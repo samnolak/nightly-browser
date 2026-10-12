@@ -8,11 +8,14 @@
 - name: zen.mods.auto-update-days
   value: 20 # In days
 
+# Nightly: no background contact with the Zen mod store; users can still
+# update mods from the Mods settings page.
 - name: zen.mods.auto-update
-  value: "@cond"
-  condition: "defined(MOZILLA_OFFICIAL)"
+  value: false
 
 # === Mark: Site Injection ===
+# The Zen mod store (zen-browser.app/mods) stays reachable when the user
+# opens it; the actor only runs on pages the user visits.
 
 - name: zen.injections.match-urls
   value: "https://zen-browser.app/*"

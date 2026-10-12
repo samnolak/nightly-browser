@@ -1,0 +1,35 @@
+diff --git a/dom/push/PushService.sys.mjs b/dom/push/PushService.sys.mjs
+index 30ee9e3..9d0f6c6 100644
+--- a/dom/push/PushService.sys.mjs
++++ b/dom/push/PushService.sys.mjs
+@@ -236,6 +236,15 @@ export var PushService = {
+     // getListeners.
+     this._setState(PUSH_SERVICE_RUNNING);
+ 
++    // Nightly: only open the push connection at startup when a push
++    // subscription exists. A new subscription opens it on demand (see
++    // PushServiceWebSocket._queueRequest), and the hello sent then carries
++    // these broadcast listeners. Remote Settings keeps its periodic poll.
++    if (!(await this.getAllUnexpired()).length) {
++      this._service._broadcastListeners = broadcastListeners;
++      return;
++    }
++
+     this._service.connect(broadcastListeners);
+   },
+ 
+@@ -1185,6 +1194,14 @@ export var PushService = {
+       return;
+     }
+ 
++    if (!this._service.isConnected()) {
++      // Nightly: the push connection is opened on demand; the hello sent
++      // when it opens carries the broadcast listeners instead.
++      this._service._broadcastListeners =
++        await lazy.pushBroadcastService.getListeners();
++      return;
++    }
++
+     await this._service.sendSubscribeBroadcast(broadcastId, version);
+   },
+ 

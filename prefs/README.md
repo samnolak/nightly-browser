@@ -4,4 +4,5 @@ This directory contains configuration files for Zen. They are divided by folder 
 
 - `firefox/`: Preferences to override Firefox defaults.
 - `zen/`: Preferences to configure Zen-specific features.
+- `nightly/`: Nightly Browser privacy defaults (no background connections the user did not ask for).
 - `privatefox/` & `fastfox/`: _Some_ of the preferences got extracted from [Betterfox](https://github.com/yokoffing/Betterfox).

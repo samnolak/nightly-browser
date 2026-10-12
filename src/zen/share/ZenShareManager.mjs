@@ -44,7 +44,11 @@ class nsZenShareManager extends nsZenDOMOperatedFeature {
   }
 
   get enabled() {
-    return !gZenWorkspaces.privateWindowOrDisabled;
+    // Sharing needs a share server; none is configured by default.
+    return (
+      !!Services.prefs.getStringPref("zen.share.base-url", "").trim() &&
+      !gZenWorkspaces.privateWindowOrDisabled
+    );
   }
 
   // Mark: sharing

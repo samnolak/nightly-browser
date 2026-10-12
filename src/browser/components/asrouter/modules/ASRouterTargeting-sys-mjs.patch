@@ -1,0 +1,39 @@
+diff --git a/browser/components/asrouter/modules/ASRouterTargeting.sys.mjs b/browser/components/asrouter/modules/ASRouterTargeting.sys.mjs
+index aab3c53..fadcf8f 100644
+--- a/browser/components/asrouter/modules/ASRouterTargeting.sys.mjs
++++ b/browser/components/asrouter/modules/ASRouterTargeting.sys.mjs
+@@ -365,30 +365,10 @@ function CheckBrowserNeedsUpdate(
+       this._value = null;
+     },
+     async get() {
+-      const now = Date.now();
+-      if (
+-        !AppConstants.MOZ_UPDATER ||
+-        now - this._lastUpdated < updateInterval
+-      ) {
+-        return this._value;
+-      }
+-      if (!lazy.AUS.canCheckForUpdates) {
+-        return false;
+-      }
+-      this._lastUpdated = now;
+-      let check = lazy.UpdateCheckSvc.checkForUpdates(
+-        lazy.UpdateCheckSvc.FOREGROUND_CHECK
+-      );
+-      let result = await check.result;
+-      if (!result.succeeded) {
+-        lazy.ASRouterPreferences.console.error(
+-          "CheckBrowserNeedsUpdate failed :>> ",
+-          result.request
+-        );
+-        return false;
+-      }
+-      checker._value = !!result.updates.length;
+-      return checker._value;
++      // Nightly: evaluating messaging targeting (e.g. the background update
++      // targeting snapshot taken at startup) must not start a network update
++      // check; the update service runs its own scheduled checks.
++      return this._value ?? false;
+     },
+   };
+ 

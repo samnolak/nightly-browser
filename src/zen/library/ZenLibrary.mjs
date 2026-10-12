@@ -914,14 +914,6 @@ export class ZenLibrary extends MozLitElement {
         l10nId: "library-footer-close-button",
         command: () => ZenLibrary.animateProgress(0),
       },
-      {
-        image: "chrome://browser/skin/zen-icons/heart-circle-fill.svg",
-        l10nId: "library-footer-donate-button",
-        command: () => {
-          window.openTrustedLinkIn("https://www.zen-browser.app/donate", "tab");
-          ZenLibrary.animateProgress(0);
-        },
-      },
     ];
 
     for (const { image, l10nId, command } of buttons) {

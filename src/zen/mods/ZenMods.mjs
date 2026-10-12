@@ -572,10 +572,10 @@ class nsZenMods extends nsZenPreloadedFeature {
     const nowSec = Math.floor(Date.now() / 1000);
     const daysSinceUpdate = (nowSec - lastUpdatedSec) / (60 * 60 * 24);
 
+    // Only contact the mod store in the background when the user opted in.
     return (
-      (Services.prefs.getBoolPref("zen.mods.auto-update", true) &&
-        daysSinceUpdate >= daysBeforeUpdate) ||
-      lastUpdatedSec < 0
+      Services.prefs.getBoolPref("zen.mods.auto-update", false) &&
+      (daysSinceUpdate >= daysBeforeUpdate || lastUpdatedSec < 0)
     );
   }
 

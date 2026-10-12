@@ -1,0 +1,114 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+# Nightly Browser privacy defaults: no background connections that the user
+# did not ask for. Hardening prefs stay user-changeable; only prefs that must
+# win over generated branding defaults are locked.
+#
+# Intentionally untouched (security): Remote Settings (CRLite, blocklists,
+# tracking-protection lists), OCSP, extension and system add-on updates, Safe
+# Browsing local hash-prefix lists, application updates.
+
+# === Mark: Branding URLs ===
+# surfer generates browser/branding/<brand>/pref/firefox-branding.js with
+# Zen's URLs. That file is read after firefox.js (which includes these prefs),
+# so the values must be locked to take effect.
+
+- name: startup.homepage_override_url
+  value: ""
+  locked: true
+
+- name: startup.homepage_welcome_url
+  value: ""
+  locked: true
+
+- name: startup.homepage_welcome_url.additional
+  value: ""
+  locked: true
+
+- name: app.update.url.manual
+  value: "https://github.com/samnolak/nightly-browser/releases/latest"
+  locked: true
+
+- name: app.update.url.details
+  value: "https://github.com/samnolak/nightly-browser/releases"
+  locked: true
+
+- name: app.releaseNotesURL
+  value: "https://github.com/samnolak/nightly-browser/releases"
+  locked: true
+
+- name: app.releaseNotesURL.aboutDialog
+  value: "https://github.com/samnolak/nightly-browser/releases"
+  locked: true
+
+- name: app.releaseNotesURL.prompt
+  value: "https://github.com/samnolak/nightly-browser/releases"
+  locked: true
+
+# === Mark: Experiments and messaging ===
+
+- name: nimbus.rollouts.enabled
+  value: false
+
+- name: browser.newtabpage.activity-stream.asrouter.providers.cfr
+  value: '{"id":"cfr","enabled":false,"type":"remote-settings","collection":"cfr","updateCycleInMs":3600000}'
+
+- name: browser.newtabpage.activity-stream.asrouter.providers.message-groups
+  value: '{"id":"message-groups","enabled":false,"type":"remote-settings","collection":"message-groups","updateCycleInMs":3600000}'
+
+- name: browser.newtabpage.activity-stream.asrouter.providers.messaging-experiments
+  value: '{"id":"messaging-experiments","enabled":false,"type":"remote-experiments","updateCycleInMs":3600000}'
+
+# === Mark: Network probes ===
+
+- name: network.captive-portal-service.enabled
+  value: false
+
+- name: network.connectivity-service.enabled
+  value: false
+
+# === Mark: Prefetching and speculative connections ===
+
+- name: network.dns.disablePrefetch
+  value: true
+
+- name: network.dns.disablePrefetchFromHTTPS
+  value: true
+
+- name: network.prefetch-next
+  value: false
+
+- name: network.http.speculative-parallel-limit
+  value: 0
+
+- name: browser.urlbar.speculativeConnect.enabled
+  value: false
+
+- name: browser.places.speculativeConnect.enabled
+  value: false
+
+# === Mark: WebRTC ===
+# Don't expose local network addresses through ICE candidates.
+
+- name: media.peerconnection.ice.default_address_only
+  value: true
+
+- name: media.peerconnection.ice.no_host
+  value: true
+
+# === Mark: Region lookup ===
+
+- name: browser.region.network.url
+  value: ""
+
+- name: browser.region.update.enabled
+  value: false
+
+# === Mark: Safe Browsing ===
+# Keep local phishing/malware lists; don't send downloaded file metadata to
+# Google for remote reputation checks.
+
+- name: browser.safebrowsing.downloads.remote.enabled
+  value: false

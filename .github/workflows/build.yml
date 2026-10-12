@@ -1,254 +1,167 @@
-name: Zen Release builds
+# Builds Nightly Browser for macOS (universal), Windows and Linux (x86_64 + arm64)
+# on GitHub-hosted runners, signs the MARs and optionally publishes:
+#   - a GitHub release (tag = displayVersion for "release", "twilight" for beta)
+#   - update.xml files on gh-pages under updates/browser/<target>/<channel>/
+#     (served at https://samnolak.github.io/nightly-browser/, see surfer.json)
+#
+# Repository secrets
+#   Required for MAR signing (scripts/mar_sign.sh):
+#     NIGHTLY_SIGNING_CERT_PEM_BASE64, NIGHTLY_SIGNING_PRIVATE_KEY_PEM_BASE64,
+#     NIGHTLY_MAR_SIGNING_PASSWORD
+#   Optional API keys (written to ~/.nightly-keys during the build):
+#     NIGHTLY_SAFEBROWSING_API_KEY, NIGHTLY_MOZILLA_API_KEY,
+#     NIGHTLY_GOOGLE_LOCATION_SERVICE_API_KEY
+#   Optional Windows Authenticode (unsigned builds otherwise):
+#     NIGHTLY_WINDOWS_PFX_BASE64, NIGHTLY_WINDOWS_PFX_PASSWORD,
+#     NIGHTLY_WINDOWS_CERT_SUBJECT_NAME, NIGHTLY_WINDOWS_CERT_ISSUER
+#   Optional macOS Developer ID signing + notarization (ad-hoc signed otherwise):
+#     NIGHTLY_MACOS_CERTIFICATE_P12_BASE64, NIGHTLY_MACOS_CERTIFICATE_P12_PASSWORD,
+#     NIGHTLY_MACOS_SIGNING_IDENTITY, NIGHTLY_MACOS_PROVISIONING_PROFILE_BASE64,
+#     NIGHTLY_APPLE_ID, NIGHTLY_APPLE_TEAM_ID, NIGHTLY_APPLE_APP_PASSWORD
+
+name: Nightly Browser release build
 
 on:
   workflow_dispatch:
     inputs:
-      create_release:
-        description: "Create a new release for this build"
-        required: false
-        default: false
-        type: "boolean"
-      update_version:
-        description: "Update the version number"
-        required: false
-        default: false
-        type: "boolean"
-      update_branch:
-        description: "Update branch with new version"
+      channel:
+        description: "Update channel: release (stable) or twilight (Nightly Browser Beta)"
         required: true
         default: "release"
-        type: "choice"
+        type: choice
         options:
           - "release"
           - "twilight"
-      use-sccache:
-        description: "Use sccache"
+      platforms:
+        description: "'all' or a comma list of linux-x86_64, linux-aarch64, windows-x86_64, windows-aarch64, macos-x86_64, macos-aarch64"
         required: true
-        type: "boolean"
-        default: false
-      disable-pgo:
-        description: "Build without PGO (skips the profile generation stages)"
-        required: false
-        type: "boolean"
-        default: false
-  workflow_call:
-    inputs:
+        default: "all"
+        type: string
       create_release:
-        description: "Create a new release for this build"
+        description: "Publish a GitHub release and the update manifests (requires all platforms)"
         required: false
         default: false
-        type: "boolean"
-      update_version:
-        description: "Update the version number"
+        type: boolean
+      display_version:
+        description: "Override the channel's displayVersion from surfer.json (leave empty to use it)"
+        required: false
+        default: ""
+        type: string
+      use_sccache:
+        description: "Use sccache backed by the GitHub Actions cache"
+        required: false
+        default: true
+        type: boolean
+      lto:
+        description: "Enable thin LTO (slower builds; watch the 6h job limit)"
         required: false
         default: false
-        type: "boolean"
-      update_branch:
-        description: "Update branch with new version"
-        required: true
-        default: "release"
-        type: "string"
-      use-sccache:
-        description: "Use sccache"
-        required: true
-        type: "boolean"
-        default: false
-      disable-pgo:
-        description: "Build without PGO (skips the profile generation stages)"
-        required: false
-        type: "boolean"
-        default: false
+        type: boolean
+
+concurrency:
+  group: build-${{ inputs.channel }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
 
 jobs:
-  buildid:
-    name: Generate build ID
-    runs-on: ubuntu-latest
+  setup:
+    name: Plan build
+    runs-on: ubuntu-24.04
     outputs:
-      buildids: ${{ steps.get.outputs.bid }}
+      version: ${{ steps.plan.outputs.version }}
+      tag: ${{ steps.plan.outputs.tag }}
+      build_id: ${{ steps.plan.outputs.build_id }}
+      build_date: ${{ steps.plan.outputs.build_date }}
+      linux: ${{ steps.plan.outputs.linux }}
+      windows: ${{ steps.plan.outputs.windows }}
+      macos: ${{ steps.plan.outputs.macos }}
+      macos_universal: ${{ steps.plan.outputs.macos_universal }}
+      all_platforms: ${{ steps.plan.outputs.all_platforms }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
-          token: ${{ secrets.DEPLOY_KEY }}
+        uses: actions/checkout@v6
 
-      - id: get
-        shell: bash -xe {0}
+      - name: Plan
+        id: plan
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CHANNEL: ${{ inputs.channel }}
+          PLATFORMS: ${{ inputs.platforms }}
+          CREATE_RELEASE: ${{ inputs.create_release }}
+          DISPLAY_VERSION: ${{ inputs.display_version }}
         run: |
-          bdat=`date +"%Y%m%d%I%M%S"`
-          echo "bid=${bdat}" >> $GITHUB_OUTPUT
+          set -euo pipefail
+          all="linux-x86_64,linux-aarch64,windows-x86_64,windows-aarch64,macos-x86_64,macos-aarch64"
+          plats="${PLATFORMS// /}"
+          if [ "$plats" = "all" ]; then plats="$all"; fi
 
-      - name: Debug
-        run: |
-          echo "create_release: ${{ inputs.create_release }}"
-          echo "update_version: ${{ inputs.update_version }}"
-          echo "use sccache: ${{ inputs.use-sccache }}"
-          echo "disable-pgo: ${{ inputs.disable-pgo }}"
-          echo "update_branch: ${{ inputs.update_branch }}"
-          echo "GITHUB_REPOSITORY: ${{ github.repository }}"
-          echo "GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}"
-          echo "GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}"
-
-      - name: Check if correct branch
-        if: ${{ inputs.create_release }}
-        run: |
-          echo "Checking if we are on the correct branch"
-          git branch
-          git status
-          git branch --show-current
-          branch="${{ inputs.update_branch }}"
-          if [[ $branch == "twilight" ]]; then
-            branch="dev"
-          elif [[ $branch == "release" ]]; then
-            branch="stable"
+          linux=(); windows=(); macos=()
+          IFS=',' read -ra items <<< "$plats"
+          for p in "${items[@]}"; do
+            case "$p" in
+              linux-x86_64|linux-aarch64) linux+=("${p#linux-}") ;;
+              windows-x86_64|windows-aarch64) windows+=("${p#windows-}") ;;
+              macos-x86_64|macos-aarch64) macos+=("${p#macos-}") ;;
+              *) echo "::error::Unknown platform '$p'. Use 'all' or a comma list of: $all"; exit 1 ;;
+            esac
+          done
+          to_json() { printf '%s\n' "$@" | sed '/^$/d' | sort -u | jq -R . | jq -cs .; }
+          linux_json=$(to_json "${linux[@]}")
+          windows_json=$(to_json "${windows[@]}")
+          macos_json=$(to_json "${macos[@]}")
+          macos_universal=$([ "$(jq length <<< "$macos_json")" = 2 ] && echo true || echo false)
+          all_platforms=false
+          if [ "$(jq length <<< "$linux_json")" = 2 ] && [ "$(jq length <<< "$windows_json")" = 2 ] && [ "$macos_universal" = true ]; then
+            all_platforms=true
           fi
-          if [[ $(git branch --show-current) != $branch ]]; then
-            echo ">>> Branch mismatch"
-          # exit 1
-          else
-            echo ">>> Branch matches"
+
+          version="$DISPLAY_VERSION"
+          if [ -z "$version" ]; then
+            version=$(jq -r --arg c "$CHANNEL" '.brands[$c].release.displayVersion' surfer.json)
           fi
-
-  start-self-host:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download aws-cli
-        if: ${{ inputs.update_branch == 'release' }}
-        run: |
-          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-          unzip awscliv2.zip
-          sudo ./aws/install --update
-
-      - name: Start self-hosted runner
-        if: ${{ inputs.update_branch == 'release' }}
-        run: |
-          echo "Starting self-hosted runner"
-          echo "${{ secrets.SELF_HOSTED_RUNNER_START_SCRIPT }}" | base64 -d > start.sh
-          sudo chmod +x start.sh
-          bash ./start.sh
-
-      - name: Remove self-hosted runner script
-        if: always() && ${{ inputs.update_branch == 'release' }}
-        run: |
-          echo "Removing self-hosted runner script"
-          rm start.sh || true
-
-  build-data:
-    permissions:
-      contents: write
-    name: Generate build data
-    runs-on: ubuntu-latest
-    needs: buildid
-    outputs:
-      build_date: ${{ steps.data.outputs.builddate }}
-      version: ${{ steps.data.outputs.version }}
-      build_time: ${{ steps.data.outputs.buildtime }}
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
-          token: ${{ secrets.DEPLOY_KEY }}
-
-      - name: Setup Node.js
-        uses: useblacksmith/setup-node@v5
-        with:
-          node-version-file: ".nvmrc"
-
-      - name: Install dependencies
-        run: |
-          npm ci
-
-      - name: Setup Surfer
-        run: |
-          npm i -g @zen-browser/surfer
-
-      - name: Bump version
-        if: ${{ inputs.update_version && inputs.update_branch == 'release' }}
-        run: |
-          npm run surfer -- ci --brand ${{ inputs.update_branch }} --bump prerelease
-
-      - name: Bump version without new version
-        if: ${{ !inputs.update_version || inputs.update_branch == 'twilight' }}
-        run: |
-          npm run surfer -- ci --brand ${{ inputs.update_branch }}
-
-      - name: Debug
-        run: |
-          surfer get version
-          surfer get version | xargs
-          echo "$(surfer get version | xargs)"
-
-      - name: Export release date
-        id: data
-        shell: bash
-        run: |
-          echo "builddate=$(date +"%Y-%m-%d")" >> $GITHUB_OUTPUT
-          echo "version=$(surfer get version | xargs)" >> $GITHUB_OUTPUT
-          echo "buildtime=$(date +"%H:%M:%S")" >> $GITHUB_OUTPUT
-
-      - name: Commit
-        uses: stefanzweifel/git-auto-commit-action@v5
-        if: ${{ inputs.update_version }}
-        with:
-          commit_message: 🔖 Update version to ${{ steps.data.outputs.version }}
-          commit_user_name: Zen Browser Robot
-          commit_user_email: zen-browser-auto@users.noreply.github.com
-
-  check-release:
-    runs-on: ubuntu-latest
-    needs: [build-data]
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
-          token: ${{ secrets.DEPLOY_KEY }}
-
-      - name: Setup Node.js
-        uses: useblacksmith/setup-node@v5
-        with:
-          node-version-file: ".nvmrc"
-
-      - name: Install dependencies
-        run: |
-          npm ci
-
-      - name: Setup Surfer
-        run: |
-          npm i -g @zen-browser/surfer
-
-      - name: Activate Surfer CLI
-        run: |
-          npm run surfer -- ci --brand ${{ inputs.update_branch }} --display-version ${{ needs.build-data.outputs.version }}
-
-      - name: Check version
-        run: |
-          echo "$(pwd)"
-          echo $(npm run --silent surfer -- get version | xargs)
-          echo "version=$(npm run --silent surfer -- get version | xargs)" >> $GITHUB_OUTPUT
-          if [[ $(npm run --silent surfer -- get version | xargs) == ${{ needs.build-data.outputs.version }} ]]; then
-            echo ">>> Version matches"
-          else
-            echo ">>> Version mismatch"
+          if ! [[ "$version" =~ ^[0-9A-Za-z][0-9A-Za-z.+-]*$ ]]; then
+            echo "::error::Invalid display version '$version'"
             exit 1
           fi
+          # Tags must match the MAR URLs surfer writes into update.xml.
+          if [ "$CHANNEL" = "release" ]; then tag="$version"; else tag="twilight"; fi
+
+          if [ "$CREATE_RELEASE" = "true" ]; then
+            if [ "$all_platforms" != "true" ]; then
+              echo "::error::create_release needs all six platforms (update manifests are published for every target)."
+              exit 1
+            fi
+            if [ "$CHANNEL" = "release" ] && gh release view "$tag" -R "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+              echo "::error::Release $tag already exists. Bump brands.release.release.displayVersion in surfer.json or pass display_version."
+              exit 1
+            fi
+          fi
+
+          {
+            echo "version=$version"
+            echo "tag=$tag"
+            echo "build_id=$(date -u +%Y%m%d%H%M%S)"
+            echo "build_date=$(date -u +%Y-%m-%d)"
+            echo "linux=$linux_json"
+            echo "windows=$windows_json"
+            echo "macos=$macos_json"
+            echo "macos_universal=$macos_universal"
+            echo "all_platforms=$all_platforms"
+          } | tee -a "$GITHUB_OUTPUT"
 
   source:
-    permissions:
-      contents: write
-    runs-on: ubuntu-latest
-    needs: [build-data, check-release]
-
+    name: Source tarball
+    if: ${{ inputs.create_release }}
+    needs: setup
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
-          token: ${{ secrets.DEPLOY_KEY }}
+        uses: actions/checkout@v6
 
       - name: Setup Node.js
-        uses: useblacksmith/setup-node@v5
+        uses: actions/setup-node@v6
         with:
           node-version-file: ".nvmrc"
 
@@ -258,11 +171,13 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Install dependencies
-        run: |
-          npm ci
+        run: npm ci
 
       - name: Load Surfer CI setup
-        run: npm run surfer -- ci --brand ${{ inputs.update_branch }} --display-version ${{ needs.build-data.outputs.version }}
+        env:
+          CHANNEL: ${{ inputs.channel }}
+          VERSION: ${{ needs.setup.outputs.version }}
+        run: npm run surfer -- ci --brand "$CHANNEL" --display-version "$VERSION"
 
       - name: Download Firefox source and dependencies
         run: npm run download --verbose
@@ -278,571 +193,270 @@ jobs:
           tar \
             --exclude='./.git' \
             --use-compress-program=zstd \
-            -hcf zen.source.tar.zst \
+            -hcf nightly.source.tar.zst \
             -C engine .
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           retention-days: 5
-          name: zen.source.tar.zst
-          path: ./zen.source.tar.zst
-
-  windows-step-1:
-    name: Windows build step 1 (PGO build)
-    uses: ./.github/workflows/windows-release-build.yml
-    if: ${{ !inputs.disable-pgo }}
-    needs: [build-data, buildid]
-    permissions:
-      contents: write
-    secrets: inherit
-    with:
-      use-sccache: ${{ inputs.use-sccache }}
-      build-version: ${{ needs.build-data.outputs.version }}
-      generate-pgo: true
-      profile-data-path-archive: zen-windows-profile-data-and-jarlog.zip
-      release-branch: ${{ inputs.update_branch }}
-      MOZ_BUILD_DATE: ${{needs.buildid.outputs.buildids}}
-
-  windows-step-2:
-    name: Windows build step 2 (Generate profile data)
-    uses: ./.github/workflows/windows-profile-build.yml
-    if: ${{ !inputs.disable-pgo }}
-    permissions:
-      contents: write
-    secrets: inherit
-    needs: [windows-step-1, build-data]
-    with:
-      build-version: ${{ needs.build-data.outputs.version }}
-      profile-data-path-archive: zen.win64-pgo-stage-1.zip
-      release-branch: ${{ inputs.update_branch }}
-
-  windows-step-3:
-    name: Windows build step 3 (build with profile data)
-    uses: ./.github/workflows/windows-release-build.yml
-    permissions:
-      contents: write
-    secrets: inherit
-    # windows-step-2 is skipped when PGO is disabled, so don't inherit its skip
-    if: ${{ !failure() && !cancelled() }}
-    needs: [build-data, windows-step-2, start-self-host, buildid]
-    with:
-      build-version: ${{ needs.build-data.outputs.version }}
-      generate-pgo: false
-      disable-pgo: ${{ inputs.disable-pgo }}
-      release-branch: ${{ inputs.update_branch }}
-      MOZ_BUILD_DATE: ${{needs.buildid.outputs.buildids}}
-      use-sccache: ${{ inputs.use-sccache }}
+          name: nightly.source.tar.zst
+          path: ./nightly.source.tar.zst
 
   linux:
-    name: Linux build
+    name: Linux
+    needs: setup
+    if: ${{ needs.setup.outputs.linux != '[]' }}
     uses: ./.github/workflows/linux-release-build.yml
-    permissions:
-      contents: write
     secrets: inherit
-    needs: [build-data, start-self-host, buildid]
     with:
-      build-version: ${{ needs.build-data.outputs.version }}
-      release-branch: ${{ inputs.update_branch }}
-      MOZ_BUILD_DATE: ${{needs.buildid.outputs.buildids}}
-      use-sccache: ${{ inputs.use-sccache }}
-      disable-pgo: ${{ inputs.disable-pgo }}
+      arches: ${{ needs.setup.outputs.linux }}
+      build-version: ${{ needs.setup.outputs.version }}
+      release-branch: ${{ inputs.channel }}
+      MOZ_BUILD_DATE: ${{ needs.setup.outputs.build_id }}
+      use-sccache: ${{ inputs.use_sccache }}
+      lto: ${{ inputs.lto }}
 
-  mac-step-1:
-    name: macOS build step 1 (PGO build)
+  windows:
+    name: Windows
+    needs: setup
+    if: ${{ needs.setup.outputs.windows != '[]' }}
+    uses: ./.github/workflows/windows-release-build.yml
+    secrets: inherit
+    with:
+      arches: ${{ needs.setup.outputs.windows }}
+      build-version: ${{ needs.setup.outputs.version }}
+      release-branch: ${{ inputs.channel }}
+      MOZ_BUILD_DATE: ${{ needs.setup.outputs.build_id }}
+      use-sccache: ${{ inputs.use_sccache }}
+      lto: ${{ inputs.lto }}
+
+  macos:
+    name: macOS
+    needs: setup
+    if: ${{ needs.setup.outputs.macos != '[]' }}
     uses: ./.github/workflows/macos-release-build.yml
-    if: ${{ !inputs.disable-pgo }}
-    needs: [build-data, buildid]
-    permissions:
-      contents: write
     secrets: inherit
     with:
-      use-sccache: ${{ inputs.use-sccache }}
-      build-version: ${{ needs.build-data.outputs.version }}
-      generate-pgo: true
-      release-branch: ${{ inputs.update_branch }}
-      MOZ_BUILD_DATE: ${{needs.buildid.outputs.buildids}}
+      arches: ${{ needs.setup.outputs.macos }}
+      build-version: ${{ needs.setup.outputs.version }}
+      release-branch: ${{ inputs.channel }}
+      MOZ_BUILD_DATE: ${{ needs.setup.outputs.build_id }}
+      use-sccache: ${{ inputs.use_sccache }}
+      lto: ${{ inputs.lto }}
 
-  mac-step-2:
-    name: macOS build step 2 (Generate profile data)
-    uses: ./.github/workflows/macos-profile-build.yml
-    if: ${{ !inputs.disable-pgo }}
-    permissions:
-      contents: write
-    secrets: inherit
-    needs: [mac-step-1, build-data]
-    with:
-      build-version: ${{ needs.build-data.outputs.version }}
-      release-branch: ${{ inputs.update_branch }}
-
-  mac-step-3:
-    name: macOS build step 3 (build with profile data)
-    uses: ./.github/workflows/macos-release-build.yml
-    permissions:
-      contents: write
-    secrets: inherit
-    # mac-step-2 is skipped when PGO is disabled, so don't inherit its skip
-    if: ${{ !failure() && !cancelled() }}
-    needs: [build-data, mac-step-2, start-self-host, buildid]
-    with:
-      build-version: ${{ needs.build-data.outputs.version }}
-      generate-pgo: false
-      disable-pgo: ${{ inputs.disable-pgo }}
-      release-branch: ${{ inputs.update_branch }}
-      MOZ_BUILD_DATE: ${{needs.buildid.outputs.buildids}}
-      use-sccache: ${{ inputs.use-sccache }}
-
-  mac-uni:
-    name: macOS build (Universal)
+  macos-universal:
+    name: macOS Universal
+    needs: [setup, macos]
+    if: ${{ needs.setup.outputs.macos_universal == 'true' }}
     uses: ./.github/workflows/macos-universal-release-build.yml
-    permissions:
-      contents: write
     secrets: inherit
-    needs: [build-data, mac-step-3]
     with:
-      build-version: ${{ needs.build-data.outputs.version }}
-      release-branch: ${{ inputs.update_branch }}
+      build-version: ${{ needs.setup.outputs.version }}
+      release-branch: ${{ inputs.channel }}
 
   appimage:
-    name: AppImage build - Linux ${{ matrix.arch }}
-    permissions:
-      contents: write
-    runs-on: ubuntu-latest
+    name: AppImage - Linux ${{ matrix.arch }}
+    needs: [setup, linux]
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
-        arch: [x86_64, aarch64]
-    needs: [linux, build-data]
+        arch: ${{ fromJSON(needs.setup.outputs.linux) }}
+    env:
+      ARCH: ${{ matrix.arch }}
+      CHANNEL: ${{ inputs.channel }}
+      VERSION: ${{ needs.setup.outputs.version }}
+      ZSYNC_TAG: ${{ inputs.channel == 'release' && 'latest' || 'twilight' }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
-          token: ${{ secrets.DEPLOY_KEY }}
-
-      - name: Setup Node.js
-        uses: useblacksmith/setup-node@v5
-        with:
-          node-version-file: ".nvmrc"
+        uses: actions/checkout@v6
 
       - name: Install dependencies
         run: |
-          npm ci
           sudo apt-get update
           sudo apt-get -y install libfuse2 desktop-file-utils appstream
 
       - name: Download Linux build
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
-          name: zen.linux-${{ matrix.arch }}.tar.xz
+          name: nightly.linux-${{ matrix.arch }}.tar.xz
 
-      - name: Execute AppImage build
+      - name: Build AppImage
         run: |
           set -eux
-          export ARCH=${{ matrix.arch }}
-          UPINFO="gh-releases-zsync|$GITHUB_REPOSITORY_OWNER|desktop|latest|zen-$ARCH.AppImage.zsync"
-          rm build/AppDir/.DirIcon || true
-          cp configs/branding/${{ inputs.update_branch }}/logo128.png build/AppDir/usr/share/icons/hicolor/128x128/apps/zen.png
-          cp configs/branding/${{ inputs.update_branch }}/logo128.png build/AppDir/zen.png && ln -s zen.png build/AppDir/.DirIcon
-
-          if [ "${{ inputs.update_branch }}" = "twilight" ]; then
-            sed -i -e 's/Name=Zen Browser/Name=Zen Twilight/g' build/AppDir/zen.desktop
-            sed -i -e 's/StartupWMClass=zen/StartupWMClass=zen-twilight/g' build/AppDir/zen.desktop
-          fi
-
-          sed -i -e 's/\$VERSION/${{ needs.build-data.outputs.version }}/g' build/AppDir/zen.desktop
-
           APPDIR=build/AppDir
-          tar -xvf *.tar.* && rm -rf *.tar.*
-          mv zen/* $APPDIR/
-          wget "https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage"
-          wget "https://github.com/VHSgunzo/uruntime/releases/latest/download/uruntime-appimage-squashfs-lite-$ARCH"
-          chmod +x *.AppImage
-          chmod +x ./uruntime-appimage-squashfs-lite-"$ARCH"
-          chmod +x ./build/AppDir/AppRun
+          UPINFO="gh-releases-zsync|${GITHUB_REPOSITORY%%/*}|${GITHUB_REPOSITORY##*/}|$ZSYNC_TAG|nightly-$ARCH.AppImage.zsync"
+          rm -f "$APPDIR/.DirIcon"
+          mkdir -p "$APPDIR/usr/share/icons/hicolor/128x128/apps"
+          cp "configs/branding/$CHANNEL/logo128.png" "$APPDIR/usr/share/icons/hicolor/128x128/apps/nightly.png"
+          cp "configs/branding/$CHANNEL/logo128.png" "$APPDIR/nightly.png"
+          ln -s nightly.png "$APPDIR/.DirIcon"
+
+          if [ "$CHANNEL" = "twilight" ]; then
+            sed -i -e 's/^Name=Nightly Browser$/Name=Nightly Browser Beta/' "$APPDIR/nightly.desktop"
+            sed -i -e 's/^StartupWMClass=nightly$/StartupWMClass=nightly-twilight/' "$APPDIR/nightly.desktop"
+          fi
+          sed -i -e "s/\$VERSION/$VERSION/g" "$APPDIR/nightly.desktop"
+
+          tar -xf ./*.tar.* && rm -f ./*.tar.*
+          mv nightly/* "$APPDIR/"
+          wget -q "https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage"
+          wget -q "https://github.com/VHSgunzo/uruntime/releases/latest/download/uruntime-appimage-squashfs-lite-$ARCH"
+          chmod +x ./appimagetool-x86_64.AppImage "./uruntime-appimage-squashfs-lite-$ARCH" "$APPDIR/AppRun"
 
           # keep the uruntime mountpoint (massively speeds up launch time)
-          sed -i 's|URUNTIME_MOUNT=[0-9]|URUNTIME_MOUNT=0|' ./uruntime-appimage-squashfs-lite-"$ARCH"
+          sed -i 's|URUNTIME_MOUNT=[0-9]|URUNTIME_MOUNT=0|' "./uruntime-appimage-squashfs-lite-$ARCH"
 
-          echo "AppDir: $APPDIR"
-          ls -al
-          find .
-          ls -al "$APPDIR"
-          ./appimagetool-x86_64.AppImage -u "$UPINFO" "$APPDIR" zen-"$ARCH".AppImage --runtime-file ./uruntime-appimage-squashfs-lite-"$ARCH"
+          ./appimagetool-x86_64.AppImage -u "$UPINFO" "$APPDIR" "nightly-$ARCH.AppImage" --runtime-file "./uruntime-appimage-squashfs-lite-$ARCH"
           mkdir dist
-          mv zen*AppImage* dist/.
-          unset ARCH
+          mv nightly-*.AppImage* dist/
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           retention-days: 5
-          name: zen-${{ matrix.arch }}.AppImage
-          path: ./dist/zen-${{ matrix.arch }}.AppImage
+          name: nightly-${{ matrix.arch }}.AppImage
+          path: ./dist/nightly-${{ matrix.arch }}.AppImage
 
       - name: Upload artifact (ZSync)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           retention-days: 5
-          name: zen-${{ matrix.arch }}.AppImage.zsync
-          path: ./dist/zen-${{ matrix.arch }}.AppImage.zsync
-
-  stop-self-hosted:
-    runs-on: ubuntu-latest
-    needs: [windows-step-3, linux]
-    if: always()
-    steps:
-      - name: Download aws-cli
-        if: ${{ inputs.update_branch == 'release' }}
-        run: |
-          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-          unzip awscliv2.zip
-          sudo ./aws/install --update
-
-      - name: Stop self-hosted runner
-        if: ${{ inputs.update_branch == 'release' }}
-        run: |
-          echo "Stopping self-hosted runner"
-          echo "${{ secrets.SELF_HOSTED_RUNNER_STOP_SCRIPT }}" | base64 -d > stop.sh
-          sudo chmod +x stop.sh
-          bash ./stop.sh > /dev/null
-
-      - name: Remove self-hosted runner script
-        if: always() && ${{ inputs.update_branch == 'release' }}
-        run: |
-          echo "Removing self-hosted runner script"
-          rm stop.sh || true
+          name: nightly-${{ matrix.arch }}.AppImage.zsync
+          path: ./dist/nightly-${{ matrix.arch }}.AppImage.zsync
 
   release:
-    permissions: write-all
-    name: Release
-    needs:
-      [
-        build-data,
-        linux,
-        windows-step-3,
-        check-release,
-        mac-uni,
-        appimage,
-        source,
-        stop-self-hosted,
-      ]
-    runs-on: blacksmith-2vcpu-ubuntu-2404
-    environment:
-      name: ${{ inputs.update_branch == 'release' && 'Deploy-Release' || 'Deploy-Twilight' }}
+    name: Sign MARs and publish
+    needs: [setup, source, linux, windows, macos-universal, appimage]
+    # Runs for every full build: MARs are signed and verified even when nothing is
+    # published, so the signing pipeline is exercised by test builds too.
+    if: >-
+      ${{ !cancelled() && needs.setup.outputs.all_platforms == 'true'
+      && needs.linux.result == 'success' && needs.windows.result == 'success'
+      && needs.macos-universal.result == 'success' && needs.appimage.result == 'success'
+      && (needs.source.result == 'success' || needs.source.result == 'skipped') }}
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    env:
+      CHANNEL: ${{ inputs.channel }}
+      RELEASE_BRANCH: ${{ inputs.channel }}
+      VERSION: ${{ needs.setup.outputs.version }}
+      TAG: ${{ needs.setup.outputs.tag }}
+      BUILD_DATE: ${{ needs.setup.outputs.build_date }}
+      MACOS_NOTARIZED: ${{ secrets.NIGHTLY_MACOS_CERTIFICATE_P12_BASE64 != '' && secrets.NIGHTLY_APPLE_ID != '' && secrets.NIGHTLY_APPLE_TEAM_ID != '' && secrets.NIGHTLY_APPLE_APP_PASSWORD != '' }}
+      WINDOWS_SIGNED: ${{ secrets.NIGHTLY_WINDOWS_PFX_BASE64 != '' }}
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
         with:
-          submodules: recursive
-          token: ${{ secrets.DEPLOY_KEY }}
+          node-version-file: ".nvmrc"
 
-      - name: Download artifact
-        uses: actions/download-artifact@v4
+      - name: Download artifacts
+        uses: actions/download-artifact@v7
 
-      - name: Checkout updates repository
-        uses: actions/checkout@v4
-        with:
-          repository: zen-browser/updates-server
-          path: updates-server
-          token: ${{ secrets.DEPLOY_KEY }}
-
-      - name: Download signed windows objects
-        if: ${{ inputs.update_branch == 'release' }}
-        env:
-          GH_TOKEN: ${{ secrets.DEPLOY_KEY }}
+      - name: Install NSS tools
         run: |
-          mkdir -p .github/workflows/object
-          gh release download "windows-signed-${{ github.run_id }}" \
-            --repo zen-browser/windows-binaries \
-            --pattern 'windows-x64-signed-*.tar.gz' \
-            --dir .github/workflows/object
+          sudo apt-get update
+          sudo apt-get install -y libnss3-tools
 
-          for arch in x86_64 arm64; do
-            archive=".github/workflows/object/windows-x64-signed-$arch.tar.gz"
-            dest=".github/workflows/object/windows-x64-signed-$arch"
-            echo "Expanding $archive"
-            mkdir -p "$dest"
-            tar -xvf "$archive" -C "$dest"
-          done
+      - name: Prepare signmar
+        run: |
+          # signmar links against the NSS libraries built next to it.
+          dir="$GITHUB_WORKSPACE/linux-signmar-x86_64"
+          chmod +x "$dir/signmar"
+          printf '#!/bin/sh\nLD_LIBRARY_PATH="%s" exec "%s/signmar" "$@"\n' "$dir" "$dir" > "$RUNNER_TEMP/signmar"
+          chmod +x "$RUNNER_TEMP/signmar"
+          echo "SIGNMAR=$RUNNER_TEMP/signmar" >> "$GITHUB_ENV"
 
       - name: Sign MAR files
         env:
-          SIGNMAR: ${{ github.workspace }}/linux-bin-x86_64/signmar
-          ZEN_MAR_SIGNING_PASSWORD: ${{ secrets.ZEN_MAR_SIGNING_PASSWORD }}
-          ZEN_SIGNING_CERT_PEM_BASE64: ${{ secrets.ZEN_SIGNING_CERT_PEM_BASE64 }}
-          ZEN_SIGNING_PRIVATE_KEY_PEM_BASE64: ${{ secrets.ZEN_SIGNING_PRIVATE_KEY_PEM_BASE64 }}
-        run: |
-          bash scripts/mar_sign.sh -s
+          NIGHTLY_MAR_SIGNING_PASSWORD: ${{ secrets.NIGHTLY_MAR_SIGNING_PASSWORD }}
+          NIGHTLY_SIGNING_CERT_PEM_BASE64: ${{ secrets.NIGHTLY_SIGNING_CERT_PEM_BASE64 }}
+          NIGHTLY_SIGNING_PRIVATE_KEY_PEM_BASE64: ${{ secrets.NIGHTLY_SIGNING_PRIVATE_KEY_PEM_BASE64 }}
+        run: bash scripts/mar_sign.sh -s
 
       - name: Verify MARs and update manifests
-        env:
-          SIGNMAR: ${{ github.workspace }}/linux-bin-x86_64/signmar
-          RELEASE_BRANCH: ${{ inputs.update_branch }}
-        run: |
-          bash scripts/mar_verify.sh
+        run: bash scripts/mar_verify.sh
 
-      - name: Copy update manifests
-        env:
-          RELEASE_BRANCH: ${{ inputs.update_branch }}
-        run: |
-          # IMPORTANT: If changing any of these names,
-          # make sure to also update the paths in the mar_sign.sh script
-
-          cd updates-server
-          mkdir -p updates
-          cp -a ../linux_update_manifest_x86_64/.  updates/
-          cp -a ../linux_update_manifest_aarch64/.  updates/
-
-          if [[ $RELEASE_BRANCH == 'release' ]]; then
-            cp -a ../.github/workflows/object/windows-x64-signed-x86_64/update_manifest/.  updates/
-            cp -a ../.github/workflows/object/windows-x64-signed-arm64/update_manifest/.  updates/
-          else
-            cp -a ../windows_update_manifest_x86_64/.  updates/
-            cp -a ../windows_update_manifest_arm64/.  updates/
-          fi
-
-          cp -a ../macos_update_manifest/.  updates/
-
-      - name: Commit
-        uses: stefanzweifel/git-auto-commit-action@v5
-        if: ${{ inputs.create_release || inputs.update_branch == 'twilight' }}
+      - name: Upload signed update files
+        uses: actions/upload-artifact@v6
         with:
-          commit_message: 🚀 Update update manifests
-          commit_user_name: Zen Browser Robot
-          commit_user_email: zen-browser-auto@users.noreply.github.com
-          repository: ./updates-server
+          retention-days: 5
+          name: signed-update-files
+          path: |
+            ./*.mar/*.mar
+            ./*_update_manifest*/
 
-      - name: Generate Release Notes
-        env:
-          RELEASE_BRANCH: ${{ inputs.update_branch }}
+      - name: Generate release notes
         run: bash .github/workflows/src/generate_release_notes.sh
 
-        # If we are on Twilight, we want to just update the Twilight tag's release
-      - name: Update Twilight tag
-        if: ${{ inputs.update_branch == 'twilight' }}
-        uses: softprops/action-gh-release@v2.2.2
-        with:
-          body_path: release_notes.md
-          files: |
-            ./zen.source.tar.zst/*
-            ./zen.linux-x86_64.tar.xz/*
-            ./zen.linux-aarch64.tar.xz/*
-            ./zen-x86_64.AppImage/*
-            ./zen-x86_64.AppImage.zsync/*
-            ./zen-aarch64.AppImage/*
-            ./zen-aarch64.AppImage.zsync/*
-            ./linux.mar/*
-            ./linux-aarch64.mar/*
-            ./windows.mar/*
-            ./windows-arm64.mar/*
-            ./macos.mar/*
-            ./zen.installer.exe/*
-            ./zen.installer-arm64.exe/*
-            ./zen.macos-universal.dmg/*
-          tag_name: "twilight-1"
-          name: "Twilight build - ${{ needs.build-data.outputs.version }} (${{ needs.build-data.outputs.build_date }} at ${{ needs.build-data.outputs.build_time }})"
-          draft: false
-          generate_release_notes: false
-          prerelease: true
-          token: ${{ secrets.DEPLOY_KEY }}
-          fail_on_unmatched_files: false
+      - name: Collect release assets
+        run: |
+          set -euo pipefail
+          mkdir release-assets
+          files=(
+            nightly.source.tar.zst/nightly.source.tar.zst
+            nightly.linux-x86_64.tar.xz/nightly.linux-x86_64.tar.xz
+            nightly.linux-aarch64.tar.xz/nightly.linux-aarch64.tar.xz
+            nightly-x86_64.AppImage/nightly-x86_64.AppImage
+            nightly-x86_64.AppImage.zsync/nightly-x86_64.AppImage.zsync
+            nightly-aarch64.AppImage/nightly-aarch64.AppImage
+            nightly-aarch64.AppImage.zsync/nightly-aarch64.AppImage.zsync
+            linux.mar/linux.mar
+            linux-aarch64.mar/linux-aarch64.mar
+            windows.mar/windows.mar
+            windows-arm64.mar/windows-arm64.mar
+            macos.mar/macos.mar
+            nightly.installer.exe/nightly.installer.exe
+            nightly.installer-arm64.exe/nightly.installer-arm64.exe
+            nightly.win-x86_64.zip/nightly.win-x86_64.zip
+            nightly.win-arm64.zip/nightly.win-arm64.zip
+            nightly.macos-universal.dmg/nightly.macos-universal.dmg
+          )
+          for f in "${files[@]}"; do
+            if [ -f "$f" ]; then
+              cp "$f" release-assets/
+            elif [ "$f" = nightly.source.tar.zst/nightly.source.tar.zst ]; then
+              echo "Source tarball is only built for published releases"
+            else
+              echo "::error::Missing release asset $f"
+              exit 1
+            fi
+          done
+          if [ "$CHANNEL" = "release" ]; then
+            tar -cf release-assets/flatpak-metadata.tar -C build/flatpak/metadata .
+            python3 scripts/prepare-flatpak-release.py \
+              --version "$VERSION" \
+              --linux-archive release-assets/nightly.linux-x86_64.tar.xz \
+              --linux-aarch64-archive release-assets/nightly.linux-aarch64.tar.xz \
+              --flatpak-archive release-assets/flatpak-metadata.tar \
+              --template-root build/flatpak \
+              --output release-assets/io.github.samnolak.nightly.yml
+          fi
+          (cd release-assets && sha256sum -- * > SHA256SUMS)
+          ls -la release-assets
+
+      - name: Publish GitHub release
+        if: ${{ inputs.create_release }}
         env:
-          GITHUB_REPOSITORY: ${{ github.repository }}
+          GH_TOKEN: ${{ github.token }}
+          TITLE: ${{ inputs.channel == 'release' && format('Nightly Browser {0}', needs.setup.outputs.version) || format('Nightly Browser Beta {0} ({1})', needs.setup.outputs.version, needs.setup.outputs.build_date) }}
+          NOTES_FILE: release_notes.md
+        run: bash .github/workflows/src/publish_release.sh release-assets/*
 
-      - name: Upload signed MAR files to workflow artifacts
-        if: ${{ inputs.update_branch == 'release' && !inputs.create_release }}
-        uses: actions/upload-artifact@v4
-        with:
-          retention-days: 5
-          name: signed-mar-files
-          path: |
-            ./linux.mar/*
-            ./linux-aarch64.mar/*
-            ./.github/workflows/object/windows-x64-signed-x86_64/windows.mar
-            ./.github/workflows/object/windows-x64-signed-arm64/windows-arm64.mar
-            ./macos.mar/*
-
-      - name: Release
-        uses: softprops/action-gh-release@v2.2.2
-        if: ${{ inputs.update_branch == 'release' && inputs.create_release }}
-        with:
-          token: ${{ secrets.DEPLOY_KEY }}
-          tag_name: ${{ needs.build-data.outputs.version }}
-          prerelease: false
-          fail_on_unmatched_files: false
-          generate_release_notes: false
-          name: "Release build - ${{ needs.build-data.outputs.version }} (${{ needs.build-data.outputs.build_date }})"
-          body_path: release_notes.md
-          files: |
-            ./zen.source.tar.zst/*
-            ./zen.linux-x86_64.tar.xz/*
-            ./zen.linux-aarch64.tar.xz/*
-            ./zen-x86_64.AppImage/*
-            ./zen-x86_64.AppImage.zsync/*
-            ./zen-aarch64.AppImage/*
-            ./zen-aarch64.AppImage.zsync/*
-            ./linux.mar/*
-            ./linux-aarch64.mar/*
-            ./.github/workflows/object/windows-x64-signed-x86_64/windows.mar
-            ./.github/workflows/object/windows-x64-signed-arm64/windows-arm64.mar
-            ./macos.mar/*
-            ./.github/workflows/object/windows-x64-signed-x86_64/zen.installer.exe
-            ./.github/workflows/object/windows-x64-signed-arm64/zen.installer-arm64.exe
-            ./zen.macos-universal.dmg/*
-
-      - name: Clean up signed windows staging release
-        if: ${{ inputs.update_branch == 'release' }}
+      # Clients only learn about the update once update.xml changes, so this runs
+      # after every MAR it points to has been uploaded.
+      - name: Publish update manifests to GitHub Pages
+        if: ${{ inputs.create_release }}
         env:
-          GH_TOKEN: ${{ secrets.DEPLOY_KEY }}
+          PUBLISH_LABEL: ${{ inputs.channel }} ${{ needs.setup.outputs.version }}
         run: |
-          # The per-run staging prerelease on windows-binaries has served its purpose
-          # now that the signed bundles are published in the real release. Never fail
-          # the release over this cleanup.
-          gh release delete "windows-signed-${{ github.run_id }}" \
-            --repo zen-browser/windows-binaries --cleanup-tag --yes || true
-
-  prepare-flatpak:
-    if: ${{ inputs.create_release && inputs.update_branch == 'release' }}
-    permissions: write-all
-    name: Prepare Flatpak
-    needs: [release, linux, build-data]
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout Flatpak repository
-        uses: actions/checkout@v4
-        with:
-          repository: zen-browser/release-utils
-          token: ${{ secrets.DEPLOY_KEY }}
-
-      - name: Install dependencies
-        run: |
-          git pull
-          sudo apt-get update
-          npm ci
-
-      - name: Generate new Flatpak release
-        run: |
-          npm run build-flatpak -- \
-            --version ${{ needs.build-data.outputs.version }}
-
-      - name: Commit
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: 🚀 Update releases for Flatpak
-          commit_user_name: Zen Browser Robot
-          commit_user_email: zen-browser-auto@users.noreply.github.com
-
-      - name: Checkout Flatpak repository
-        uses: actions/checkout@v4
-        with:
-          repository: zen-browser/flatpak
-          token: ${{ secrets.DEPLOY_KEY }}
-          path: flatpak
-
-      - name: Move releases.xml
-        run: |
-          pwd
-          ls .
-          ls ..
-          mv releases.xml ./flatpak/app.zen_browser.zen.metainfo.xml
-          # output the version to the file
-          echo -n ${{ needs.build-data.outputs.version }} > ./flatpak/version
-
-      - name: Commit
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: "[release]: Update Flatpak manifest"
-          commit_user_name: Zen Browser Robot
-          commit_user_email: zen-browser-auto@users.noreply.github.com
-          repository: ./flatpak
-
-      - name: Wait 2 minutes for the Flatpak repo to update
-        run: sleep 120
-
-  release-flatpak:
-    if: ${{ inputs.create_release && inputs.update_branch == 'release' }}
-    permissions: write-all
-    name: Release Flatpak
-    needs: [prepare-flatpak, build-data]
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout Flatpak repository
-        uses: actions/checkout@v4
-        with:
-          repository: flathub/app.zen_browser.zen
-          token: ${{ secrets.DEPLOY_KEY }}
-
-      - name: Download Linux x86_64 build
-        uses: actions/download-artifact@v4
-        with:
-          name: zen.linux-x86_64.tar.xz
-
-      - name: Download Linux aarch64 build
-        uses: actions/download-artifact@v4
-        with:
-          name: zen.linux-aarch64.tar.xz
-
-      - name: Update repository
-        uses: actions/checkout@v4
-        with:
-          path: zen-browser
-          token: ${{ secrets.DEPLOY_KEY }}
-
-      - name: Download Flatpak archive
-        run: |
-          wget https://github.com/zen-browser/flatpak/releases/latest/download/archive.tar -O archive.tar
-
-      - name: Setup Git
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-
-      - name: Prepare Flatpak manifest
-        run: |
-          python3 ./zen-browser/scripts/prepare-flatpak-release.py \
-            --flatpak-archive archive.tar \
-            --version ${{ needs.build-data.outputs.version }} \
-            --linux-archive zen.linux-x86_64.tar.xz \
-            --linux-aarch64-archive zen.linux-aarch64.tar.xz \
-            --output app.zen_browser.zen.yml \
-            --template-root ./zen-browser/build/flatpak
-
-      - name: Commit changes
-        run: |
-          git add app.zen_browser.zen.yml
-          git commit -m "Update to version ${{ needs.build-data.outputs.version }}"
-
-      - name: Clean up
-        run: |
-          rm -rf zen-browser
-          rm -rf archive.tar
-          rm -rf zen.linux-x86_64.tar.xz
-          rm -rf zen.linux-aarch64.tar.xz
-
-      - name: Upload Flatpak manifest
-        uses: actions/upload-artifact@v4
-        with:
-          retention-days: 5
-          name: app.zen_browser.zen.yml
-          path: ./app.zen_browser.zen.yml
-
-      - name: Create pull request
-        uses: peter-evans/create-pull-request@v7
-        env:
-          GIT_TRACE: 1
-          GIT_CURL_VERBOSE: 1
-        with:
-          token: ${{ secrets.DEPLOY_KEY }}
-          commit-message: Update to version `${{ needs.build-data.outputs.version }}`
-          title: Update to version `${{ needs.build-data.outputs.version }}`
-          body: |
-            This PR updates the Zen Browser Flatpak package to version ${{ needs.build-data.outputs.version }}.
-
-            @${{ github.actor }} please review and merge this PR.
-          branch: update-to-${{ needs.build-data.outputs.version }}
-          base: master
-          git-token: ${{ secrets.DEPLOY_KEY }}
-          delete-branch: true
+          bash scripts/github_pages.sh publish \
+            linux_update_manifest_x86_64 linux_update_manifest_aarch64 \
+            windows_update_manifest_x86_64 windows_update_manifest_arm64 \
+            macos_update_manifest

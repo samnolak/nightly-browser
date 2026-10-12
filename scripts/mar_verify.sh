@@ -18,7 +18,7 @@ CERT_PATH_DIR="build/signing"
 PUBLIC_KEY_DER="$CERT_PATH_DIR/public_key.der"
 VERIFY_NSS_DIR="$CERT_PATH_DIR/nss_verify"
 LINUX_EXTRACT_DIR="$CERT_PATH_DIR/extracted_linux"
-LINUX_ARCHIVE="zen.linux-x86_64.tar.xz/zen.linux-x86_64.tar.xz"
+LINUX_ARCHIVE="nightly.linux-x86_64.tar.xz/nightly.linux-x86_64.tar.xz"
 
 FAILURES=0
 
@@ -73,20 +73,13 @@ setup_verify_db() {
 declare -a pairs=(
   "linux.mar/linux.mar|linux_update_manifest_x86_64|linux-x86_64"
   "linux-aarch64.mar/linux-aarch64.mar|linux_update_manifest_aarch64|linux-aarch64"
+  "windows.mar/windows.mar|windows_update_manifest_x86_64|windows-x86_64"
+  "windows-arm64.mar/windows-arm64.mar|windows_update_manifest_arm64|windows-arm64"
   "macos.mar/macos.mar|macos_update_manifest|macos"
 )
 
-if [ -d ".github/workflows/object/windows-x64-signed-x86_64" ]; then
-  pairs+=(
-    ".github/workflows/object/windows-x64-signed-x86_64/windows.mar|.github/workflows/object/windows-x64-signed-x86_64/update_manifest|windows-x86_64"
-    ".github/workflows/object/windows-x64-signed-arm64/windows-arm64.mar|.github/workflows/object/windows-x64-signed-arm64/update_manifest|windows-arm64"
-  )
-else
-  pairs+=(
-    "windows.mar/windows.mar|windows_update_manifest_x86_64|windows-x86_64"
-    "windows-arm64.mar/windows-arm64.mar|windows_update_manifest_arm64|windows-arm64"
-  )
-fi
+# update.xml must send clients to this repository's GitHub releases.
+EXPECTED_URL_PREFIX="https://github.com/${GITHUB_REPOSITORY:-samnolak/nightly-browser}/releases/download/"
 
 hash_file() {
   if command -v sha512sum >/dev/null 2>&1; then
@@ -229,6 +222,10 @@ verify_manifest() {
     fi
     if [ -z "$xurl" ]; then
       fail "$label: $xml is missing URL attribute"
+      continue
+    fi
+    if [[ "$xurl" != "$EXPECTED_URL_PREFIX"*"/$(basename "$mar")" ]]; then
+      fail "$label: $xml URL '$xurl' is not a $(basename "$mar") asset under $EXPECTED_URL_PREFIX"
       continue
     fi
     if ! grep -q 'hashFunction="sha512"' "$xml"; then

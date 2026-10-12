@@ -1,0 +1,45 @@
+name: Sync Zen upstream
+
+# Manual only. Opens a PR that moves this fork to a newer zen-browser/desktop
+# commit (see scripts/sync_upstream_zen.sh). PRs created with GITHUB_TOKEN do not
+# trigger other workflows; run the checks on the PR branch manually if needed.
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "zen-browser/desktop branch, tag or commit to sync to"
+        required: true
+        default: "dev"
+        type: string
+
+concurrency:
+  group: sync-upstream-zen
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    name: Sync Zen upstream
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        # Uses the version from .python-version.
+
+      - name: Setup Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Sync
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ZEN_REF: ${{ inputs.ref }}
+        run: bash scripts/sync_upstream_zen.sh --ref "$ZEN_REF"

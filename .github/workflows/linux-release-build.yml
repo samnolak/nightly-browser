@@ -3,74 +3,76 @@ name: Linux Release Build
 on:
   workflow_call:
     inputs:
+      arches:
+        description: 'JSON list of architectures to build, e.g. ["x86_64","aarch64"]'
+        required: true
+        type: string
       build-version:
         description: "The version to build"
         required: true
         type: string
       release-branch:
-        description: "The branch to build"
+        description: "The channel to build (release or twilight)"
         required: true
         type: string
       MOZ_BUILD_DATE:
         type: string
         required: true
-        default: ""
       use-sccache:
-        description: "Use sccache"
+        description: "Use sccache with the GitHub Actions cache"
         required: true
         type: boolean
-        default: false
-      disable-pgo:
-        description: "Build without PGO at all"
-        required: false
+      lto:
+        description: "Enable thin LTO"
+        required: true
         type: boolean
-        default: false
+
+permissions:
+  contents: read
 
 jobs:
   build-linux:
-    permissions:
-      contents: write
-    # aarch64 does not need full 16x
-    runs-on: ${{ (inputs.release-branch == 'release' && matrix.arch == 'x86_64') && 'self-hosted' || 'blacksmith-8vcpu-ubuntu-2404' }}
+    name: Build Linux - ${{ matrix.arch }}
+    # Cross-compiled on x86_64 for both targets with Mozilla's bootstrapped toolchains.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 355
     strategy:
       fail-fast: false
       matrix:
-        arch: [x86_64, aarch64]
+        arch: ${{ fromJSON(inputs.arches) }}
     env:
       SCCACHE_GHA_ENABLED: ${{ inputs.use-sccache && 'true' || 'false' }}
       CARGO_TERM_COLOR: always
       CARGO_INCREMENTAL: 0
-    name: Build Linux - ${{ matrix.arch }}
+      SURFER_COMPAT: ${{ matrix.arch }}
+      SURFER_PLATFORM: linux
+      ZEN_GA_DISABLE_PGO: 1
+      ZEN_DISABLE_LTO: ${{ !inputs.lto && '1' || '' }}
+      MOZ_BUILD_DATE: ${{ inputs.MOZ_BUILD_DATE }}
 
     steps:
-      - name: Free Disk Space (Ubuntu)
-        uses: jlumbroso/free-disk-space@main
-        with:
-          tool-cache: false
+      - name: Free disk space and add swap
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /usr/local/.ghcup \
+            /opt/hostedtoolcache/CodeQL /usr/local/share/boost /usr/local/share/powershell /usr/share/swift
+          sudo docker image prune --all --force > /dev/null || true
+          sudo fallocate -l 12G /mnt/nightly-swap && sudo chmod 600 /mnt/nightly-swap
+          sudo mkswap /mnt/nightly-swap > /dev/null && sudo swapon /mnt/nightly-swap
+          df -h / /mnt && free -h
 
       - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
-          token: ${{ secrets.DEPLOY_KEY }}
+        uses: actions/checkout@v6
 
       - name: Setup Node.js
-        uses: useblacksmith/setup-node@v5
+        uses: actions/setup-node@v6
         with:
           node-version-file: ".nvmrc"
 
       - name: Run sccache-cache
-        uses: mozilla-actions/sccache-action@main
+        uses: mozilla-actions/sccache-action@v0.0.11
         if: ${{ inputs.use-sccache }}
         with:
           disable_annotations: true
-
-      - name: Expose actions cache variables
-        uses: actions/github-script@v6
-        with:
-          script: |
-            core.exportVariable('ACTIONS_CACHE_URL', process.env['ACTIONS_CACHE_URL'])
-            core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env['ACTIONS_RUNTIME_TOKEN'])
 
       - name: Setup Git
         run: |
@@ -79,39 +81,28 @@ jobs:
 
       - name: Install system dependencies
         run: |
-          set -x
-          sudo apt-get update --fix-missing
           sudo apt-get update
           sudo apt-get install -y python3 python3-pip dos2unix yasm nasm build-essential libgtk2.0-dev libpython3-dev m4 uuid libasound2-dev libcurl4-openssl-dev libdbus-1-dev libdrm-dev libdbus-glib-1-dev libgtk-3-dev libpulse-dev libx11-xcb-dev libxt-dev xvfb lld llvm
 
       - name: Install dependencies
-        run: |
-          npm ci
+        run: npm ci
 
       - name: Load Surfer CI setup
-        run: npm run surfer -- ci --brand ${{ inputs.release-branch }} --display-version ${{ inputs.build-version }}
+        env:
+          CHANNEL: ${{ inputs.release-branch }}
+          VERSION: ${{ inputs.build-version }}
+        run: npm run surfer -- ci --brand "$CHANNEL" --display-version "$VERSION"
 
       - name: Download Firefox source and dependencies
         run: npm run download
 
-      - name: Fix Rust version
+      - name: Setup Rust
         run: |
-          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain $(cat .rust-toolchain)
-          source $HOME/.cargo/env
-
-          if test "${{ matrix.arch }}" = "aarch64"; then
-            rustup target add aarch64-unknown-linux-gnu
-          else
-            rustup target add x86_64-unknown-linux-gnu
-          fi
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain "$(cat .rust-toolchain)"
+          . "$HOME/.cargo/env"
+          rustup target add "${SURFER_COMPAT}-unknown-linux-gnu"
 
       - name: Import
-        env:
-          SURFER_COMPAT: ${{ matrix.arch }}
-          SURFER_CERT_PATCH_ISSUER: ${{ secrets.SURFER_CERT_PATCH_ISSUER }}
-          SURFER_CERT_PATCH_NAME: ${{ secrets.SURFER_CERT_PATCH_NAME }}
-          SURFER_CERT_PATCH_NAME_PREV: ${{ secrets.SURFER_CERT_PATCH_NAME_PREV }}
-          SURFER_CERT_PATCH_ISSUER_PREV: ${{ secrets.SURFER_CERT_PATCH_ISSUER_PREV }}
         run: |
           . "$HOME/.cargo/env"
           npm run import
@@ -120,99 +111,57 @@ jobs:
         run: sh scripts/download-language-packs.sh
 
       - name: Bootstrap
-        run: |
-          cd engine
-          export SURFER_PLATFORM="linux"
-          ./mach --no-interactive bootstrap --application-choice browser
-          cd ..
-
-      - name: Build (PGO stage 1 - generate)
-        if: ${{ matrix.arch == 'x86_64' && !inputs.disable-pgo }}
-        env:
-          SURFER_COMPAT: ${{ matrix.arch }}
-          ZEN_RELEASE_BRANCH: ${{ inputs.release-branch }}
-          ZEN_GA_GENERATE_PROFILE: 1
-          ZEN_SAFEBROWSING_API_KEY: ${{ secrets.ZEN_SAFEBROWSING_API_KEY }}
-          ZEN_MOZILLA_API_KEY: ${{ secrets.ZEN_MOZILLA_API_KEY }}
-          ZEN_GOOGLE_LOCATION_SERVICE_API_KEY: ${{ secrets.ZEN_GOOGLE_LOCATION_SERVICE_API_KEY }}
-        continue-on-error: true
-        run: |
-          export SURFER_PLATFORM="linux"
-          if [[ -n ${{ inputs.MOZ_BUILD_DATE }} ]];then
-            export MOZ_BUILD_DATE=${{ inputs.MOZ_BUILD_DATE }}
-          fi
-          bash .github/workflows/src/release-build.sh
-
-      - name: Generate PGO profile data
-        if: ${{ matrix.arch == 'x86_64' && !inputs.disable-pgo }}
-        run: |
-          set -x
-          export DISPLAY=:2
-          export LLVM_PROFDATA="$HOME/.mozbuild/clang/bin/llvm-profdata"
-          export JARLOG_FILE=en-US.log
-          mkdir -p "$HOME/artifact"
-          cd engine
-          ./mach python ../scripts/download_pgo_extended_corpus.py
-          ./mach package
-          ./mach python build/pgo/profileserver.py --extended-corpus ./pgo-extended-corpus
-          mv merged.profdata "$HOME/artifact/merged.profdata"
-          mv en-US.log "$HOME/artifact/en-US.log"
+        working-directory: engine
+        run: ./mach --no-interactive bootstrap --application-choice browser
 
       - name: Build
         env:
-          SURFER_COMPAT: ${{ matrix.arch }}
-          ZEN_RELEASE_BRANCH: ${{ inputs.release-branch }}
-          ZEN_GA_DISABLE_PGO: ${{ inputs.disable-pgo && '1' || '' }}
-          ZEN_SAFEBROWSING_API_KEY: ${{ secrets.ZEN_SAFEBROWSING_API_KEY }}
-          ZEN_MOZILLA_API_KEY: ${{ secrets.ZEN_MOZILLA_API_KEY }}
-          ZEN_GOOGLE_LOCATION_SERVICE_API_KEY: ${{ secrets.ZEN_GOOGLE_LOCATION_SERVICE_API_KEY }}
-        continue-on-error: true
-        run: |
-          export SURFER_PLATFORM="linux"
-          if [[ -n ${{ inputs.MOZ_BUILD_DATE }} ]];then
-            export MOZ_BUILD_DATE=${{ inputs.MOZ_BUILD_DATE }}
-          fi
-          bash .github/workflows/src/release-build.sh
+          NIGHTLY_SAFEBROWSING_API_KEY: ${{ secrets.NIGHTLY_SAFEBROWSING_API_KEY }}
+          NIGHTLY_MOZILLA_API_KEY: ${{ secrets.NIGHTLY_MOZILLA_API_KEY }}
+          NIGHTLY_GOOGLE_LOCATION_SERVICE_API_KEY: ${{ secrets.NIGHTLY_GOOGLE_LOCATION_SERVICE_API_KEY }}
+        run: bash .github/workflows/src/release-build.sh
 
       - name: Package
         env:
-          SURFER_COMPAT: ${{ matrix.arch }}
-          ZEN_GA_DISABLE_PGO: true
-        run: |
-          export SURFER_PLATFORM="linux"
-          export ZEN_RELEASE=1
-          npm run package
+          ZEN_RELEASE: 1
+        run: npm run package
 
       - name: Rename artifacts
         run: |
-          mv dist/zen-*.tar.xz "zen.linux-${{ matrix.arch }}.tar.xz"
-          mv dist/output.mar linux${{ matrix.arch == 'aarch64' && '-aarch64' || '' }}.mar
+          set -x
+          mv dist/nightly-*.tar.xz "nightly.linux-${SURFER_COMPAT}.tar.xz"
+          mv dist/output.mar "linux${{ matrix.arch == 'aarch64' && '-aarch64' || '' }}.mar"
 
       - name: Upload build artifact (binary)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           retention-days: 5
-          name: zen.linux-${{ matrix.arch }}.tar.xz
-          path: ./zen.linux-${{ matrix.arch }}.tar.xz
+          name: nightly.linux-${{ matrix.arch }}.tar.xz
+          path: ./nightly.linux-${{ matrix.arch }}.tar.xz
 
       - name: Upload build artifact (.mar)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           retention-days: 5
           name: linux${{ matrix.arch == 'aarch64' && '-aarch64' || '' }}.mar
           path: ./linux${{ matrix.arch == 'aarch64' && '-aarch64' || '' }}.mar
 
       - name: Upload build artifact (update manifests)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           retention-days: 5
           name: linux_update_manifest_${{ matrix.arch }}
           path: ./dist/update
 
-      - name: Upload linux bin
+      # signmar (and the NSS libraries it loads) signs every platform's MAR in the
+      # release job.
+      - name: Upload signmar
         if: ${{ matrix.arch == 'x86_64' }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           retention-days: 2
-          name: linux-bin-x86_64
-          path: engine/obj-x86_64-pc-linux-gnu/dist/bin/
+          name: linux-signmar-x86_64
+          path: |
+            engine/obj-x86_64-pc-linux-gnu/dist/bin/signmar
+            engine/obj-x86_64-pc-linux-gnu/dist/bin/lib*.so
+            !engine/obj-x86_64-pc-linux-gnu/dist/bin/libxul.so

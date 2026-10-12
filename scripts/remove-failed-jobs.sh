@@ -3,18 +3,13 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+# Usage: scripts/remove-failed-jobs.sh [owner/repo]  (default: samnolak/nightly-browser)
 gh_bulk_delete_workflow_runs() {
-  local repo=zen-browser/$1
-
-  # Ensure the repo argument is provided
-  if [[ -z "$repo" ]]; then
-    echo "Usage: gh_bulk_delete_workflow_runs <repo>"
-    return 1
-  fi
+  local repo="${1:-samnolak/nightly-browser}"
 
   # Fetch workflow runs that are cancelled, failed, or timed out
   local runs
-  runs=$(gh api repos/$repo/actions/runs --paginate \
+  runs=$(gh api "repos/$repo/actions/runs" --paginate \
     | jq -r '.workflow_runs[] |
     select(.conclusion == "cancelled" or
       .conclusion == "failure" or
@@ -31,7 +26,7 @@ gh_bulk_delete_workflow_runs() {
     echo "Attempting to delete run: https://github.com/$repo/actions/runs/$run"
 
     # Perform the deletion
-    if gh api -X DELETE repos/$repo/actions/runs/$run --silent; then
+    if gh api -X DELETE "repos/$repo/actions/runs/$run" --silent; then
       echo "Successfully deleted run: $run"
     else
       echo "Error deleting run: $run" >&2

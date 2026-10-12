@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.samnolak.nightly</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MPL-2.0</project_license>
+  <name>Nightly Browser</name>
+  <summary>Private, calm web browsing with vertical tabs and spaces</summary>
+  <developer id="io.github.samnolak">
+    <name>Nightly Browser</name>
+  </developer>
+  <description>
+    <p>Nightly Browser is a privacy-focused web browser based on Zen Browser and Mozilla Firefox. It ships without telemetry and keeps your browsing on your device.</p>
+    <ul>
+      <li>Vertical tabs and workspaces</li>
+      <li>Split view</li>
+      <li>Compact mode</li>
+      <li>Customizable interface</li>
+      <li>No telemetry</li>
+    </ul>
+  </description>
+  <url type="homepage">https://github.com/samnolak/nightly-browser</url>
+  <url type="bugtracker">https://github.com/samnolak/nightly-browser/issues</url>
+  <url type="vcs-browser">https://github.com/samnolak/nightly-browser</url>
+  <branding>
+    <color type="primary" scheme_preference="light">#c9cff5</color>
+    <color type="primary" scheme_preference="dark">#0b0d2a</color>
+  </branding>
+  <content_rating type="oars-1.1"/>
+  <launchable type="desktop-id">io.github.samnolak.nightly.desktop</launchable>
+  <requires>
+    <display_length compare="ge">450</display_length>
+  </requires>
+  <recommends>
+    <internet>always</internet>
+  </recommends>
+  <supports>
+    <control>pointing</control>
+    <control>keyboard</control>
+  </supports>
+</component>

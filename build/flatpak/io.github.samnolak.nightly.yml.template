@@ -1,12 +1,12 @@
-app-id: app.zen_browser.zen
+app-id: io.github.samnolak.nightly
 runtime: org.freedesktop.Platform
 runtime-version: '25.08'
 sdk: org.freedesktop.Sdk
 base: org.mozilla.firefox.BaseApp
 base-version: '25.08'
 add-extensions:
-  app.zen_browser.zen.systemconfig:
-    directory: etc/zen
+  io.github.samnolak.nightly.systemconfig:
+    directory: etc/nightly
     no-autodownload: true
 command: launch-script.sh
 finish-args:
@@ -18,7 +18,7 @@ finish-args:
   - --socket=fallback-x11
   - --socket=pcsc
   - --socket=cups
-  - --persist=.zen
+  - --persist=.nightly
   - --env=DICPATH=/usr/share/hunspell
   - --filesystem=xdg-download:rw
   - --filesystem=/run/.heim_org.h5l.kcm-socket
@@ -29,7 +29,7 @@ finish-args:
   - --talk-name=org.a11y.Bus
   - --talk-name=org.gtk.vfs.*
   - --own-name=org.mpris.MediaPlayer2.firefox.*
-  - --own-name=org.mozilla.zen.*
+  - --own-name=org.mozilla.nightly.*
 cleanup:
   - /include
   - /lib/pkgconfig
@@ -43,11 +43,11 @@ cleanup:
   - '*.la'
   - '*.a'
 modules:
-  - name: zen_browser
+  - name: nightly_browser
     buildsystem: simple
     build-commands:
-      - mv zen /app/
-      - mkdir -p /app/etc/zen
+      - mv nightly /app/
+      - mkdir -p /app/etc/nightly
 
       - install -Dm0755 metadata/launch-script.sh ${{FLATPAK_DEST}}/bin/launch-script.sh
       - install -Dm0644 metadata/policies.json ${{FLATPAK_DEST}}/bin/distribution/policies.json
@@ -57,21 +57,21 @@ modules:
 
     sources:
       - type: archive
-        url: https://github.com/zen-browser/desktop/releases/download/{version}/zen.linux-x86_64.tar.xz
+        url: https://github.com/samnolak/nightly-browser/releases/download/{version}/nightly.linux-x86_64.tar.xz
         sha256: {linux_sha256}
         strip-components: 0
         only-arches:
           - x86_64
 
       - type: archive
-        url: https://github.com/zen-browser/desktop/releases/download/{version}/zen.linux-aarch64.tar.xz
+        url: https://github.com/samnolak/nightly-browser/releases/download/{version}/nightly.linux-aarch64.tar.xz
         sha256: {linux_aarch64_sha256}
         strip-components: 0
         only-arches:
           - aarch64
 
       - type: archive
-        url: https://github.com/zen-browser/flatpak/releases/download/{version}/archive.tar
+        url: https://github.com/samnolak/nightly-browser/releases/download/{version}/flatpak-metadata.tar
         sha256: {flatpak_sha256}
         strip-components: 0
         dest: metadata

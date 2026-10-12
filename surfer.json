@@ -1,8 +1,8 @@
 {
-  "name": "Zen Browser",
-  "vendor": "Zen OSS Team",
-  "appId": "zen",
-  "binaryName": "zen",
+  "name": "Nightly Browser",
+  "vendor": "Nightly Browser",
+  "appId": "nightly",
+  "binaryName": "nightly",
   "version": {
     "product": "firefox",
     "version": "157.0.1",
@@ -16,13 +16,13 @@
   "brands": {
     "release": {
       "backgroundColor": "#282A33",
-      "brandShorterName": "Zen",
-      "brandShortName": "Zen",
-      "brandFullName": "Zen Browser",
+      "brandShorterName": "Nightly",
+      "brandShortName": "Nightly",
+      "brandFullName": "Nightly Browser",
       "release": {
         "displayVersion": "1.23.2b",
         "github": {
-          "repo": "zen-browser/desktop"
+          "repo": "samnolak/nightly-browser"
         },
         "archives": {
           "windows": "windows.mar",
@@ -36,13 +36,13 @@
     },
     "twilight": {
       "backgroundColor": "#282A33",
-      "brandShorterName": "Zen",
-      "brandShortName": "Twilight",
-      "brandFullName": "Zen Twilight",
+      "brandShorterName": "Nightly",
+      "brandShortName": "Nightly Beta",
+      "brandFullName": "Nightly Browser Beta",
       "release": {
         "displayVersion": "1.24t",
         "github": {
-          "repo": "zen-browser/desktop"
+          "repo": "samnolak/nightly-browser"
         }
       }
     }
@@ -53,5 +53,5 @@
     ],
     "licenseType": "MPL-2.0"
   },
-  "updateHostname": "updates.zen-browser.app"
+  "updateHostname": "samnolak.github.io/nightly-browser"
 }

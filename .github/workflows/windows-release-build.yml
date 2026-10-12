@@ -201,7 +201,8 @@ jobs:
       - name: Rename artifacts
         run: |
           set -x
-          mv ./dist/nightly-*.en-US.win64*.zip "nightly.win-${ARCH_NAME}.zip"
+          # Exact name: packaging also emits nightly-<ver>.en-US.win64[-aarch64].xpt_artifacts.zip
+          mv "./dist/nightly-$(npm run --silent surfer -- get version | xargs).en-US.win64${{ matrix.arch == 'aarch64' && '-aarch64' || '' }}.zip" "nightly.win-${ARCH_NAME}.zip"
           mv ./dist/output.mar "windows${ARCH_SUFFIX}.mar"
           mv ./dist/nightly.installer.exe "nightly.installer${ARCH_SUFFIX}.exe"
 

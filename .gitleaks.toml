@@ -1,0 +1,16 @@
+title = "Nightly Browser secret scan"
+
+[extend]
+useDefault = true
+
+# Known non-secrets inherited from Firefox/Zen: test vectors and mocks in the
+# test suites, and a keyboard shortcut definition named "...key".
+[[allowlists]]
+description = "Firefox test fixtures"
+paths = ['''^src/zen/tests/''']
+
+[[allowlists]]
+description = "Keyboard shortcut properties"
+paths = ['''^src/devtools/client/locales/en-US/toolbox-properties\.patch$''']
+regexes = ['''toolbox\.elementPicker\.key=''']
+regexTarget = "line"

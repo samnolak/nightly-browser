@@ -407,11 +407,20 @@ class ZenLibraryDownloadStack {
         `${preview ? `url('${preview}'), ` : ""}url('${this.#iconUrl(download)}')`
       );
     }
+    // Without a known size there is no share to show; a quarter of the ring
+    // spins instead, as in the library's downloads section.
+    const indeterminate =
+      !!download && !download.stopped && !download.hasProgress;
+    badge.toggleAttribute("indeterminate", indeterminate);
+    let dash = 0;
+    if (download?.hasProgress) {
+      dash = download.progress;
+    } else if (indeterminate) {
+      dash = 25;
+    }
     badge.querySelector(
       ".zen-library-download-progress-arc"
-    ).style.strokeDasharray = `${
-      download?.hasProgress ? download.progress : 0
-    } 100`;
+    ).style.strokeDasharray = `${dash} 100`;
   }
 
   #updateBadgeShowing() {

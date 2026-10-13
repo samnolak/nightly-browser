@@ -217,6 +217,22 @@
   }
 }
 
+@media (prefers-reduced-motion: no-preference) {
+  .zen-library-download-badge[indeterminate] .zen-library-download-progress-arc {
+    animation: zen-library-badge-spin 1s linear infinite;
+  }
+}
+
+@keyframes zen-library-badge-spin {
+  from {
+    rotate: -90deg;
+  }
+
+  to {
+    rotate: 270deg;
+  }
+}
+
 #zen-sidebar-foot-buttons:is([zen-library-stack-open], [zen-library-stack-closing]) {
   z-index: 3;
 }

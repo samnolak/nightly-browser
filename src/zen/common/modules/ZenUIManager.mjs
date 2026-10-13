@@ -9,6 +9,8 @@ import { nsZenUrlbarController } from "resource:///modules/zen/urlbar/ZenUrlbarC
 // Minimum height the floating URL bar is vertically centered against.
 const FLOATING_URLBAR_MIN_HEIGHT = 333;
 const FLOATING_URLBAR_MAX_WIDTH = 750;
+// Space kept between the floating URL bar and the edges of the web content.
+const FLOATING_URLBAR_CONTENT_MARGIN = 24;
 
 // Panels shown as native NSPopovers on macOS, which clip instead of scroll.
 const NATIVE_POPOVER_PANELS = [
@@ -205,13 +207,29 @@ class nsZenUIManager {
       FLOATING_URLBAR_MIN_HEIGHT,
       window.windowUtils.getBoundsWithoutFlushing(gURLBar).height
     );
+    // Centered on the web content area, not the window: the sidebar (and a
+    // top toolbar) would otherwise pull it off the page's center.
+    const content = window.windowUtils.getBoundsWithoutFlushing(
+      gBrowser.tabbox
+    );
+    const hasContent = content.width > 0 && content.height > 0;
+    const centerX = hasContent
+      ? content.left + content.width / 2
+      : window.innerWidth / 2;
+    const centerY = hasContent
+      ? content.top + content.height / 2
+      : window.innerHeight / 2;
+    const maxWidth = hasContent
+      ? content.width - 2 * FLOATING_URLBAR_CONTENT_MARGIN
+      : Infinity;
+    gURLBar.style.setProperty("--zen-urlbar-left", `${centerX}px`);
     gURLBar.style.setProperty(
       "--zen-urlbar-top",
-      `${window.innerHeight / 2 - urlbarHeight / 2}px`
+      `${centerY - urlbarHeight / 2}px`
     );
     gURLBar.style.setProperty(
       "--zen-urlbar-width",
-      `${Math.min(window.innerWidth / 1.5, FLOATING_URLBAR_MAX_WIDTH)}px`
+      `${Math.min(window.innerWidth / 1.5, FLOATING_URLBAR_MAX_WIDTH, maxWidth)}px`
     );
     gZenVerticalTabsManager.actualWindowButtons.removeAttribute(
       "zen-has-hover"

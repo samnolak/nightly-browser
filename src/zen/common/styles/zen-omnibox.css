@@ -494,7 +494,7 @@
   }
   top: var(--zen-urlbar-top) !important;
   translate: -50% 0%;
-  left: 50% !important;
+  left: var(--zen-urlbar-left, 50%) !important;
 
   /* stylelint-disable-next-line stylelint-plugin-mozilla/no-has-selector */
   #urlbar-container:has(&) {

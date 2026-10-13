@@ -3053,6 +3053,7 @@ class nsZenWorkspaces {
       isEmpty
     );
     document.documentElement.setAttribute("zen-has-empty-tab", isEmpty);
+    gZenUIManager.updateEmptyTabPage();
   }
 
   async onLocationChange(event) {

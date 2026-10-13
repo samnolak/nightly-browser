@@ -140,3 +140,6 @@ zen-window-sync-migration-dialog-learn-more = Узнать больше
 zen-window-sync-migration-dialog-accept = Понятно
 zen-appmenu-new-blank-window = 
     .label = Новое пустое окно
+
+zen-empty-tab-sites =
+    .aria-label = Часто посещаемые сайты

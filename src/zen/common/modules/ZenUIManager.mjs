@@ -5,6 +5,7 @@
 import { nsZenMenuBar } from "chrome://browser/content/zen-components/ZenMenubar.mjs";
 import { nsZenToastManager } from "resource:///modules/zen/ZenToasts.mjs";
 import { nsZenUrlbarController } from "resource:///modules/zen/urlbar/ZenUrlbarController.mjs";
+import { nsZenEmptyTabPage } from "resource:///modules/zen/urlbar/ZenEmptyTabPage.mjs";
 
 // Minimum height the floating URL bar is vertically centered against.
 const FLOATING_URLBAR_MIN_HEIGHT = 333;
@@ -38,6 +39,7 @@ class nsZenUIManager {
 
   #toasts = new nsZenToastManager();
   #urlbar = new nsZenUrlbarController();
+  #emptyTabPage = new nsZenEmptyTabPage();
 
   // Elements that get `has-popup-menu` while a popup opened from them is up.
   #popupTrackingElements = new Set();
@@ -66,6 +68,7 @@ class nsZenUIManager {
 
     gZenVerticalTabsManager.init();
     this.#urlbar.init();
+    this.#emptyTabPage.init();
 
     this.#markAcrylicSupport();
     this.#initCreateNewPopup();
@@ -442,6 +445,11 @@ class nsZenUIManager {
     const tab = browserWindow.gBrowser.addTrustedTab(url, options);
     browserWindow.gBrowser.selectedTab = tab;
     return tab;
+  }
+
+  /** Shows or hides the page behind the URL bar on the empty tab. */
+  updateEmptyTabPage() {
+    this.#emptyTabPage.update();
   }
 
   generateUuidv4() {

@@ -167,3 +167,6 @@ zen-window-sync-migration-dialog-accept = Got It
 zen-appmenu-new-blank-window =
     .label = New Blank Window
 
+
+zen-empty-tab-sites =
+    .aria-label = Frequently visited sites

@@ -1,0 +1,44 @@
+diff --git a/toolkit/locales/en-US/toolkit/main-window/autocomplete.ftl b/toolkit/locales/en-US/toolkit/main-window/autocomplete.ftl
+index 7c0ee74163864b4b614fc113ed44cac4a1858d09..074dd4e2a38f2296790150ef07405e8dc4a46dac 100644
+--- a/toolkit/locales/en-US/toolkit/main-window/autocomplete.ftl
++++ b/toolkit/locales/en-US/toolkit/main-window/autocomplete.ftl
+@@ -16,6 +16,39 @@ autocomplete-import-logins-chromium =
+ autocomplete-import-logins-chromium-edge =
+     <div data-l10n-name="line1">Import your login from Microsoft Edge</div>
+     <div data-l10n-name="line2">for { $host } and other sites</div>
++autocomplete-import-logins-chrome-beta =
++    <div data-l10n-name="line1">Import your login from Chrome Beta</div>
++    <div data-l10n-name="line2">for { $host } and other sites</div>
++autocomplete-import-logins-chrome-dev =
++    <div data-l10n-name="line1">Import your login from Chrome Dev</div>
++    <div data-l10n-name="line2">for { $host } and other sites</div>
++autocomplete-import-logins-canary =
++    <div data-l10n-name="line1">Import your login from Chrome Canary</div>
++    <div data-l10n-name="line2">for { $host } and other sites</div>
++autocomplete-import-logins-chromium-edge-beta =
++    <div data-l10n-name="line1">Import your login from Microsoft Edge Beta</div>
++    <div data-l10n-name="line2">for { $host } and other sites</div>
++autocomplete-import-logins-chromium-360se =
++    <div data-l10n-name="line1">Import your login from 360 Secure Browser</div>
++    <div data-l10n-name="line2">for { $host } and other sites</div>
++autocomplete-import-logins-brave =
++    <div data-l10n-name="line1">Import your login from Brave</div>
++    <div data-l10n-name="line2">for { $host } and other sites</div>
++autocomplete-import-logins-opera =
++    <div data-l10n-name="line1">Import your login from Opera</div>
++    <div data-l10n-name="line2">for { $host } and other sites</div>
++autocomplete-import-logins-opera-gx =
++    <div data-l10n-name="line1">Import your login from Opera GX</div>
++    <div data-l10n-name="line2">for { $host } and other sites</div>
++autocomplete-import-logins-vivaldi =
++    <div data-l10n-name="line1">Import your login from Vivaldi</div>
++    <div data-l10n-name="line2">for { $host } and other sites</div>
++autocomplete-import-logins-arc =
++    <div data-l10n-name="line1">Import your login from Arc</div>
++    <div data-l10n-name="line2">for { $host } and other sites</div>
++autocomplete-import-logins-dia =
++    <div data-l10n-name="line1">Import your login from Dia</div>
++    <div data-l10n-name="line2">for { $host } and other sites</div>
+ 
+ ##
+ 

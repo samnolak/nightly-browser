@@ -1,0 +1,28 @@
+diff --git a/browser/components/migration/MigrationUtils.sys.mjs b/browser/components/migration/MigrationUtils.sys.mjs
+index e366c09df3e7b54d24e0d84bb63b950cbda95110..1a8e7336a6178e16ae58af070dd40c25e76c9442 100644
+--- a/browser/components/migration/MigrationUtils.sys.mjs
++++ b/browser/components/migration/MigrationUtils.sys.mjs
+@@ -116,6 +116,14 @@ const MIGRATOR_MODULES = Object.freeze({
+     moduleURI: "resource:///modules/ChromeProfileMigrator.sys.mjs",
+     platforms: ["macosx", "win"],
+   },
++  ArcProfileMigrator: {
++    moduleURI: "resource:///modules/ChromeProfileMigrator.sys.mjs",
++    platforms: ["macosx"],
++  },
++  DiaProfileMigrator: {
++    moduleURI: "resource:///modules/ChromeProfileMigrator.sys.mjs",
++    platforms: ["macosx"],
++  },
+ 
+   InternalTestingProfileMigrator: {
+     moduleURI: "resource:///modules/InternalTestingProfileMigrator.sys.mjs",
+@@ -513,6 +521,8 @@ class MigrationUtils {
+       Nightly: AppConstants.MOZ_APP_NAME,
+       Opera: "opera",
+       Vivaldi: "vivaldi",
++      Arc: "arc",
++      Dia: "dia",
+       "Opera GX": "opera-gx",
+       "Brave Web Browser": "brave", // Windows, Linux
+       Brave: "brave", // OS X

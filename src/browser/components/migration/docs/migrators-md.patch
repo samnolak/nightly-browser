@@ -1,0 +1,23 @@
+diff --git a/browser/components/migration/docs/migrators.md b/browser/components/migration/docs/migrators.md
+index 40276c363e6c643373773285e89eb0e95520100d..bca8cec3e5c68097a23683a4d4354af65ac107ed 100644
+--- a/browser/components/migration/docs/migrators.md
++++ b/browser/components/migration/docs/migrators.md
+@@ -86,6 +86,18 @@ The `ChromeProfileMigrator` is subclassed ino order to provide migration capabil
+ :members:
+ ```
+ 
++## ArcProfileMigrator class
++
++```{js:autoclass} ArcProfileMigrator
++:members:
++```
++
++## DiaProfileMigrator class
++
++```{js:autoclass} DiaProfileMigrator
++:members:
++```
++
+ ### EdgeProfileMigrator class
+ 
+ ```{js:autoclass} EdgeProfileMigrator

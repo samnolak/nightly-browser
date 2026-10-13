@@ -1,5 +1,5 @@
 diff --git a/browser/components/migration/ChromeProfileMigrator.sys.mjs b/browser/components/migration/ChromeProfileMigrator.sys.mjs
-index 69b6a90566371912614272582efe4c89a4c3553f..81a62cb9a3ea1c5753a5a7005c43efdd9980a07f 100644
+index 69b6a90566371912614272582efe4c89a4c3553f..8ca12d0aab88807b1930ece0c7cf55a24a1ebeef 100644
 --- a/browser/components/migration/ChromeProfileMigrator.sys.mjs
 +++ b/browser/components/migration/ChromeProfileMigrator.sys.mjs
 @@ -362,20 +362,31 @@ export class ChromeProfileMigrator extends MigratorBase {
@@ -163,3 +163,45 @@ index 69b6a90566371912614272582efe4c89a4c3553f..81a62cb9a3ea1c5753a5a7005c43efdd
            }
          } catch (e) {
            console.error(e);
+@@ -1288,3 +1330,41 @@ export class VivaldiProfileMigrator extends ChromeProfileMigrator {
+   _keychainServiceName = "Vivaldi Safe Storage";
+   _keychainAccountName = "Vivaldi";
+ }
++
++/**
++ * Arc migrator
++ */
++export class ArcProfileMigrator extends ChromeProfileMigrator {
++  static get key() {
++    return "arc";
++  }
++
++  static get displayNameL10nID() {
++    return "migration-wizard-migrator-display-name-arc";
++  }
++
++  static get brandImage() {
++    return "chrome://browser/content/migration/brands/arc.png";
++  }
++
++  _chromeUserDataPathSuffix = "Arc";
++  _keychainServiceName = "Arc Safe Storage";
++  _keychainAccountName = "Arc";
++}
++
++/**
++ * Dia migrator
++ */
++export class DiaProfileMigrator extends ChromeProfileMigrator {
++  static get key() {
++    return "dia";
++  }
++
++  static get displayNameL10nID() {
++    return "migration-wizard-migrator-display-name-dia";
++  }
++
++  _chromeUserDataPathSuffix = "Dia";
++  _keychainServiceName = "Dia Safe Storage";
++  _keychainAccountName = "Dia";
++}

@@ -1,0 +1,11 @@
+diff --git a/browser/components/migration/jar.mn b/browser/components/migration/jar.mn
+index bf1d7516edf24ac5354e65eec616aa70adc04053..be9bb5ed296db1aca54f2bd635db4500116f4785 100644
+--- a/browser/components/migration/jar.mn
++++ b/browser/components/migration/jar.mn
+@@ -26,5 +26,6 @@ browser.jar:
+    content/browser/migration/brands/vivaldi.png               (content/brands/vivaldi.png)
+ 
+ #ifdef XP_MACOSX
++   content/browser/migration/brands/arc.png                   (content/brands/arc.png)
+    content/browser/migration/brands/safari.png                (content/brands/safari.png)
+ #endif

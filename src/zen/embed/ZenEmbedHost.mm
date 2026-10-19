@@ -110,8 +110,10 @@
 // activating Nightly; they roll up when the embedder deactivates the window
 // (Focus 0) or moves it (Resize with another origin). Keys reach its <key>s
 // as in any browser window. Command{navigate} opens the URL in a new tab
-// (ZenEmbedBrowser.sys.mjs); the other commands go to its selected tab. A
-// page's window.open from it opens an ordinary Nightly window. When the
+// (ZenEmbedBrowser.sys.mjs); the other commands go to its selected tab. Any
+// other browser window opened meanwhile (a page's popup, a new or restored
+// window) is a stray: embedded, never on screen nor sent to the embedder, its
+// tabs moved into the pane's window by ZenEmbedBrowser.sys.mjs. When the
 // embedder's first pane is a browser window, Nightly starts with -chrome
 // browser.xhtml and NIGHTLY_EMBED_BROWSER_PANE=<token> (AutoEmbedScope).
 
@@ -479,6 +481,9 @@ static bool sEmbedNextWindow = false;
 // The pane of the browser window OnOpenBrowserWindow is opening (0: none);
 // AddWindow takes it.
 static uint32_t sBrowserPaneForNextWindow = 0;
+// The browser window being created is a stray (AutoEmbedScope): any other
+// browser window while a pane's is open. AddWindow takes it.
+static bool sStrayNextWindow = false;
 
 class WindowExporter final : public NativeLayerRootCAObserver {
  public:
@@ -574,6 +579,8 @@ class Channel final {
   // Whether aWidget is an embed window of the chrome-less document (not a
   // browser window, not an ordinary one).
   bool IsEmbedDocumentWindow(nsIWidget* aWidget);
+  // Whether one of the embedder's panes shows a browser window.
+  bool HasBrowserWindow() const;
 
  private:
   struct Entry {
@@ -583,6 +590,11 @@ class Channel final {
     bool mReady = false;   // zen-embed.js listens (zen-embed-ready).
     bool mBrowser = false;  // A browser window (OpenBrowserWindow).
     bool mAnnounced = false;  // zen-embed-browser-window sent (mBrowser).
+    // Any other browser window opened while a pane's is open (a page's popup,
+    // a new window, a restored one): embedded so that it never shows, never
+    // sent to the embedder; ZenEmbedBrowser.sys.mjs moves its tabs into the
+    // pane's window and closes it (zen-embed-stray-window).
+    bool mStray = false;
     nsCocoaWindow* mWindow = nullptr;  // Removed in WindowDestroyed.
     RefPtr<NativeLayerRootCA> mLayerRoot;
     RefPtr<WindowExporter> mExporter;
@@ -1334,6 +1346,9 @@ void Channel::AddWindow(nsCocoaWindow* aWindow, NativeLayerRootCA* aLayerRoot) {
     entry.mBrowser = true;
     entry.mReady = true;
     sBrowserPaneForNextWindow = 0;
+  } else if (sStrayNextWindow) {
+    entry.mStray = true;
+    sStrayNextWindow = false;
   }
   {
     MutexAutoLock lock(mExportersMutex);
@@ -1341,7 +1356,9 @@ void Channel::AddWindow(nsCocoaWindow* aWindow, NativeLayerRootCA* aLayerRoot) {
   }
   aLayerRoot->SetObserver(entry.mExporter);
   EMBED_LOG("window %u created%s", entry.mId,
-            entry.mBrowser ? " (browser window)" : "");
+            entry.mBrowser ? " (browser window)"
+            : entry.mStray ? " (stray browser window)"
+                           : "");
   mWindows.AppendElement(std::move(entry));
 }
 
@@ -1349,20 +1366,22 @@ void Channel::SetWindowVisible(nsCocoaWindow* aWindow, bool aVisible) {
   for (auto& entry : mWindows) {
     if (entry.mWindow == aWindow) {
       entry.mVisible = aVisible;
-      if (aVisible && entry.mBrowser && !entry.mAnnounced) {
+      if (aVisible && (entry.mBrowser || entry.mStray) && !entry.mAnnounced) {
         // Its chrome (ZenEmbedBrowser.sys.mjs) marks the document as
         // embedded: the embedder's frame, not a window of its own on screen.
         // Not from inside the widget's Show: once that is over.
         entry.mAnnounced = true;
         nsCOMPtr<nsPIDOMWindowOuter> window = OuterWindowOf(entry.mWindow);
         if (window) {
+          const char* topic = entry.mStray ? "zen-embed-stray-window"
+                                           : "zen-embed-browser-window";
           NS_DispatchToMainThread(NS_NewRunnableFunction(
-              "ZenEmbed::AnnounceBrowserWindow", [window] {
+              "ZenEmbed::AnnounceBrowserWindow", [window, topic] {
                 if (nsCOMPtr<nsIObserverService> obs =
                         services::GetObserverService()) {
                   obs->NotifyObservers(
-                      static_cast<mozIDOMWindowProxy*>(window.get()),
-                      "zen-embed-browser-window", nullptr);
+                      static_cast<mozIDOMWindowProxy*>(window.get()), topic,
+                      nullptr);
                 }
               }));
         }
@@ -1370,7 +1389,7 @@ void Channel::SetWindowVisible(nsCocoaWindow* aWindow, bool aVisible) {
       if (mAuthenticated) {
         SendWindow(entry);
       }
-      entry.mExporter->SetVisible(aVisible);
+      entry.mExporter->SetVisible(aVisible && !entry.mStray);
       return;
     }
   }
@@ -1464,6 +1483,9 @@ void Channel::OnChromeLocation(nsPIDOMWindowOuter* aWindow,
 }
 
 void Channel::SendWindow(const Entry& aEntry) {
+  if (aEntry.mStray) {
+    return;
+  }
   NSWindow* window = (NSWindow*)aEntry.mWindow->GetNativeData(NS_NATIVE_WINDOW);
   if (!window) {
     return;
@@ -1978,7 +2000,16 @@ void Channel::OnOpenBrowserWindow(uint32_t aPane) {
 bool Channel::IsEmbedDocumentWindow(nsIWidget* aWidget) {
   for (const auto& entry : mWindows) {
     if (static_cast<nsIWidget*>(entry.mWindow) == aWidget) {
-      return !entry.mBrowser;
+      return !entry.mBrowser && !entry.mStray;
+    }
+  }
+  return false;
+}
+
+bool Channel::HasBrowserWindow() const {
+  for (const auto& entry : mWindows) {
+    if (entry.mBrowser) {
+      return true;
     }
   }
   return false;
@@ -2266,10 +2297,17 @@ ZenEmbedHost::AutoEmbedScope::AutoEmbedScope(nsIURI* aUrl)
           sBrowserPaneForNextWindow = uint32_t(strtoul(pane, nullptr, 10));
         }
       }
+      const bool browser = spec.Equals(kBrowserDocument);
+      // Any other browser window while a pane shows one (a page's popup, a
+      // new window, a moved tab's, a restored one, an external link's) would
+      // be a Nightly window of its own on screen beside the embedder: it is
+      // embedded too and stays off screen as a stray, whose tabs
+      // ZenEmbedBrowser.sys.mjs moves into the pane's window.
+      sStrayNextWindow = browser && !sBrowserPaneForNextWindow && sChannel &&
+                         sChannel->HasBrowserWindow();
       embed = spec.Equals(kEmbedDocument) || StringBeginsWith(spec, withQuery) ||
-              // The browser window OnOpenBrowserWindow opens for a pane;
-              // any other browser window stays an ordinary one.
-              (sBrowserPaneForNextWindow && spec.Equals(kBrowserDocument));
+              // The browser window OnOpenBrowserWindow opens for a pane.
+              (sBrowserPaneForNextWindow && browser) || sStrayNextWindow;
     }
   }
   sEmbedNextWindow = embed;
@@ -2277,6 +2315,7 @@ ZenEmbedHost::AutoEmbedScope::AutoEmbedScope(nsIURI* aUrl)
 
 ZenEmbedHost::AutoEmbedScope::~AutoEmbedScope() {
   sEmbedNextWindow = mPrevious;
+  sStrayNextWindow = false;
 }
 
 void ZenEmbedHost::WindowCreated(nsCocoaWindow* aWindow,

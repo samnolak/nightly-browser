@@ -1,5 +1,5 @@
 diff --git a/xpfe/appshell/AppWindow.cpp b/xpfe/appshell/AppWindow.cpp
-index 27536c5541ba72d4100dca5661f170660bd9c967..5e7a578b87cc826a9f161225d37f11a8f8665ae3 100644
+index 27536c5541ba72d4100dca5661f170660bd9c967..03a6c2cd4cd6309b850fca027b89871e2139dff6 100644
 --- a/xpfe/appshell/AppWindow.cpp
 +++ b/xpfe/appshell/AppWindow.cpp
 @@ -78,6 +78,10 @@
@@ -22,22 +22,25 @@ index 27536c5541ba72d4100dca5661f170660bd9c967..5e7a578b87cc826a9f161225d37f11a8
  
    (void)PersistPreXULSkeletonUIValues(settings);
  #endif
-@@ -2227,6 +2231,14 @@ NS_IMETHODIMP AppWindow::CreateNewContentWindow(
+@@ -2227,6 +2231,17 @@ NS_IMETHODIMP AppWindow::CreateNewContentWindow(
    nsCOMPtr<nsIURI> uri;
    nsAutoCString urlStr;
    urlStr.AssignLiteral(BROWSER_CHROME_URL_QUOTED);
 +#ifdef XP_MACOSX
 +  // zen/embed: in an embedder's runtime a page's new window is an embed window
 +  // too (its document makes the browser from mInitialOpenWindowInfo), and the
-+  // embedder shows it as a tab.
-+  if (zen::ZenEmbedHost::IsEnabled()) {
++  // embedder shows it as a tab. Only from the chrome-less embed windows: a
++  // browser window's page opens a browser window, which AutoEmbedScope keeps
++  // off screen as a stray whose tabs join the pane's window.
++  if (zen::ZenEmbedHost::IsEnabled() &&
++      zen::ZenEmbedHost::IsEmbedDocumentWindow(mWindow)) {
 +    urlStr.Assign(zen::ZenEmbedHost::EmbedDocument());
 +  }
 +#endif
  
    nsCOMPtr<nsIIOService> service(do_GetService(NS_IOSERVICE_CONTRACTID));
    if (service) {
-@@ -2241,6 +2253,9 @@ NS_IMETHODIMP AppWindow::CreateNewContentWindow(
+@@ -2241,6 +2256,9 @@ NS_IMETHODIMP AppWindow::CreateNewContentWindow(
    nsCOMPtr<nsIAppWindow> newWindow;
    {
      AutoNoJSAPI nojsapi;

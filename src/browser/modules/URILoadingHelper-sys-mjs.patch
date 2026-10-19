@@ -1,8 +1,8 @@
 diff --git a/browser/modules/URILoadingHelper.sys.mjs b/browser/modules/URILoadingHelper.sys.mjs
-index b60820ef0cc62c27a8bab127218d625012153791..04cdd58ed4426af802f2868310140a8a33ec092b 100644
+index 10e9bb3ca932c9c0085a3d8fa4a398ff2c9c7105..0fcc0e36f1d3f9788d0cf64d1facca3e72f2fa40 100644
 --- a/browser/modules/URILoadingHelper.sys.mjs
 +++ b/browser/modules/URILoadingHelper.sys.mjs
-@@ -231,6 +231,7 @@ function openInWindow(url, params, sourceWindow) {
+@@ -250,6 +250,7 @@ function openInWindow(url, params, sourceWindow) {
      features,
      sa
    );
@@ -10,7 +10,26 @@ index b60820ef0cc62c27a8bab127218d625012153791..04cdd58ed4426af802f2868310140a8a
  }
  
  function openInCurrentTab(targetBrowser, url, uriObj, params) {
-@@ -548,7 +549,7 @@ export const URILoadingHelper = {
+@@ -530,6 +531,18 @@ export const URILoadingHelper = {
+       return;
+     }
+ 
++    // zen/embed: the embedder's pane shows this one window; a link for a new
++    // window (shift-click, a bookmark's or a menu's "in New Window") opens as
++    // a tab of it, in front as the window would have been.
++    if (
++      where == "window" &&
++      !params.private &&
++      window?.document?.documentElement?.hasAttribute("zen-embedded")
++    ) {
++      where = "tab";
++      params.inBackground = false;
++    }
++
+     // Establish which window we'll load the link in.
+     let w = this._resolveInitialTargetWindow(
+       where,
+@@ -568,7 +581,7 @@ export const URILoadingHelper = {
        // page. If a load request bounces off for the currently selected tab,
        // we'll open a new tab instead.
        let tab = w.gBrowser.getTabForBrowser(targetBrowser);
@@ -19,7 +38,7 @@ index b60820ef0cc62c27a8bab127218d625012153791..04cdd58ed4426af802f2868310140a8a
          where = "tab";
          targetBrowser = null;
        } else if (
-@@ -981,7 +982,7 @@ export const URILoadingHelper = {
+@@ -1025,7 +1038,7 @@ export const URILoadingHelper = {
          ignoreQueryString || replaceQueryString,
          ignoreFragmentWhenComparing
        );
@@ -28,7 +47,7 @@ index b60820ef0cc62c27a8bab127218d625012153791..04cdd58ed4426af802f2868310140a8a
        for (let i = 0; i < browsers.length; i++) {
          let browser = browsers[i];
          let browserCompare = cleanURL(
-@@ -1037,7 +1038,7 @@ export const URILoadingHelper = {
+@@ -1081,7 +1094,7 @@ export const URILoadingHelper = {
                }
                aSplitView.documentGlobal.focus();
              } else {

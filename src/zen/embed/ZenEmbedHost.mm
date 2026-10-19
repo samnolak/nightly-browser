@@ -2762,7 +2762,8 @@ void Channel::DragTick() {
   DragMouse(info.zenEmbedEvent, info.draggingLocation);
 }
 
-// aEvent: what cancelled it (Escape: the user did), else the last move.
+// All cancellation paths (including focus loss) must report user cancellation,
+// not an unsuccessful drop: tab dragend otherwise creates a split view.
 void Channel::CancelDrag(NSEvent* aEvent) {
   Drag* drag = mDrag.get();
   ZenEmbedDragInfo* info = [[drag->mInfo retain] autorelease];
@@ -2774,8 +2775,21 @@ void Channel::CancelDrag(NSEvent* aEvent) {
       return;
     }
   }
-  EndDrag(info.draggingLocation, NSDragOperationNone,
-          aEvent ? aEvent : info.zenEmbedEvent);
+  if (!aEvent || aEvent.type != NSEventTypeKeyDown ||
+      aEvent.keyCode != kEscapeKeyCode) {
+    NSEvent* lastEvent = info.zenEmbedEvent;
+    aEvent = [NSEvent keyEventWithType:NSEventTypeKeyDown
+                            location:info.draggingLocation
+                       modifierFlags:lastEvent.modifierFlags
+                           timestamp:NSProcessInfo.processInfo.systemUptime
+                        windowNumber:drag->mView.window.windowNumber
+                             context:nil
+                          characters:@"\x1b"
+         charactersIgnoringModifiers:@"\x1b"
+                           isARepeat:NO
+                             keyCode:kEscapeKeyCode];
+  }
+  EndDrag(info.draggingLocation, NSDragOperationNone, aEvent);
 }
 
 void Channel::EndDrag(NSPoint aLocation, NSDragOperation aOperation,

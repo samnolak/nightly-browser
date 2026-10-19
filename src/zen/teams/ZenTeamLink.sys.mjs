@@ -4,8 +4,9 @@
 
 // B1/B2 in Nightly through Ombra (SERVER_DESIGN §7, decision 2026-10-18): Nightly has no team device of its own. It
 // shares pages, tab groups and gallery screenshots, and learns what was shared with this member, through the Ombra
-// running on this Mac, over the authenticated local Mach channel in ZenTeamLinkWorker.js. When Ombra does not run,
-// cannot be verified or is not signed in to a team, every share action says why and stays disabled.
+// running on this Mac, over the authenticated local Mach channel in ZenTeamLinkWorker.js: the runtime an Ombra embeds
+// asks that Ombra (its own service name, NIGHTLY_TEAMS_SERVICE), a standalone Nightly the shared name. When Ombra does
+// not run, cannot be verified or is not signed in to a team, every share action says why and stays disabled.
 
 import { setTimeout } from "resource://gre/modules/Timer.sys.mjs";
 
@@ -65,6 +66,7 @@ class Worker {
         json,
         timeoutMs,
         requirement: peerRequirement(),
+        service: Services.env.get("NIGHTLY_TEAMS_SERVICE"),
         allowUnsigned: Services.prefs.getBoolPref(
           "zen.embed.allow-unsigned-peer",
           false

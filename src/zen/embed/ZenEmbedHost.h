@@ -8,6 +8,11 @@
 class nsCocoaWindow;
 class nsIURI;
 class nsIWidget;
+#ifdef __OBJC__
+@class NSArray<ObjectType>;
+@class NSDraggingItem;
+@class NSView;
+#endif
 
 namespace mozilla::layers {
 class NativeLayerRootCA;
@@ -68,6 +73,13 @@ class ZenEmbedHost final {
   // The pointer shape (nsCursor) the page wants over an embedded window: the
   // embedder shows it (nsCocoaWindow::SetCursor). Main thread.
   static void CursorChanged(nsCocoaWindow* aWindow, int aCursor);
+#ifdef __OBJC__
+  // A drag begins in aView (nsDragSession::InvokeDragSessionImpl, aItems its
+  // dragging items). An embedded window is never on screen, so AppKit cannot
+  // run a drag from it: for one, the embedder's mouse runs the drag and this
+  // returns true (see ZenEmbedHost.mm, Drags). False for any other view.
+  static bool BeginDrag(NSView* aView, NSArray<NSDraggingItem*>* aItems);
+#endif
 };
 
 }  // namespace zen

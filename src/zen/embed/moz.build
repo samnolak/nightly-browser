@@ -11,7 +11,12 @@ if CONFIG["MOZ_WIDGET_TOOLKIT"] == "cocoa":
         "ZenEmbedHost.mm",
     ]
 
+    # nsChildView.h (the drag destination of an embedded window's view)
+    # pulls in TextInputHandler.h and with it these layout headers.
     LOCAL_INCLUDES += [
+        "/layout/base",
+        "/layout/generic",
+        "/layout/xul",
         "/widget",
         "/widget/cocoa",
     ]

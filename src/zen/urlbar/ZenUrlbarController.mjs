@@ -115,6 +115,13 @@ export class nsZenUrlbarController {
 
     // Close the new tab popup on cmd/ctrl + t
     if (!overridePreferance && gURLBar.hasAttribute("zen-newtab")) {
+      // On the empty tab the bar is the new tab itself: it stays, with the
+      // keyboard (closing it would leave the page without an input).
+      if (gZenUIManager.emptyTabPageShown && gURLBar._zenHandleUrlbarClose) {
+        document.getElementById("Browser:OpenLocation").doCommand();
+        this.#float();
+        return true;
+      }
       // The _zenHandleUrlbarClose holds a token in it's closure.
       // Call that instead.
       if (gURLBar._zenHandleUrlbarClose) {
@@ -154,12 +161,32 @@ export class nsZenUrlbarController {
     try {
       gURLBar.search(this.#lastSearch || "");
       document.getElementById("Browser:OpenLocation").doCommand();
+      this.#float();
     } catch (e) {
       console.error("Error opening location in new tab:", e);
       this.handleUrlbarClose(closeSeq, false, false);
       return false;
     }
     return true;
+  }
+
+  /**
+   * Floats a bar the user had already opened in place (a click on it in the
+   * sidebar): opening it again does not move it, and the new tab's bar floats
+   * over the content wherever the URL bar behavior floats on keyboard focus.
+   */
+  #float() {
+    const behavior = gURLBar.zenUrlbarBehavior;
+    if (
+      (behavior != "float" && behavior != "floating-on-type") ||
+      !gURLBar.hasAttribute("breakout-extend") ||
+      gURLBar.getAttribute("zen-floating-urlbar") == "true"
+    ) {
+      return;
+    }
+    gURLBar.focusedViaMousedown = false;
+    gURLBar.setAttribute("zen-floating-urlbar", "true");
+    gZenUIManager.onFloatingURLBarOpen();
   }
 
   /**

@@ -18,6 +18,13 @@ const DEFAULT_ICON = "chrome://global/skin/icons/defaultFavicon.svg";
  * What sits behind the floating URL bar while the empty tab is shown: a
  * backdrop in the space's colors and the most visited sites, from local
  * history only.
+ *
+ * The page is the new tab, and the floating URL bar is its input: whenever the
+ * page shows in the active window without the bar, the bar opens over it again
+ * (a new-tab session, as ⌘T opens). Firefox's own paths leave the empty tab
+ * without one: Esc or a click on the page closes the bar, so does the window
+ * losing the focus (the bar closes on blur and nothing reopens it when the
+ * focus comes back), and closing the last tab only focuses the bar in place.
  */
 export class nsZenEmptyTabPage {
   #page = null;
@@ -25,6 +32,7 @@ export class nsZenEmptyTabPage {
   // Bumped on every refresh, so a slow query cannot overwrite a newer one.
   #refreshId = 0;
   #typingObserver = null;
+  #urlbarTimer = null;
 
   init() {
     this.#page = document.getElementById("zen-empty-tab-page");
@@ -37,16 +45,99 @@ export class nsZenEmptyTabPage {
       attributes: true,
       attributeFilter: ["usertyping"],
     });
-    window.addEventListener("unload", () => this.#typingObserver.disconnect(), {
-      once: true,
-    });
+
+    // Where the empty tab is left without its bar: the window gets the focus
+    // back, the focus lands on the empty tab's browser (the bar closing hands
+    // it there), or the bar is focused in place (the last tab closed, a click
+    // on it in the sidebar).
+    window.addEventListener("activate", this);
+    gBrowser.tabpanels.addEventListener("focus", this, true);
+    gURLBar.inputField.addEventListener("focus", this);
+    window.addEventListener(
+      "unload",
+      () => {
+        this.#typingObserver.disconnect();
+        clearTimeout(this.#urlbarTimer);
+      },
+      { once: true }
+    );
+  }
+
+  /** Whether the page shows: the empty tab is selected, on its own. */
+  get shown() {
+    return !!this.#page && !this.#page.hidden;
   }
 
   handleEvent(event) {
-    const site = event.target.closest(".zen-empty-tab-site");
-    if (event.type === "click" && site && event.button === 0) {
-      gZenUIManager.openAndChangeToTab(site.dataset.url);
+    switch (event.type) {
+      case "click": {
+        const site = event.target.closest(".zen-empty-tab-site");
+        if (site && event.button === 0) {
+          gZenUIManager.openAndChangeToTab(site.dataset.url);
+        }
+        break;
+      }
+      case "activate":
+        this.#scheduleUrlbar();
+        break;
+      case "focus":
+        if (
+          event.target === gURLBar.inputField ||
+          event.target === gBrowser.selectedBrowser
+        ) {
+          this.#scheduleUrlbar();
+        }
+        break;
     }
+  }
+
+  /**
+   * Opens the bar over the page after the current task: a bar that is closing
+   * has finished by then (its session ends in timeouts of its own), and the
+   * tab switch or window activation that showed the page has placed the focus.
+   *
+   * @param {number} [retries] - Further tries while a closing session still
+   *   holds the bar.
+   */
+  #scheduleUrlbar(retries = 3) {
+    if (!this.shown || this.#urlbarTimer) {
+      return;
+    }
+    this.#urlbarTimer = setTimeout(() => {
+      this.#urlbarTimer = null;
+      this.#openUrlbar(retries);
+    }, 0);
+  }
+
+  #openUrlbar(retries) {
+    if (!this.shown || Services.focus.activeWindow !== window) {
+      return;
+    }
+    if (gURLBar.hasAttribute("zen-newtab")) {
+      // A session whose close handler is gone is still tearing down.
+      if (!gURLBar._zenHandleUrlbarClose && retries > 0) {
+        this.#scheduleUrlbar(retries - 1);
+      }
+      return;
+    }
+    // The user went somewhere else on purpose: the sidebar, a panel, a menu.
+    const focused = document.activeElement;
+    if (
+      focused &&
+      focused !== document.documentElement &&
+      focused !== gBrowser.selectedBrowser &&
+      focused !== gURLBar.inputField
+    ) {
+      return;
+    }
+    if (
+      [...document.querySelectorAll("panel, menupopup")].some(
+        popup => popup.state === "open" || popup.state === "showing"
+      )
+    ) {
+      return;
+    }
+    gZenUIManager.handleNewTab(false, false, "tab");
   }
 
   /**
@@ -65,6 +156,7 @@ export class nsZenEmptyTabPage {
     this.#updateTyping();
     if (active) {
       this.#refreshSites();
+      this.#scheduleUrlbar();
     }
   }
 

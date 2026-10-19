@@ -793,6 +793,7 @@ var gZenLooksAndFeel = {
 var gZenWorkspacesSettings = {
   init() {
     this.initAutoGroups();
+    this.initOpenInApp();
     var tabsUnloaderPrefListener = {
       async observe() {
         let buttonIndex = await confirmRestartPrompt(true, 1, true, true);
@@ -903,6 +904,56 @@ var gZenWorkspacesSettings = {
         paths.value
       );
     });
+  },
+
+  // One row per app ZenOpenInApp knows, installed ones first: Always open in
+  // the app / Ask / Open in the browser (zen.open-in-app.app.<id>).
+  initOpenInApp() {
+    const list = document.getElementById("zenOpenInAppList");
+    if (!list || list.childElementCount) {
+      return;
+    }
+    const { ZenOpenInAppService } = ChromeUtils.importESModule(
+      "resource:///modules/zen/openinapp/ZenOpenInApp.sys.mjs"
+    );
+    const apps = ZenOpenInAppService.apps.map(app => ({
+      app,
+      installed: ZenOpenInAppService.isInstalled(app),
+    }));
+    apps.sort((a, b) => b.installed - a.installed);
+    for (const { app, installed } of apps) {
+      const row = document.createXULElement("hbox");
+      row.setAttribute("align", "center");
+      row.className = "zenOpenInAppRow";
+      row.dataset.app = app.id;
+      const label = document.createXULElement("label");
+      label.setAttribute("flex", "1");
+      if (installed) {
+        label.textContent = ZenOpenInAppService.appName(app);
+      } else {
+        document.l10n.setAttributes(label, "zen-open-in-app-not-installed", {
+          app: app.name,
+        });
+        label.classList.add("description-deemphasized");
+      }
+      const menulist = document.createXULElement("menulist");
+      menulist.id = `zenOpenInApp-${app.id}`;
+      label.setAttribute("control", menulist.id);
+      const popup = document.createXULElement("menupopup");
+      for (const mode of ["always", "ask", "never"]) {
+        const item = document.createXULElement("menuitem");
+        item.value = mode;
+        document.l10n.setAttributes(item, `zen-open-in-app-mode-${mode}`);
+        popup.appendChild(item);
+      }
+      menulist.appendChild(popup);
+      menulist.value = ZenOpenInAppService.modeFor(app);
+      menulist.addEventListener("command", () =>
+        ZenOpenInAppService.setMode(app, menulist.value)
+      );
+      row.append(label, menulist);
+      list.appendChild(row);
+    }
   },
 };
 
@@ -1429,6 +1480,11 @@ Preferences.addAll([
   },
   {
     id: "zen.tabs.auto-groups.enabled",
+    type: "bool",
+    default: true,
+  },
+  {
+    id: "zen.open-in-app.enabled",
     type: "bool",
     default: true,
   },

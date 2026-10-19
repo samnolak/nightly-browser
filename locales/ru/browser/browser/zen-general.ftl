@@ -61,6 +61,17 @@ zen-tabs-renamed = Вкладка успешно переименована!
 zen-background-tab-opened-toast = Открыта новая фоновая вкладка!
 zen-workspace-renamed-toast = Пространство успешно переименовано!
 zen-split-view-limit-toast = Невозможно добавить больше панелей в раздельный вид!
+# Open in app: a link went to its desktop app. $app (String) - the app's name.
+zen-open-in-app-toast = Открыто в { $app }
+zen-open-in-app-toast-description = Удерживайте ⌥ Option при открытии ссылки, чтобы она осталась в браузере
+zen-open-in-app-ask-title = Открыть в { $app }?
+zen-open-in-app-ask-text = Эту ссылку может открыть приложение { $app }.
+zen-open-in-app-ask-open-app = Открыть { $app }
+zen-open-in-app-ask-open-here = Открыть в браузере
+zen-open-in-app-ask-remember = Запомнить для ссылок { $app }
+zen-open-in-app-context-open-in-browser =
+    .label = Открыть ссылку в браузере
+    .accesskey = б
 
 # Tab tooltip line for a tab that was opened in bulk and waits to load.
 # $position (Number) - place of the tab in the load queue, starting at 1.

@@ -4,4 +4,7 @@
 
 EXTRA_JS_MODULES.zen.openinapp += [
     "ZenOpenInApp.sys.mjs",
+    "ZenOpenInAppRules.sys.mjs",
 ]
+
+BROWSER_CHROME_MANIFESTS += ["tests/browser.toml"]

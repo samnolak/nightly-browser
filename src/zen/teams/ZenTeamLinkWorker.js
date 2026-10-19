@@ -8,8 +8,10 @@
 "use strict";
 
 // The Nightly end of Ombra's team link (Ombra: avalonia/src/Ombra.App/Nightly/NightlyTeamLink.cs). Nightly has no team
-// device of its own: it asks the Ombra running on this Mac, over the Mach bootstrap service SERVICE, to share and to
-// list what was shared with this member. One request at a time per worker; the call blocks this thread until Ombra
+// device of its own: it asks the Ombra running on this Mac, over a Mach bootstrap service, to share and to list what
+// was shared with this member. The service is SERVICE for a standalone Nightly, or the embedding Ombra's own name
+// (NIGHTLY_TEAMS_SERVICE, passed in by ZenTeamLink.sys.mjs as `service`) for the runtime an Ombra embeds. One request
+// at a time per worker; the call blocks this thread until Ombra
 // answers or the timeout passes (the inbox long poll as well), never the main thread.
 //
 // Message (both directions): mach_msg_header_t, then u32 version, u32 length, UTF-8 JSON. A request carries a
@@ -336,14 +338,14 @@ function exchange(service, out, { timeoutMs, requirement, allowUnsigned }) {
 }
 
 /**
- * Looks the service up and authenticates its receiver with the handshake
+ * Looks `name` up and authenticates its receiver with the handshake
  * (no content of the user's in it); pins the port when it is Ombra.
  *
  * @returns {{error?: string}}
  */
-function connect(options) {
+function connect(name, options) {
   const service = new port_t();
-  if (bootstrap_look_up(bootstrapPort.value, SERVICE, service.address())) {
+  if (bootstrap_look_up(bootstrapPort.value, name, service.address())) {
     return { error: "not-running" };
   }
   const answer = exchange(service.value, message(HANDSHAKE), options);
@@ -365,7 +367,7 @@ function connect(options) {
  *   Nightly), "untrusted" (the service is not Ombra), "timeout",
  *   "failed".
  */
-function request({ json, timeoutMs, requirement, allowUnsigned }) {
+function request({ json, timeoutMs, requirement, allowUnsigned, service }) {
   const out = message(json);
   if (out.tooLarge) {
     return { error: "too-large" };
@@ -373,7 +375,7 @@ function request({ json, timeoutMs, requirement, allowUnsigned }) {
   const options = { timeoutMs, requirement, allowUnsigned };
   for (let attempt = 0; attempt < 2; attempt++) {
     if (!pinned) {
-      const connected = connect({
+      const connected = connect(service || SERVICE, {
         ...options,
         timeoutMs: Math.min(timeoutMs, 3000),
       });

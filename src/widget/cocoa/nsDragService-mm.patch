@@ -1,16 +1,17 @@
 diff --git a/widget/cocoa/nsDragService.mm b/widget/cocoa/nsDragService.mm
-index 4918a19b2e1e1c1e13286339b088f57213413029..4c010e956410fdab16303d9cd68de5d1b3e61625 100644
+index 4918a19b2e1e1c1e13286339b088f57213413029..6d0dff064e68c549cf4705abddd3b6161bfb683c 100644
 --- a/widget/cocoa/nsDragService.mm
 +++ b/widget/cocoa/nsDragService.mm
-@@ -10,6 +10,7 @@
+@@ -10,6 +10,8 @@
  #include "mozilla/dom/Document.h"
  #include "mozilla/dom/DocumentInlines.h"
  #include "mozilla/gfx/2D.h"
++#include "mozilla/ZenEmbedHost.h"
 +#include "mozilla/nsZenDragAndDrop.h"
  #include "nsArrayUtils.h"
  #include "nsCOMPtr.h"
  #include "nsClipboard.h"
-@@ -185,6 +186,10 @@
+@@ -185,6 +187,10 @@
                                              bitsPerPixel:32];
  
    uint8_t* dest = [imageRep bitmapData];
@@ -21,7 +22,7 @@ index 4918a19b2e1e1c1e13286339b088f57213413029..4c010e956410fdab16303d9cd68de5d1
    for (uint32_t i = 0; i < height; ++i) {
      uint8_t* src = map.mData + i * map.mStride;
      for (uint32_t j = 0; j < width; ++j) {
-@@ -192,15 +197,15 @@
+@@ -192,15 +198,15 @@
        // is premultipled here. Also, Quartz likes RGBA, so do that translation
        // as well.
  #ifdef IS_BIG_ENDIAN
@@ -45,7 +46,7 @@ index 4918a19b2e1e1c1e13286339b088f57213413029..4c010e956410fdab16303d9cd68de5d1
  #endif
        src += 4;
        dest += 4;
-@@ -289,12 +294,44 @@
+@@ -289,12 +295,50 @@
        [[[NSDraggingItem alloc] initWithPasteboardWriter:pbItem] autorelease];
    [dragItem setDraggingFrame:localDragRect contents:image];
  
@@ -80,6 +81,12 @@ index 4918a19b2e1e1c1e13286339b088f57213413029..4c010e956410fdab16303d9cd68de5d1
 +
    OpenDragPopup();
  
++  // zen/embed: an embedded window is never on screen, so AppKit could not
++  // track a drag from it; the embedder's mouse runs this one.
++  if (zen::ZenEmbedHost::BeginDrag(mNativeDragView, dragItems)) {
++    return NS_OK;
++  }
++
    mNSDraggingSession = [mNativeDragView
 -      beginDraggingSessionWithItems:[NSArray arrayWithObject:dragItem]
 +      beginDraggingSessionWithItems:dragItems
@@ -91,7 +98,7 @@ index 4918a19b2e1e1c1e13286339b088f57213413029..4c010e956410fdab16303d9cd68de5d1
    if (!mNSDraggingSession) {
      // The system refused to start a drag, for example because the mouse button
      // was released before we got here. Fail, so that our caller ends this drag
-@@ -503,29 +540,44 @@
+@@ -503,29 +547,44 @@
      }
  
      if (pc) {

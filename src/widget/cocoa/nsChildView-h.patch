@@ -1,0 +1,34 @@
+diff --git a/widget/cocoa/nsChildView.h b/widget/cocoa/nsChildView.h
+index f594bedd8e01762a3b5f8743250e37ec877c5b83..2be2f648120fdf3d635412d9b0bdd256db779e27 100644
+--- a/widget/cocoa/nsChildView.h
++++ b/widget/cocoa/nsChildView.h
+@@ -93,6 +93,14 @@ class WidgetRenderingContext;
+ - (void)viewDidChangeBackingProperties;
+ @end
+ 
++// zen/embed: an embedded window is never on screen, so AppKit cannot track a
++// drag over it; the embedder's mouse does (ZenEmbedHost). Its NSDraggingInfo
++// carries the mouse event that moved the drag, which -doDragAction:sender:
++// reads instead of [NSApp currentEvent].
++@protocol ZenEmbedDraggingInfo <NSDraggingInfo>
++- (NSEvent*)zenEmbedEvent;
++@end
++
+ @interface ChildView : NSView <
+ #ifdef ACCESSIBILITY
+                            mozAccessible,
+@@ -250,6 +258,14 @@ class WidgetRenderingContext;
+ 
+ - (NSEvent*)lastKeyDownEvent;
+ 
++// Ends the drag this view started, as the end of its AppKit dragging session
++// does: at aLocation (window coordinates) with aOperation; aEvent is the
++// event that ended it (Escape: the user cancelled). zen/embed's drags end
++// here too.
++- (void)endDragSessionAt:(NSPoint)aLocation
++               operation:(NSDragOperation)aOperation
++                   event:(NSEvent*)aEvent;
++
+ + (uint32_t)sUniqueKeyEventId;
+ 
+ + (NSMutableDictionary*)sNativeKeyEventsMap;

@@ -16,6 +16,7 @@
 #include "mozilla/StaticPrefs_general.h"
 #include "mozilla/UniquePtr.h"
 #include "mozilla/layers/NativeLayerCA.h"
+#include "nsChildView.h"
 #include "nsCocoaWindow.h"
 #include "nsIAppStartup.h"
 #include "nsIAppWindow.h"
@@ -23,6 +24,7 @@
 #include "nsIObserver.h"
 #include "nsIObserverService.h"
 #include "nsIRollupListener.h"
+#include "nsITimer.h"
 #include "nsIURI.h"
 #include "nsIWidgetListener.h"
 #include "nsIWindowWatcher.h"
@@ -116,6 +118,22 @@
 // tabs moved into the pane's window by ZenEmbedBrowser.sys.mjs. When the
 // embedder's first pane is a browser window, Nightly starts with -chrome
 // browser.xhtml and NIGHTLY_EMBED_BROWSER_PANE=<token> (AutoEmbedScope).
+// Drags (protocol 4, ids 44-45 and 123-124). An embedded window is never on
+// screen, so AppKit can neither run a drag from it nor send it one over it:
+// the embedder's mouse does both. A drag that starts in the window
+// (ZenEmbedHost::BeginDrag) is announced as DragStarted{image (PNG, out of
+// line), its frame and the press, in window points; the drag pasteboard, a
+// named one holding its data}; the Mouse messages that follow with the button
+// held move it over the window (drag events for the page and the chrome),
+// the release drops it, Escape cancels it. When the pointer leaves the pane
+// the embedder may carry it on as its own AppKit drag of that data (it reads
+// it from the pasteboard as the destination asks): DragSource{carried} says
+// so, and DragSource{ended, operation, where} ends the drag later. An AppKit
+// drag over the pane (from another app, or the embedder's carried one) comes
+// as DragTarget{enter, over, exit, drop; point; the source's operations};
+// its data is on the system's drag pasteboard. Each step is answered with
+// DragStatus{operation}, what a drop there would do (NSDragOperation);
+// DragStatus{ended} once the window's own drag is over.
 
 using namespace mozilla;
 using mozilla::layers::NativeLayerRootCA;
@@ -123,6 +141,133 @@ using mozilla::layers::NativeLayerRootCAObserver;
 
 static LazyLogModule sEmbedLog("ZenEmbed");
 #define EMBED_LOG(...) MOZ_LOG(sEmbedLog, LogLevel::Info, (__VA_ARGS__))
+
+// widget/cocoa's drag state (nsCocoaWindow.mm): the pasteboard of the drag in
+// progress and the mouse press that started it.
+extern NSPasteboard* globalDragPboard;
+extern NSEvent* gLastDragMouseDownEvent;
+
+// The NSDraggingInfo of a drag over an embedded window (Channel's drags): the
+// embedder's pointer where AppKit would have its own.
+@interface ZenEmbedDragInfo : NSObject <ZenEmbedDraggingInfo>
+- (instancetype)initWithWindow:(NSWindow*)aWindow
+                    pasteboard:(NSPasteboard*)aPasteboard
+                        source:(id)aSource
+                    operations:(NSDragOperation)aOperations
+                      sequence:(NSInteger)aSequence;
+// The pointer is at aLocation (window coordinates), moved there by aEvent.
+- (void)moveTo:(NSPoint)aLocation event:(NSEvent*)aEvent;
+@end
+
+@implementation ZenEmbedDragInfo {
+  NSWindow* mWindow;          // [weak] The embedded window; outlives its drags.
+  NSPasteboard* mPasteboard;  // [strong]
+  id mSource;                 // [weak] The window's view, for its own drag.
+  NSDragOperation mOperations;
+  NSInteger mSequence;
+  NSPoint mLocation;
+  NSEvent* mEvent;  // [strong]
+}
+
+@synthesize draggingFormation;
+@synthesize animatesToDestination;
+@synthesize numberOfValidItemsForDrop;
+
+- (instancetype)initWithWindow:(NSWindow*)aWindow
+                    pasteboard:(NSPasteboard*)aPasteboard
+                        source:(id)aSource
+                    operations:(NSDragOperation)aOperations
+                      sequence:(NSInteger)aSequence {
+  if ((self = [super init])) {
+    mWindow = aWindow;
+    mPasteboard = [aPasteboard retain];
+    mSource = aSource;
+    mOperations = aOperations;
+    mSequence = aSequence;
+  }
+  return self;
+}
+
+- (void)dealloc {
+  [mPasteboard release];
+  [mEvent release];
+  [super dealloc];
+}
+
+- (void)moveTo:(NSPoint)aLocation event:(NSEvent*)aEvent {
+  mLocation = aLocation;
+  // aEvent may be mEvent itself (the dragover a resting pointer repeats).
+  [aEvent retain];
+  [mEvent release];
+  mEvent = aEvent;
+}
+
+- (NSEvent*)zenEmbedEvent {
+  return mEvent;
+}
+
+- (NSWindow*)draggingDestinationWindow {
+  return mWindow;
+}
+
+- (NSDragOperation)draggingSourceOperationMask {
+  return mOperations;
+}
+
+- (NSPoint)draggingLocation {
+  return mLocation;
+}
+
+- (NSPoint)draggedImageLocation {
+  return mLocation;
+}
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-implementations"
+- (NSImage*)draggedImage {
+  return nil;
+}
+
+- (NSArray<NSString*>*)namesOfPromisedFilesDroppedAtDestination:
+    (NSURL*)aDestination {
+  return nil;
+}
+#pragma clang diagnostic pop
+
+- (NSPasteboard*)draggingPasteboard {
+  return mPasteboard;
+}
+
+- (id)draggingSource {
+  return mSource;
+}
+
+- (NSInteger)draggingSequenceNumber {
+  return mSequence;
+}
+
+- (void)slideDraggedImageTo:(NSPoint)aScreenPoint {
+}
+
+// No dragging items to move: the embedder draws the drag image.
+- (void)enumerateDraggingItemsWithOptions:
+            (NSDraggingItemEnumerationOptions)aOptions
+                                  forView:(NSView*)aView
+                                  classes:(NSArray<Class>*)aClasses
+                            searchOptions:
+                                (NSDictionary<NSPasteboardReadingOptionKey, id>*)
+                                    aSearchOptions
+                               usingBlock:(void (^)(NSDraggingItem*, NSInteger,
+                                                    BOOL*))aBlock {
+}
+
+- (NSSpringLoadingHighlight)springLoadingHighlight {
+  return NSSpringLoadingHighlightNone;
+}
+
+- (void)resetSpringLoading {
+}
+@end
 
 namespace zen {
 namespace {
@@ -134,6 +279,11 @@ constexpr size_t kMaxSentSurfaces = 16;
 constexpr uint32_t kMaxText = 8192;
 // Script source plus arguments, and script results, in bytes.
 constexpr uint32_t kMaxScript = 64u << 20;
+// kVK_Escape: cancels a drag.
+constexpr uint16_t kEscapeKeyCode = 0x35;
+// While the pointer rests over the window, a drag's dragover repeats this
+// often (AppKit's periodic draggingUpdated:).
+constexpr uint32_t kDragRepeatMs = 100;
 constexpr char kEmbedDocument[] = "chrome://browser/content/zen-embed.xhtml";
 constexpr char kBrowserDocument[] = "chrome://browser/content/browser.xhtml";
 
@@ -157,6 +307,10 @@ enum : mach_msg_id_t {
   kMsgDialogReply = 41,
   kMsgDownloadCancel = 42,
   kMsgOpenBrowserWindow = 43,
+  // Drags (see the comment at the top): 44-45 embedder -> Nightly, 123-124
+  // back.
+  kMsgDragTarget = 44,
+  kMsgDragSource = 45,
   kMsgHello = 100,
   kMsgHelloAck = 101,
   kMsgWindow = 102,
@@ -169,6 +323,8 @@ enum : mach_msg_id_t {
   kMsgDialog = 120,
   kMsgDialogClosed = 121,
   kMsgDownload = 122,
+  kMsgDragStarted = 123,
+  kMsgDragStatus = 124,
 };
 
 enum : int32_t { kMouseDown = 1, kMouseUp = 2, kMouseMove = 3, kMouseExit = 4 };
@@ -470,6 +626,67 @@ struct ScriptResultMsg {
 static_assert(offsetof(ScriptResultMsg, windowId) == 44);
 static_assert(sizeof(ScriptResultMsg) == 64);
 
+// Drags. Points are window points with the origin at the top left (as in
+// MouseMsg), operations NSDragOperation masks, modifiers NSEventModifierFlags.
+enum : uint32_t { kDragEnter = 1, kDragOver = 2, kDragExit = 3, kDragDrop = 4 };
+struct DragTargetMsg {
+  mach_msg_header_t header;
+  uint32_t windowId;
+  uint32_t phase;  // kDragEnter...kDragDrop
+  double x;
+  double y;
+  uint64_t operations;  // What the drag's source allows.
+  uint64_t modifiers;
+};
+static_assert(sizeof(DragTargetMsg) == 64);
+
+// state: kDragCarried (the embedder's AppKit drag runs the window's drag
+// now), kDragEnded (that drag ended with `operation` at x, y) or
+// kDragCancelled (the user cancelled it, Escape).
+enum : uint32_t { kDragCarried = 1, kDragEnded = 2, kDragCancelled = 3 };
+struct DragSourceMsg {
+  mach_msg_header_t header;
+  uint32_t windowId;
+  uint32_t state;
+  double x;
+  double y;
+  uint64_t operation;
+  uint64_t modifiers;
+};
+static_assert(sizeof(DragSourceMsg) == 64);
+
+// image: imageLength bytes of PNG at the window's backing scale, drawn at
+// image{X, Y, Width, Height} when the pointer is at pointer{X, Y}.
+// pasteboard: the named pasteboard with the drag's data (UTF-8).
+struct DragStartedMsg {
+  mach_msg_header_t header;
+  mach_msg_body_t body;
+  mach_msg_ool_descriptor_t image;
+  uint32_t windowId;
+  uint32_t imageLength;
+  uint32_t pasteboardLength;
+  double imageX;
+  double imageY;
+  double imageWidth;
+  double imageHeight;
+  double pointerX;
+  double pointerY;
+  uint64_t operations;
+  char pasteboard[128];
+};
+static_assert(offsetof(DragStartedMsg, windowId) == 44);
+static_assert(offsetof(DragStartedMsg, imageX) == 56);
+static_assert(sizeof(DragStartedMsg) == 240);
+
+enum : uint32_t { kDragStatusEnded = 1 };
+struct DragStatusMsg {
+  mach_msg_header_t header;
+  uint32_t windowId;
+  uint32_t flags;  // kDragStatusEnded: the window's own drag is over.
+  uint64_t operation;
+};
+static_assert(sizeof(DragStatusMsg) == 40);
+
 union ReceiveBuffer {
   mach_msg_header_t header;
   uint8_t bytes[sizeof(CommandMsg) + 512];
@@ -581,6 +798,9 @@ class Channel final {
   bool IsEmbedDocumentWindow(nsIWidget* aWidget);
   // Whether one of the embedder's panes shows a browser window.
   bool HasBrowserWindow() const;
+  // A drag starts in aView (ZenEmbedHost::BeginDrag): false when aView is not
+  // an embedded window's.
+  bool BeginDrag(NSView* aView, NSArray<NSDraggingItem*>* aItems);
 
  private:
   struct Entry {
@@ -640,6 +860,33 @@ class Channel final {
   void SendScriptResult(uint32_t aWindowId, uint32_t aRequestId,
                         uint32_t aStatus, const nsACString& aText);
 
+  // Drags (see the comment at the top).
+  // The window's own drag: the embedder's mouse moves it (DragMouse), its
+  // release drops it, Escape or the embedder's deactivation cancels it, and
+  // once the embedder carries it as its own AppKit drag, DragSource ends it.
+  struct Drag {
+    ~Drag();
+    uint32_t mWindowId = 0;
+    nsCocoaWindow* mWidget = nullptr;  // Gone with the window (RemoveWindow).
+    ChildView* mView = nil;            // [strong]
+    ZenEmbedDragInfo* mInfo = nil;     // [strong]
+    bool mOver = false;     // draggingEntered: sent, and no exit since.
+    bool mCarried = false;  // The embedder's AppKit drag runs it now.
+    NSDragOperation mOperation = NSDragOperationNone;  // The last answer.
+    double mMovedAt = 0;    // systemUptime of the last move.
+    nsCOMPtr<nsITimer> mTimer;  // Repeats dragover while the pointer rests.
+  };
+  void DragMouse(NSEvent* aEvent, NSPoint aLocation);
+  void DragTick();
+  void CancelDrag(NSEvent* aEvent);
+  void EndDrag(NSPoint aLocation, NSDragOperation aOperation, NSEvent* aEvent);
+  void OnDragTarget(const DragTargetMsg& aMsg);
+  void OnDragSource(const DragSourceMsg& aMsg);
+  void SendDragStarted(const Entry& aEntry, NSDraggingItem* aItem,
+                       NSPoint aPointer, NSString* aPasteboard);
+  void SendDragStatus(uint32_t aWindowId, NSDragOperation aOperation,
+                      uint32_t aFlags);
+
   mach_port_t mPeer = MACH_PORT_NULL;
   mach_port_t mReceive = MACH_PORT_NULL;
   dispatch_queue_t mQueue = nullptr;
@@ -653,6 +900,15 @@ class Channel final {
   nsTArray<Entry> mWindows;
   uint32_t mNextWindowId = 1;
   RefPtr<ChromeObserver> mObserver;
+  UniquePtr<Drag> mDrag;
+  // An AppKit drag over a pane (DragTarget): its window and NSDraggingInfo.
+  uint32_t mTargetWindow = 0;
+  ZenEmbedDragInfo* mTargetInfo = nil;  // [strong]
+  NSDragOperation mTargetOperation = NSDragOperationNone;
+  NSInteger mDragSequence = 0;
+  // Where the embedder's pointer last was over a window (window coordinates).
+  uint32_t mMouseWindow = 0;
+  NSPoint mMouse = NSZeroPoint;
 
   // Read on the receive queue (Release), written on the main thread.
   Mutex mExportersMutex MOZ_UNANNOTATED;
@@ -1194,6 +1450,18 @@ void Channel::HandleMessage(const ReceiveBuffer& aBuffer) {
       });
       break;
     }
+    case kMsgDragTarget:
+      if (size >= sizeof(DragTargetMsg)) {
+        DragTargetMsg msg = reinterpret_cast<const DragTargetMsg&>(aBuffer);
+        OnMain("ZenEmbed::DragTarget", [this, msg] { OnDragTarget(msg); });
+      }
+      break;
+    case kMsgDragSource:
+      if (size >= sizeof(DragSourceMsg)) {
+        DragSourceMsg msg = reinterpret_cast<const DragSourceMsg&>(aBuffer);
+        OnMain("ZenEmbed::DragSource", [this, msg] { OnDragSource(msg); });
+      }
+      break;
     default:
       EMBED_LOG("unknown message %d", header.msgh_id);
       break;
@@ -1412,6 +1680,16 @@ void Channel::RemoveWindow(nsCocoaWindow* aWindow) {
       mExporters.RemoveElementsBy(
           [&](const auto& pair) { return pair.first == entry.mId; });
     }
+    if (mDrag && mDrag->mWindowId == entry.mId) {
+      // Gone with its window; the next press ends Gecko's stale session.
+      SendDragStatus(entry.mId, NSDragOperationNone, kDragStatusEnded);
+      mDrag = nullptr;
+    }
+    if (mTargetWindow == entry.mId) {
+      [mTargetInfo release];
+      mTargetInfo = nil;
+      mTargetWindow = 0;
+    }
     mWindows.RemoveElementAt(i);
     return;
   }
@@ -1533,6 +1811,12 @@ void Channel::OnMouse(const MouseMsg& aMsg) {
     grip->DispatchInputEvent(&event);
     return;
   }
+  if (mDrag && mDrag->mWindowId == entry->mId && !mDrag->mCarried &&
+      aMsg.button < 0) {
+    // No button is held any more, so the release that ended the drag was
+    // lost: the drag is over (AppKit's would be too).
+    CancelDrag(nil);
+  }
   if (aMsg.kind == kMouseMove && aMsg.button < 0) {
     // AppKit derives hover positions from the real cursor
     // (nsCocoaUtils::ScreenLocationForEvent), so dispatch hover directly.
@@ -1579,6 +1863,24 @@ void Channel::OnMouse(const MouseMsg& aMsg) {
                          pressure:aMsg.kind == kMouseUp ? 0.0 : 1.0];
   if (!event) {
     return;
+  }
+  mMouseWindow = entry->mId;
+  mMouse = location;
+  if (mDrag && mDrag->mWindowId == entry->mId) {
+    // The window's drag has the pointer (the embedder's AppKit drag, once it
+    // carries it): AppKit sends no mouse events to a view while it drags.
+    if (!mDrag->mCarried && (type == NSEventTypeLeftMouseDragged ||
+                             type == NSEventTypeLeftMouseUp)) {
+      DragMouse(event, location);
+      return;
+    }
+    if (type != NSEventTypeLeftMouseDown &&
+        type != NSEventTypeRightMouseDown &&
+        type != NSEventTypeOtherMouseDown) {
+      return;
+    }
+    // A press: whatever ended the drag never came.
+    CancelDrag(nil);
   }
   // Straight to the view: [NSApp sendEvent:] would activate Nightly and take
   // focus away from the embedder.
@@ -1758,6 +2060,26 @@ void Channel::OnKey(const KeyMsg& aMsg) {
   if (!event) {
     return;
   }
+  if (mDrag && mDrag->mWindowId == entry->mId && !mDrag->mCarried) {
+    // While AppKit drags, the keys are the drag's: Escape cancels it, the
+    // modifiers choose its operation (Option copies), the window gets none.
+    if (aMsg.down == 1 && aMsg.keyCode == kEscapeKeyCode) {
+      CancelDrag(event);
+    } else if (flagsChanged) {
+      NSPoint at = mDrag->mInfo.draggingLocation;
+      DragMouse([NSEvent mouseEventWithType:NSEventTypeLeftMouseDragged
+                                   location:at
+                              modifierFlags:NSEventModifierFlags(aMsg.modifiers)
+                                  timestamp:NSProcessInfo.processInfo.systemUptime
+                               windowNumber:window.windowNumber
+                                    context:nil
+                                eventNumber:0
+                                 clickCount:0
+                                   pressure:1.0],
+                at);
+    }
+    return;
+  }
   // Straight to Gecko's ChildView, which runs the regular path
   // (TextInputHandler, native key bindings); the window is never key, so
   // AppKit would not route the event there. Like NSApplication, offer
@@ -1882,6 +2204,11 @@ void Channel::OnFocus(const FocusMsg& aMsg) {
   Entry* entry = FindEntry(aMsg.windowId);
   if (!entry) {
     return;
+  }
+  if (!aMsg.focused && mDrag && mDrag->mWindowId == entry->mId &&
+      !mDrag->mCarried) {
+    // The embedder's window went inactive (Command-Tab): so does the drag.
+    CancelDrag(nil);
   }
   if (nsIWidgetListener* listener = entry->mWindow->GetWidgetListener()) {
     if (aMsg.focused) {
@@ -2251,6 +2578,418 @@ void Channel::OnDownloadCancel(uint32_t aWindowId, uint32_t aDialogId) {
       "zen-embed-download-cancel", data.get());
 }
 
+// ── Drags ──
+
+Channel::Drag::~Drag() {
+  if (mTimer) {
+    mTimer->Cancel();
+  }
+  [mView release];
+  [mInfo release];
+}
+
+// Named pasteboards are the user's, shared by every process: this one is this
+// runtime's.
+static NSString* DragPasteboardName() {
+  return [NSString
+      stringWithFormat:@"org.mozilla.nightly.embed-drag.%d", int(getpid())];
+}
+
+bool Channel::BeginDrag(NSView* aView, NSArray<NSDraggingItem*>* aItems) {
+  Entry* entry = nullptr;
+  for (auto& candidate : mWindows) {
+    if (candidate.mWindow &&
+        candidate.mWindow->GetNativeData(NS_NATIVE_WIDGET) == aView) {
+      entry = &candidate;
+      break;
+    }
+  }
+  NSWindow* window = aView.window;
+  if (!entry || !window || !aItems.count) {
+    return false;
+  }
+  // Gecko runs one drag at a time, so one still here lost its session.
+  mDrag = nullptr;
+
+  // The drag's data as AppKit's drag pasteboard would have it (promised by
+  // the view): the drop reads it there (globalDragPboard), and so does the
+  // embedder for a drag it carries on.
+  NSString* name = DragPasteboardName();
+  NSPasteboard* pasteboard = [NSPasteboard pasteboardWithName:name];
+  [pasteboard clearContents];
+  NSMutableArray* writers = [NSMutableArray arrayWithCapacity:aItems.count];
+  for (NSDraggingItem* item in aItems) {
+    [writers addObject:item.item];
+  }
+  [pasteboard writeObjects:writers];
+  [globalDragPboard release];
+  globalDragPboard = [pasteboard retain];
+
+  NSSize size = [window contentRectForFrameRect:window.frame].size;
+  NSPoint press = gLastDragMouseDownEvent
+                      ? gLastDragMouseDownEvent.locationInWindow
+                      : mMouse;
+  auto drag = MakeUnique<Drag>();
+  drag->mWindowId = entry->mId;
+  drag->mWidget = entry->mWindow;
+  drag->mView = [(ChildView*)aView retain];
+  drag->mInfo = [[ZenEmbedDragInfo alloc] initWithWindow:window
+                                               pasteboard:pasteboard
+                                                   source:aView
+                                               operations:NSDragOperationEvery
+                                                 sequence:++mDragSequence];
+  [drag->mInfo moveTo:mMouseWindow == entry->mId ? mMouse : press
+                event:gLastDragMouseDownEvent];
+  drag->mMovedAt = NSProcessInfo.processInfo.systemUptime;
+  NS_NewTimerWithCallback(
+      getter_AddRefs(drag->mTimer),
+      [](nsITimer*) {
+        @autoreleasepool {
+          if (sChannel) {
+            sChannel->DragTick();
+          }
+        }
+      },
+      kDragRepeatMs, nsITimer::TYPE_REPEATING_SLACK, "ZenEmbed::DragOver"_ns);
+  mDrag = std::move(drag);
+  EMBED_LOG("drag in window %u", entry->mId);
+  SendDragStarted(*entry, aItems.firstObject,
+                  NSMakePoint(press.x, size.height - press.y), name);
+  return true;
+}
+
+// The pointer moved (or let go: aEvent a mouse up) to aLocation during the
+// window's own drag: AppKit's destination calls on the window's view, as if
+// the window were on screen under the pointer.
+void Channel::DragMouse(NSEvent* aEvent, NSPoint aLocation) {
+  Drag* drag = mDrag.get();
+  ChildView* view = [[drag->mView retain] autorelease];
+  ZenEmbedDragInfo* info = [[drag->mInfo retain] autorelease];
+  // Gecko may have ended the session itself (a stale one): the drag is over.
+  nsCOMPtr<nsIDragService> service =
+      do_GetService("@mozilla.org/widget/dragservice;1");
+  nsCOMPtr<nsIDragSession> session;
+  if (service) {
+    service->GetCurrentSession(drag->mWidget, getter_AddRefs(session));
+  }
+  if (!session) {
+    SendDragStatus(drag->mWindowId, NSDragOperationNone, kDragStatusEnded);
+    mDrag = nullptr;
+    return;
+  }
+  NSWindow* window = view.window;
+  NSSize size = [window contentRectForFrameRect:window.frame].size;
+  const bool inside = aLocation.x >= 0 && aLocation.y >= 0 &&
+                      aLocation.x < size.width && aLocation.y < size.height;
+  const bool release = aEvent.type == NSEventTypeLeftMouseUp;
+  [info moveTo:aLocation event:aEvent];
+  drag->mMovedAt = NSProcessInfo.processInfo.systemUptime;
+  if (!release) {
+    // As draggingSession:movedToPoint: does (the drag popup, its image).
+    NSPoint screen = [window convertPointToScreen:aLocation];
+    session->DragMoved(int32_t(screen.x), int32_t(screen.y));
+    if (mDrag.get() != drag) {
+      return;
+    }
+  }
+  if (inside) {
+    NSDragOperation operation = drag->mOver ? [view draggingUpdated:info]
+                                            : [view draggingEntered:info];
+    if (mDrag.get() != drag) {
+      return;
+    }
+    drag->mOver = true;
+    drag->mOperation = operation;
+  } else if (drag->mOver) {
+    drag->mOver = false;
+    drag->mOperation = NSDragOperationNone;
+    [view draggingExited:info];
+    if (mDrag.get() != drag) {
+      return;
+    }
+  }
+  if (!release) {
+    SendDragStatus(drag->mWindowId, drag->mOperation, 0);
+    return;
+  }
+  // The drop, as AppKit makes it: only where the last update accepted one.
+  NSDragOperation operation = NSDragOperationNone;
+  if (drag->mOver) {
+    drag->mOver = false;
+    if (drag->mOperation == NSDragOperationNone) {
+      [view draggingExited:info];
+    } else if ([view performDragOperation:info]) {
+      operation = drag->mOperation;
+    }
+    if (mDrag.get() != drag) {
+      return;
+    }
+  }
+  EndDrag(aLocation, operation, aEvent);
+  // The press is over for the view too; after a drag its mouseUp: only
+  // forgets it.
+  [view mouseUp:aEvent];
+}
+
+void Channel::DragTick() {
+  Drag* drag = mDrag.get();
+  if (!drag || drag->mCarried || !drag->mOver ||
+      NSProcessInfo.processInfo.systemUptime - drag->mMovedAt <
+          kDragRepeatMs / 1000.0) {
+    return;
+  }
+  ZenEmbedDragInfo* info = [[drag->mInfo retain] autorelease];
+  DragMouse(info.zenEmbedEvent, info.draggingLocation);
+}
+
+// aEvent: what cancelled it (Escape: the user did), else the last move.
+void Channel::CancelDrag(NSEvent* aEvent) {
+  Drag* drag = mDrag.get();
+  ZenEmbedDragInfo* info = [[drag->mInfo retain] autorelease];
+  if (drag->mOver) {
+    drag->mOver = false;
+    ChildView* view = [[drag->mView retain] autorelease];
+    [view draggingExited:info];
+    if (mDrag.get() != drag) {
+      return;
+    }
+  }
+  EndDrag(info.draggingLocation, NSDragOperationNone,
+          aEvent ? aEvent : info.zenEmbedEvent);
+}
+
+void Channel::EndDrag(NSPoint aLocation, NSDragOperation aOperation,
+                      NSEvent* aEvent) {
+  ChildView* view = [[mDrag->mView retain] autorelease];
+  uint32_t windowId = mDrag->mWindowId;
+  mDrag = nullptr;
+  EMBED_LOG("drag in window %u ended: operation %lu", windowId,
+            (unsigned long)aOperation);
+  [view endDragSessionAt:aLocation operation:aOperation event:aEvent];
+  SendDragStatus(windowId, aOperation, kDragStatusEnded);
+}
+
+void Channel::OnDragSource(const DragSourceMsg& aMsg) {
+  Drag* drag = mDrag.get();
+  if (!drag || drag->mWindowId != aMsg.windowId) {
+    return;
+  }
+  NSWindow* window = drag->mView.window;
+  NSSize size = [window contentRectForFrameRect:window.frame].size;
+  NSPoint location = NSMakePoint(aMsg.x, size.height - aMsg.y);
+  if (aMsg.state == kDragCarried) {
+    // The embedder's AppKit drag has the pointer now, outside the pane.
+    if (drag->mOver) {
+      drag->mOver = false;
+      ChildView* view = [[drag->mView retain] autorelease];
+      [view draggingExited:[[drag->mInfo retain] autorelease]];
+      if (mDrag.get() != drag) {
+        return;
+      }
+    }
+    drag->mCarried = true;
+    return;
+  }
+  if (aMsg.state != kDragEnded && aMsg.state != kDragCancelled) {
+    return;
+  }
+  // What ended the drag, as AppKit's end of a dragging session sees it:
+  // Escape for a cancelled one.
+  NSEvent* event =
+      aMsg.state == kDragCancelled
+          ? [NSEvent keyEventWithType:NSEventTypeKeyDown
+                             location:location
+                        modifierFlags:NSEventModifierFlags(aMsg.modifiers)
+                            timestamp:NSProcessInfo.processInfo.systemUptime
+                         windowNumber:window.windowNumber
+                              context:nil
+                           characters:@"\x1b"
+          charactersIgnoringModifiers:@"\x1b"
+                            isARepeat:NO
+                              keyCode:kEscapeKeyCode]
+          : [NSEvent mouseEventWithType:NSEventTypeLeftMouseUp
+                               location:location
+                          modifierFlags:NSEventModifierFlags(aMsg.modifiers)
+                              timestamp:NSProcessInfo.processInfo.systemUptime
+                           windowNumber:window.windowNumber
+                                context:nil
+                            eventNumber:0
+                             clickCount:1
+                               pressure:0.0];
+  EndDrag(location,
+          aMsg.state == kDragCancelled ? NSDragOperationNone
+                                       : NSDragOperation(aMsg.operation),
+          event);
+}
+
+void Channel::OnDragTarget(const DragTargetMsg& aMsg) {
+  Entry* entry = FindEntry(aMsg.windowId);
+  if (!entry) {
+    return;
+  }
+  ChildView* view =
+      (ChildView*)entry->mWindow->GetNativeData(NS_NATIVE_WIDGET);
+  NSWindow* window = (NSWindow*)entry->mWindow->GetNativeData(NS_NATIVE_WINDOW);
+  if (!view || !window) {
+    return;
+  }
+  [[view retain] autorelease];
+  const uint32_t windowId = entry->mId;
+  NSSize size = [window contentRectForFrameRect:window.frame].size;
+  NSPoint location = NSMakePoint(aMsg.x, size.height - aMsg.y);
+  NSEvent* event = [NSEvent
+      mouseEventWithType:aMsg.phase == kDragDrop ? NSEventTypeLeftMouseUp
+                                                 : NSEventTypeLeftMouseDragged
+                location:location
+           modifierFlags:NSEventModifierFlags(aMsg.modifiers)
+               timestamp:NSProcessInfo.processInfo.systemUptime
+            windowNumber:window.windowNumber
+                 context:nil
+             eventNumber:0
+              clickCount:aMsg.phase == kDragDrop ? 1 : 0
+                pressure:aMsg.phase == kDragDrop ? 0.0 : 1.0];
+  NSDragOperation operation = NSDragOperationNone;
+  if (!mTargetInfo || mTargetWindow != windowId || aMsg.phase == kDragEnter) {
+    if (aMsg.phase == kDragExit) {
+      return;
+    }
+    // A drag comes over the window (an exit from another may have been lost).
+    // Its data is on the system's drag pasteboard, as AppKit's would be.
+    [mTargetInfo release];
+    mTargetInfo = [[ZenEmbedDragInfo alloc]
+        initWithWindow:window
+            pasteboard:[NSPasteboard pasteboardWithName:NSPasteboardNameDrag]
+                source:mDrag && mDrag->mWindowId == windowId ? mDrag->mView
+                                                             : nil
+            operations:NSDragOperation(aMsg.operations)
+              sequence:++mDragSequence];
+    mTargetWindow = windowId;
+    ZenEmbedDragInfo* info = [[mTargetInfo retain] autorelease];
+    [info moveTo:location event:event];
+    operation = [view draggingEntered:info];
+    mTargetOperation = operation;
+    if (aMsg.phase == kDragEnter) {
+      SendDragStatus(windowId, operation, 0);
+      return;
+    }
+  }
+  ZenEmbedDragInfo* info = [[mTargetInfo retain] autorelease];
+  [info moveTo:location event:event];
+  if (aMsg.phase == kDragOver) {
+    operation = [view draggingUpdated:info];
+    if (info == mTargetInfo) {
+      mTargetOperation = operation;
+    }
+    SendDragStatus(windowId, operation, 0);
+    return;
+  }
+  // An exit or a drop: this drag is over here.
+  NSDragOperation accepted = info == mTargetInfo ? mTargetOperation
+                                                 : NSDragOperationNone;
+  if (info == mTargetInfo) {
+    [mTargetInfo release];
+    mTargetInfo = nil;
+    mTargetWindow = 0;
+  }
+  if (aMsg.phase == kDragDrop && accepted != NSDragOperationNone) {
+    operation = [view performDragOperation:info] ? accepted
+                                                 : NSDragOperationNone;
+  } else {
+    [view draggingExited:info];
+  }
+  SendDragStatus(windowId, operation, 0);
+}
+
+void Channel::SendDragStarted(const Entry& aEntry, NSDraggingItem* aItem,
+                              NSPoint aPointer, NSString* aPasteboard) {
+  if (!mAuthenticated) {
+    return;
+  }
+  // The drag image, as AppKit would show it: its frame is in the view's
+  // (flipped) coordinates, the window's points from its top left.
+  NSRect frame = aItem.draggingFrame;
+  NSImage* image = nil;
+  for (NSDraggingImageComponent* component in aItem.imageComponents) {
+    if ([component.contents isKindOfClass:[NSImage class]]) {
+      image = component.contents;
+      break;
+    }
+  }
+  NSData* png = nil;
+  const CGFloat scale = aEntry.mWindow->BackingScaleFactor();
+  if (image && frame.size.width >= 1 && frame.size.height >= 1) {
+    NSBitmapImageRep* rep = [[[NSBitmapImageRep alloc]
+        initWithBitmapDataPlanes:nullptr
+                      pixelsWide:NSInteger(std::ceil(frame.size.width * scale))
+                      pixelsHigh:NSInteger(std::ceil(frame.size.height * scale))
+                   bitsPerSample:8
+                 samplesPerPixel:4
+                        hasAlpha:YES
+                        isPlanar:NO
+                  colorSpaceName:NSDeviceRGBColorSpace
+                     bytesPerRow:0
+                    bitsPerPixel:0] autorelease];
+    rep.size = frame.size;
+    [NSGraphicsContext saveGraphicsState];
+    NSGraphicsContext.currentContext =
+        [NSGraphicsContext graphicsContextWithBitmapImageRep:rep];
+    [image drawInRect:NSMakeRect(0, 0, frame.size.width, frame.size.height)];
+    [NSGraphicsContext restoreGraphicsState];
+    png = [rep representationUsingType:NSBitmapImageFileTypePNG
+                            properties:@{}];
+  }
+  // Out of line, in pages of its own (as SendOutOfLine).
+  vm_address_t address = 0;
+  const uint32_t length = uint32_t(png.length);
+  if (length > 0) {
+    if (vm_allocate(mach_task_self(), &address, length, VM_FLAGS_ANYWHERE) !=
+        KERN_SUCCESS) {
+      return;
+    }
+    memcpy(reinterpret_cast<void*>(address), png.bytes, length);
+  }
+  DragStartedMsg msg{};
+  msg.header.msgh_bits = MACH_MSGH_BITS_SET(MACH_MSG_TYPE_COPY_SEND, 0, 0,
+                                            MACH_MSGH_BITS_COMPLEX);
+  msg.header.msgh_id = kMsgDragStarted;
+  msg.body.msgh_descriptor_count = 1;
+  msg.image.address = reinterpret_cast<void*>(address);
+  msg.image.size = length;
+  msg.image.deallocate = length > 0;
+  msg.image.copy = MACH_MSG_VIRTUAL_COPY;
+  msg.image.type = MACH_MSG_OOL_DESCRIPTOR;
+  msg.windowId = aEntry.mId;
+  msg.imageLength = length;
+  msg.imageX = frame.origin.x;
+  msg.imageY = frame.origin.y;
+  msg.imageWidth = frame.size.width;
+  msg.imageHeight = frame.size.height;
+  msg.pointerX = aPointer.x;
+  msg.pointerY = aPointer.y;
+  msg.operations = NSDragOperationEvery;
+  const char* name = aPasteboard.UTF8String;
+  msg.pasteboardLength =
+      uint32_t(std::min(strlen(name), sizeof(msg.pasteboard)));
+  memcpy(msg.pasteboard, name, msg.pasteboardLength);
+  if (!Send(&msg.header, sizeof(msg), 2000)) {
+    EMBED_LOG("drag of window %u could not be announced", aEntry.mId);
+  }
+}
+
+void Channel::SendDragStatus(uint32_t aWindowId, NSDragOperation aOperation,
+                             uint32_t aFlags) {
+  if (!mAuthenticated) {
+    return;
+  }
+  DragStatusMsg msg{};
+  msg.header.msgh_bits = MACH_MSGH_BITS_SET(MACH_MSG_TYPE_COPY_SEND, 0, 0, 0);
+  msg.header.msgh_id = kMsgDragStatus;
+  msg.windowId = aWindowId;
+  msg.flags = aFlags;
+  msg.operation = aOperation;
+  Send(&msg.header, sizeof(msg));
+}
+
 }  // namespace
 
 bool ZenEmbedHost::IsEnabled() {
@@ -2275,6 +3014,10 @@ void ZenEmbedHost::CursorChanged(nsCocoaWindow* aWindow, int aCursor) {
   if (sChannel) {
     sChannel->CursorChanged(aWindow, uint32_t(aCursor));
   }
+}
+
+bool ZenEmbedHost::BeginDrag(NSView* aView, NSArray<NSDraggingItem*>* aItems) {
+  return sChannel && sChannel->BeginDrag(aView, aItems);
 }
 
 ZenEmbedHost::AutoEmbedScope::AutoEmbedScope(nsIURI* aUrl)

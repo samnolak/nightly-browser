@@ -1,5 +1,5 @@
 diff --git a/widget/cocoa/nsCocoaWindow.mm b/widget/cocoa/nsCocoaWindow.mm
-index fe4c27544a29b8bbf0b99331c9e1bce3038b8e81..16490118b5079f066afaf53185454a742f06a332 100644
+index fe4c27544a29b8bbf0b99331c9e1bce3038b8e81..1389d798e907dd00b47c6da294f71206d9505489 100644
 --- a/widget/cocoa/nsCocoaWindow.mm
 +++ b/widget/cocoa/nsCocoaWindow.mm
 @@ -72,6 +72,7 @@
@@ -159,7 +159,62 @@ index fe4c27544a29b8bbf0b99331c9e1bce3038b8e81..16490118b5079f066afaf53185454a74
  void nsCocoaWindow::UpdateWindowDraggingRegion(
      const LayoutDeviceIntRegion& aRegion) {
    // mChildView returns YES from mouseDownCanMoveWindow, so we need to put
-@@ -3908,7 +4030,9 @@ - (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)sender {
+@@ -3780,6 +3902,11 @@ - (NSDragOperation)doDragAction:(EventMessage)aMessage sender:(id)aSender {
+     if (!mDragService) return NSDragOperationNone;
+   }
+ 
++  // zen/embed: the embedder's mouse event moves an embedded window's drag.
++  NSEvent* currentEvent =
++      [aSender conformsToProtocol:@protocol(ZenEmbedDraggingInfo)]
++          ? [(id<ZenEmbedDraggingInfo>)aSender zenEmbedEvent]
++          : [NSApp currentEvent];
+   nsCOMPtr<nsIDragSession> dragSession;
+   if (aMessage == eDragEnter) {
+     nsIWidget* widget = mGeckoChild;
+@@ -3793,7 +3920,7 @@ - (NSDragOperation)doDragAction:(EventMessage)aMessage sender:(id)aSender {
+       // fire the drag event at the source. Just ignore whether it was
+       // cancelled or not as there isn't actually a means to stop the drag
+       dragSession->FireDragEventAtSource(
+-          eDrag, nsCocoaUtils::ModifiersForEvent([NSApp currentEvent]));
++          eDrag, nsCocoaUtils::ModifiersForEvent(currentEvent));
+       dragSession->SetCanDrop(false);
+     } else if (aMessage == eDrop) {
+       // We make the assumption that the dragOver handlers have correctly set
+@@ -3806,13 +3933,13 @@ - (NSDragOperation)doDragAction:(EventMessage)aMessage sender:(id)aSender {
+         dragSession->GetSourceNode(getter_AddRefs(sourceNode));
+         if (!sourceNode) {
+           dragSession->EndDragSession(
+-              false, nsCocoaUtils::ModifiersForEvent([NSApp currentEvent]));
++              false, nsCocoaUtils::ModifiersForEvent(currentEvent));
+         }
+         return NSDragOperationNone;
+       }
+     }
+ 
+-    unsigned int modifierFlags = [[NSApp currentEvent] modifierFlags];
++    unsigned int modifierFlags = [currentEvent modifierFlags];
+     uint32_t action = nsIDragService::DRAGDROP_ACTION_MOVE;
+     // force copy = option, alias = cmd-option, default is move
+     if (modifierFlags & NSEventModifierFlagOption) {
+@@ -3826,7 +3953,7 @@ - (NSDragOperation)doDragAction:(EventMessage)aMessage sender:(id)aSender {
+ 
+   // set up gecko event
+   WidgetDragEvent geckoEvent(true, aMessage, mGeckoChild);
+-  nsCocoaUtils::InitInputEvent(geckoEvent, [NSApp currentEvent]);
++  nsCocoaUtils::InitInputEvent(geckoEvent, currentEvent);
+ 
+   // Use our own coordinates in the gecko event.
+   // Convert event from gecko global coords to gecko view coords.
+@@ -3867,7 +3994,7 @@ - (NSDragOperation)doDragAction:(EventMessage)aMessage sender:(id)aSender {
+           // since we're done with it for now (until the user
+           // drags back into mozilla).
+           dragSession->EndDragSession(
+-              false, nsCocoaUtils::ModifiersForEvent([NSApp currentEvent]));
++              false, nsCocoaUtils::ModifiersForEvent(currentEvent));
+         }
+         break;
+       }
+@@ -3908,7 +4035,9 @@ - (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)sender {
  // NSDraggingDestination
  - (NSDragOperation)draggingUpdated:(id<NSDraggingInfo>)sender {
    MOZ_LOG(sCocoaLog, LogLevel::Info, ("ChildView draggingUpdated: entered\n"));
@@ -170,7 +225,7 @@ index fe4c27544a29b8bbf0b99331c9e1bce3038b8e81..16490118b5079f066afaf53185454a74
  }
  
  // NSDraggingDestination
-@@ -3924,6 +4048,9 @@ - (void)draggingExited:(id<NSDraggingInfo>)sender {
+@@ -3924,6 +4053,9 @@ - (void)draggingExited:(id<NSDraggingInfo>)sender {
  - (BOOL)performDragOperation:(id<NSDraggingInfo>)sender {
    nsAutoRetainCocoaObject kungFuDeathGrip(self);
    BOOL handled = [self doDragAction:eDrop sender:sender] != NSDragOperationNone;
@@ -180,7 +235,64 @@ index fe4c27544a29b8bbf0b99331c9e1bce3038b8e81..16490118b5079f066afaf53185454a74
    NS_IF_RELEASE(mDragService);
    return handled;
  }
-@@ -4878,6 +5005,11 @@ - (BOOL)wantsBestResolutionOpenGLSurface {
+@@ -3944,15 +4076,26 @@ - (BOOL)ignoreModifierKeysForDraggingSession:(NSDraggingSession*)session {
+ - (void)draggingSession:(NSDraggingSession*)aSession
+            endedAtPoint:(NSPoint)aPoint
+               operation:(NSDragOperation)aOperation {
++  // Set the dragend point from the current mouse location
++  // FIXME(emilio): Weird that we wouldn't use aPoint instead? Seems to work
++  // locally as well...
++  [self endDragSessionAt:nsCocoaUtils::ConvertPointFromScreen(
++                             [self window], [NSEvent mouseLocation])
++               operation:aOperation
++                   event:[NSApp currentEvent]];
++}
++
++- (void)endDragSessionAt:(NSPoint)aLocation
++               operation:(NSDragOperation)aOperation
++                   event:(NSEvent*)aEvent {
+   NS_OBJC_BEGIN_TRY_IGNORE_BLOCK;
+ 
+ #ifdef NIGHTLY_BUILD
+   MOZ_RELEASE_ASSERT(NS_IsMainThread());
+ #endif
+ 
+-  NSEvent* currentEvent = [NSApp currentEvent];
+-  gUserCancelledDrag = ([currentEvent type] == NSEventTypeKeyDown &&
+-                        [currentEvent keyCode] == kVK_Escape);
++  gUserCancelledDrag = ([aEvent type] == NSEventTypeKeyDown &&
++                        [aEvent keyCode] == kVK_Escape);
+ 
+   if (!mDragService) {
+     CallGetService(kDragServiceContractID, &mDragService);
+@@ -3962,15 +4105,7 @@ - (void)draggingSession:(NSDraggingSession*)aSession
+   nsCOMPtr<nsIDragSession> session =
+       mDragService->GetCurrentSession(mGeckoChild);
+   if (session) {
+-    // Set the dragend point from the current mouse location
+-    // FIXME(emilio): Weird that we wouldn't use aPoint instead? Seems to work
+-    // locally as well...
+-    // NSPoint pnt = aPoint;
+-    NSPoint pnt = [NSEvent mouseLocation];
+-    NSPoint locationInWindow =
+-        nsCocoaUtils::ConvertPointFromScreen([self window], pnt);
+-    FlipCocoaScreenCoordinate(pnt);
+-    LayoutDeviceIntPoint pt = [self convertWindowCoordinates:locationInWindow];
++    LayoutDeviceIntPoint pt = [self convertWindowCoordinates:aLocation];
+     session->SetDragEndPoint(pt.x, pt.y);
+ 
+     // XXX: dropEffect should be updated per |aOperation|.
+@@ -3987,8 +4122,7 @@ - (void)draggingSession:(NSDraggingSession*)aSession
+       }
+     }
+ 
+-    session->EndDragSession(true,
+-                            nsCocoaUtils::ModifiersForEvent(currentEvent));
++    session->EndDragSession(true, nsCocoaUtils::ModifiersForEvent(aEvent));
+   }
+ 
+   session = nullptr;
+@@ -4878,6 +5012,11 @@ - (BOOL)wantsBestResolutionOpenGLSurface {
  
    nsIWidget* windowWidget = [(WindowDelegate*)delegate geckoWidget];
    if (!windowWidget) return YES;
@@ -192,7 +304,7 @@ index fe4c27544a29b8bbf0b99331c9e1bce3038b8e81..16490118b5079f066afaf53185454a74
  
    NSWindow* topLevelWindow = nil;
  
-@@ -4978,6 +5110,10 @@ - (BOOL)wantsBestResolutionOpenGLSurface {
+@@ -4978,6 +5117,10 @@ - (BOOL)wantsBestResolutionOpenGLSurface {
  nsCocoaWindow::~nsCocoaWindow() {
    NS_OBJC_BEGIN_TRY_IGNORE_BLOCK;
  
@@ -203,7 +315,7 @@ index fe4c27544a29b8bbf0b99331c9e1bce3038b8e81..16490118b5079f066afaf53185454a74
    RemoveAllChildren();
    if (mWindow && mWindowMadeHere) {
      CancelAllTransitions();
-@@ -5052,6 +5188,8 @@ DesktopToLayoutDeviceScale ParentBackingScaleFactor(nsIWidget* aParent) {
+@@ -5052,6 +5195,8 @@ DesktopToLayoutDeviceScale ParentBackingScaleFactor(nsIWidget* aParent) {
    mAlwaysOnTop = aInitData.mAlwaysOnTop;
    mIsAlert = aInitData.mIsAlert;
    mIsInitialFullscreenSuppressed = aInitData.mIsInitialFullscreenSuppressed;
@@ -212,7 +324,7 @@ index fe4c27544a29b8bbf0b99331c9e1bce3038b8e81..16490118b5079f066afaf53185454a74
  
    nsresult rv = CreateNativeWindow(nsCocoaUtils::GeckoRectToCocoaRect(aRect),
                                     mBorderStyle, false, aInitData.mIsPrivate);
-@@ -5071,6 +5209,10 @@ DesktopToLayoutDeviceScale ParentBackingScaleFactor(nsIWidget* aParent) {
+@@ -5071,6 +5216,10 @@ DesktopToLayoutDeviceScale ParentBackingScaleFactor(nsIWidget* aParent) {
        NativeLayerRootCA::CreateForCALayer(mChildView.rootCALayer);
    mNativeLayerRoot->SetBackingScale(BackingScaleFactor());
  
@@ -223,7 +335,7 @@ index fe4c27544a29b8bbf0b99331c9e1bce3038b8e81..16490118b5079f066afaf53185454a74
    // Link mChildView into the native NSView hierarchy only after
    // mNativeLayerRoot is initialized. This resolves bug 1986701.
    [contentView addSubview:mChildView];
-@@ -5155,6 +5297,13 @@ static unsigned int WindowMaskForBorderStyle(BorderStyle aBorderStyle) {
+@@ -5155,6 +5304,13 @@ static unsigned int WindowMaskForBorderStyle(BorderStyle aBorderStyle) {
        return NS_ERROR_FAILURE;
    }
  
@@ -237,7 +349,7 @@ index fe4c27544a29b8bbf0b99331c9e1bce3038b8e81..16490118b5079f066afaf53185454a74
    NSRect contentRect;
  
    if (aRectIsFrameRect) {
-@@ -5213,11 +5362,12 @@ static unsigned int WindowMaskForBorderStyle(BorderStyle aBorderStyle) {
+@@ -5213,11 +5369,12 @@ static unsigned int WindowMaskForBorderStyle(BorderStyle aBorderStyle) {
      windowClass = [BorderlessWindow class];
    }
  
@@ -252,7 +364,7 @@ index fe4c27544a29b8bbf0b99331c9e1bce3038b8e81..16490118b5079f066afaf53185454a74
  
    // Make sure that window titles don't leak to disk in private browsing mode
    // due to macOS' resume feature.
-@@ -5344,6 +5494,9 @@ static unsigned int WindowMaskForBorderStyle(BorderStyle aBorderStyle) {
+@@ -5344,6 +5501,9 @@ static unsigned int WindowMaskForBorderStyle(BorderStyle aBorderStyle) {
      return;
    }
    mOnDestroyCalled = true;
@@ -262,7 +374,7 @@ index fe4c27544a29b8bbf0b99331c9e1bce3038b8e81..16490118b5079f066afaf53185454a74
  
    nsCOMPtr<nsIWidget> kungFuDeathGrip(this);
  
-@@ -5436,6 +5589,9 @@ static unsigned int WindowMaskForBorderStyle(BorderStyle aBorderStyle) {
+@@ -5436,6 +5596,9 @@ static unsigned int WindowMaskForBorderStyle(BorderStyle aBorderStyle) {
  bool nsCocoaWindow::IsVisible() const {
    NS_OBJC_BEGIN_TRY_BLOCK_RETURN;
  
@@ -272,7 +384,7 @@ index fe4c27544a29b8bbf0b99331c9e1bce3038b8e81..16490118b5079f066afaf53185454a74
    return mWindow && mWindow.isVisibleOrBeingShown;
  
    NS_OBJC_END_TRY_BLOCK_RETURN(false);
-@@ -5544,6 +5700,22 @@ static void SyncPopoverBounds(NSPopover* aPopover,
+@@ -5544,6 +5707,22 @@ static void SyncPopoverBounds(NSPopover* aPopover,
      return;
    }
  
@@ -295,7 +407,7 @@ index fe4c27544a29b8bbf0b99331c9e1bce3038b8e81..16490118b5079f066afaf53185454a74
    // Early exit if our current visibility state is already the requested
    // state.
    if (aState == mWindow.isVisibleOrBeingShown) {
-@@ -5562,18 +5734,25 @@ static void SyncPopoverBounds(NSPopover* aPopover,
+@@ -5562,18 +5741,25 @@ static void SyncPopoverBounds(NSPopover* aPopover,
  
    NSWindow* nativeParentWindow =
        mParent ? (NSWindow*)mParent->GetNativeData(NS_NATIVE_WINDOW) : nil;
@@ -323,7 +435,7 @@ index fe4c27544a29b8bbf0b99331c9e1bce3038b8e81..16490118b5079f066afaf53185454a74
        if (!nativeParentWindow.isVisible || nativeParentWindow.isMiniaturized) {
          return;
        }
-@@ -5603,7 +5782,12 @@ static void SyncPopoverBounds(NSPopover* aPopover,
+@@ -5603,7 +5789,12 @@ static void SyncPopoverBounds(NSPopover* aPopover,
        // calls to ...orderFront: in TRY blocks.  See bmo bug 470864.
        NS_OBJC_BEGIN_TRY_IGNORE_BLOCK;
        mWindow.contentView.needsDisplay = YES;
@@ -337,7 +449,7 @@ index fe4c27544a29b8bbf0b99331c9e1bce3038b8e81..16490118b5079f066afaf53185454a74
          [mWindow orderFront:nil];
        }
        NS_OBJC_END_TRY_IGNORE_BLOCK;
-@@ -5663,8 +5847,11 @@ static void SyncPopoverBounds(NSPopover* aPopover,
+@@ -5663,8 +5854,11 @@ static void SyncPopoverBounds(NSPopover* aPopover,
  
        // If a parent window was supplied and this is a popup at the parent
        // level, set its child window. This will cause the child window to
@@ -351,7 +463,7 @@ index fe4c27544a29b8bbf0b99331c9e1bce3038b8e81..16490118b5079f066afaf53185454a74
          [nativeParentWindow addChildWindow:mWindow ordered:NSWindowAbove];
        }
      } else {
-@@ -5780,8 +5967,23 @@ static void SyncPopoverBounds(NSPopover* aPopover,
+@@ -5780,8 +5974,23 @@ static void SyncPopoverBounds(NSPopover* aPopover,
  bool nsCocoaWindow::ShouldUseNSPopover() const {
    // Use NSPopover for panel popups when the preference is enabled
    // But not for detached popups - they should use traditional window logic
@@ -376,7 +488,7 @@ index fe4c27544a29b8bbf0b99331c9e1bce3038b8e81..16490118b5079f066afaf53185454a74
  }
  
  bool nsCocoaWindow::ShouldShowAsNSPopover() const {
-@@ -5791,7 +5993,6 @@ static void SyncPopoverBounds(NSPopover* aPopover,
+@@ -5791,7 +6000,6 @@ static void SyncPopoverBounds(NSPopover* aPopover,
    nsMenuPopupFrame* popupFrame = GetPopupFrame();
    return [mWindow isKindOfClass:[PopupWindow class]] &&
           [(PopupWindow*)mWindow usePopover] && popupFrame &&
@@ -384,7 +496,7 @@ index fe4c27544a29b8bbf0b99331c9e1bce3038b8e81..16490118b5079f066afaf53185454a74
           !popupFrame->PopupElement().GetBoolAttr(nsGkAtoms::nonnative);
  }
  
-@@ -5926,7 +6127,10 @@ static void SyncPopoverBounds(NSPopover* aPopover,
+@@ -5926,7 +6134,10 @@ static void SyncPopoverBounds(NSPopover* aPopover,
  void nsCocoaWindow::Move(const DesktopPoint& aPoint) {
    NS_OBJC_BEGIN_TRY_IGNORE_BLOCK;
  
@@ -396,7 +508,7 @@ index fe4c27544a29b8bbf0b99331c9e1bce3038b8e81..16490118b5079f066afaf53185454a74
      return;
    }
  
-@@ -6811,7 +7015,8 @@ static bool AlwaysUsesNativeFullScreen() {
+@@ -6811,7 +7022,8 @@ static bool AlwaysUsesNativeFullScreen() {
                               double aHeight, bool aRepaint) {
    NS_OBJC_BEGIN_TRY_IGNORE_BLOCK;
  
@@ -406,7 +518,7 @@ index fe4c27544a29b8bbf0b99331c9e1bce3038b8e81..16490118b5079f066afaf53185454a74
      return;
    }
  
-@@ -7095,6 +7300,27 @@ static nsSizeMode GetWindowSizeMode(NSWindow* aWindow, bool aFullScreen) {
+@@ -7095,6 +7307,27 @@ static nsSizeMode GetWindowSizeMode(NSWindow* aWindow, bool aFullScreen) {
    return nsSizeMode_Normal;
  }
  
@@ -434,7 +546,7 @@ index fe4c27544a29b8bbf0b99331c9e1bce3038b8e81..16490118b5079f066afaf53185454a74
  void nsCocoaWindow::ReportMoveEvent() {
    NS_OBJC_BEGIN_TRY_IGNORE_BLOCK;
  
-@@ -7108,6 +7334,7 @@ static nsSizeMode GetWindowSizeMode(NSWindow* aWindow, bool aFullScreen) {
+@@ -7108,6 +7341,7 @@ static nsSizeMode GetWindowSizeMode(NSWindow* aWindow, bool aFullScreen) {
    mInReportMoveEvent = true;
  
    UpdateBounds();
@@ -442,7 +554,7 @@ index fe4c27544a29b8bbf0b99331c9e1bce3038b8e81..16490118b5079f066afaf53185454a74
  
    // The zoomed state can change when we're moving, in which case we need to
    // update our internal mSizeMode. This can happen either if we're maximized
-@@ -7151,6 +7378,18 @@ static nsSizeMode GetWindowSizeMode(NSWindow* aWindow, bool aFullScreen) {
+@@ -7151,6 +7385,18 @@ static nsSizeMode GetWindowSizeMode(NSWindow* aWindow, bool aFullScreen) {
      return;
    }
  
@@ -461,7 +573,7 @@ index fe4c27544a29b8bbf0b99331c9e1bce3038b8e81..16490118b5079f066afaf53185454a74
    // macOS occasionally reports a window as not visible (its occlusionState is
    // missing NSWindowOcclusionStateVisible) even while the window is on screen
    // and frontmost. This has been observed on systems running menu-bar managers
-@@ -7202,6 +7441,7 @@ static nsSizeMode GetWindowSizeMode(NSWindow* aWindow, bool aFullScreen) {
+@@ -7202,6 +7448,7 @@ static nsSizeMode GetWindowSizeMode(NSWindow* aWindow, bool aFullScreen) {
    NS_OBJC_BEGIN_TRY_IGNORE_BLOCK;
  
    UpdateBounds();
@@ -469,7 +581,7 @@ index fe4c27544a29b8bbf0b99331c9e1bce3038b8e81..16490118b5079f066afaf53185454a74
    LayoutDeviceIntRect innerBounds = GetClientBounds();
    if (mWidgetListener) {
      mWidgetListener->WindowResized(this, innerBounds.Size());
-@@ -9164,6 +9404,15 @@ - (void)showPopoverRelativeToRect:(NSRect)positioningRect
+@@ -9164,6 +9411,15 @@ - (void)showPopoverRelativeToRect:(NSRect)positioningRect
      return;
    }
  

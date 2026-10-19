@@ -92,7 +92,8 @@
 // it the page closed one itself.
 // Text input from the embedder's input method: Text commits, MarkedText
 // {selection, text} is the composition (setMarkedText:; empty text cancels
-// it), and TextRect{x, y, w, h} answers where the composition's selection is
+// it, and is nothing once Gecko has ended the composition itself), and
+// TextRect{x, y, w, h} answers where the composition's selection is
 // (window points) for the embedder's candidate window. Cursor{nsCursor}
 // reports the pointer shape the page wants over the window.
 // Protocol 4 adds: Quit{} asks Nightly to quit as a user would (sessions and
@@ -2112,6 +2113,15 @@ void Channel::OnText(const TextMsg& aMsg) {
                          replacementRange:NSMakeRange(NSNotFound, 0)];
 }
 
+// Whether aWindow's TextInputHandler (its view's input client) has a
+// composition: one the embedder's input method started that Gecko has not
+// ended.
+static bool IsComposing(nsCocoaWindow* aWindow) {
+  auto* handler = static_cast<mozilla::widget::TextInputHandler*>(
+      aWindow->GetNativeTextEventDispatcherListener());
+  return handler && handler->IsIMEComposing();
+}
+
 void Channel::OnMarkedText(const MarkedTextMsg& aMsg) {
   Entry* entry = FindEntry(aMsg.windowId);
   if (!entry) {
@@ -2122,6 +2132,16 @@ void Channel::OnMarkedText(const MarkedTextMsg& aMsg) {
     return;
   }
   int32_t count = std::clamp(aMsg.count, 0, 64);
+  if (count == 0 && !IsComposing(entry->mWindow)) {
+    // The input method ends a composition the window no longer has: Gecko
+    // ended it itself (committed it as the focus moved or the window went
+    // inactive, or nothing took it), or never started one. On screen AppKit
+    // would not send this (Gecko's commit discards the input method's marked
+    // text), and TextInputHandler can only end a composition it has (it
+    // crashed: MOZ_RELEASE_ASSERT(isSome()) in
+    // IMEInputHandler::DispatchCompositionCommitEvent).
+    return;
+  }
   NSString* text = [NSString stringWithCharacters:aMsg.chars length:count];
   int32_t start = std::clamp(aMsg.selStart, 0, count);
   int32_t length = std::clamp(aMsg.selLength, 0, count - start);

@@ -187,6 +187,10 @@ enum : uint32_t {
   // ui.systemUsesDarkTheme, which Zen's automatic scheme, the chrome and the
   // pages' prefers-color-scheme follow live.
   kCommandTheme = 8,
+  // The embedder's window controls, "shown" or "hidden" (its fullscreen), for
+  // the whole runtime (any window id): it sets the bool
+  // zen.embed.window-controls-hidden, which zen-browser-ui.css follows live.
+  kCommandWindowControls = 9,
 };
 
 // Script kinds and result statuses, as zen-embed.js and the embedder read them.
@@ -1907,6 +1911,11 @@ void Channel::OnCommand(uint32_t aWindowId, uint32_t aOp,
     } else {
       Preferences::ClearUser(kDarkPref);
     }
+    return;
+  }
+  if (aOp == kCommandWindowControls) {
+    Preferences::SetBool("zen.embed.window-controls-hidden",
+                         aText.EqualsLiteral("hidden"));
     return;
   }
   Entry* entry = FindEntry(aWindowId);

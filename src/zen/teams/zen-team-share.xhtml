@@ -1,0 +1,83 @@
+<?xml version="1.0"?>
+<!-- This Source Code Form is subject to the terms of the Mozilla Public
+   - License, v. 2.0. If a copy of the MPL was not distributed with this
+   - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
+
+<!DOCTYPE window>
+
+<window
+  xmlns:html="http://www.w3.org/1999/xhtml"
+  xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+  id="zenTeamShareDialog"
+>
+  <dialog
+    buttons="accept,cancel"
+    data-l10n-id="zen-team-share-dialog"
+    data-l10n-attrs="buttonlabelaccept"
+  >
+    <linkset>
+      <html:link
+        rel="stylesheet"
+        href="chrome://global/skin/global.css"
+        type="text/css"
+      />
+      <html:link
+        rel="stylesheet"
+        href="chrome://browser/content/zen-team-share.css"
+        type="text/css"
+      />
+      <html:link rel="localization" href="browser/zen-teams.ftl" />
+    </linkset>
+
+    <script src="chrome://browser/content/zen-team-share.js"></script>
+
+    <html:form id="zen-team-share" autocomplete="off">
+      <html:h2 data-l10n-id="zen-team-share-title"></html:h2>
+      <html:div id="zen-team-share-what">
+        <html:img id="zen-team-share-preview" alt="" hidden="hidden" />
+        <html:span id="zen-team-share-what-text"></html:span>
+      </html:div>
+      <html:div id="zen-team-share-secrets" role="alert" hidden="hidden">
+        <html:p id="zen-team-share-secrets-text"></html:p>
+        <html:label>
+          <html:input type="checkbox" id="zen-team-share-strip" checked="checked" />
+          <html:span data-l10n-id="zen-team-share-strip"></html:span>
+        </html:label>
+      </html:div>
+      <html:textarea
+        id="zen-team-share-comment"
+        maxlength="280"
+        rows="3"
+        data-l10n-id="zen-team-share-comment"
+      ></html:textarea>
+      <html:label id="zen-team-share-team-row" hidden="hidden">
+        <html:span data-l10n-id="zen-team-share-team"></html:span>
+        <html:select id="zen-team-share-team"></html:select>
+      </html:label>
+      <html:fieldset id="zen-team-share-to">
+        <html:legend data-l10n-id="zen-team-share-to"></html:legend>
+        <html:label>
+          <html:input
+            type="radio"
+            name="to"
+            value="all"
+            id="zen-team-share-to-all"
+            checked="checked"
+          />
+          <html:span id="zen-team-share-to-all-label"></html:span>
+        </html:label>
+        <html:label>
+          <html:input
+            type="radio"
+            name="to"
+            value="members"
+            id="zen-team-share-to-members"
+          />
+          <html:span data-l10n-id="zen-team-share-to-members"></html:span>
+        </html:label>
+        <html:div id="zen-team-share-members" role="group"></html:div>
+      </html:fieldset>
+      <html:p id="zen-team-share-status" role="status"></html:p>
+    </html:form>
+  </dialog>
+</window>

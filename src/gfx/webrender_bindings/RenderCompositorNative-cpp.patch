@@ -1,0 +1,26 @@
+diff --git a/gfx/webrender_bindings/RenderCompositorNative.cpp b/gfx/webrender_bindings/RenderCompositorNative.cpp
+index cfd530ba0669283897bccd2e5fd5f23eba597946..6b375585a3bfd563f143c4dee2d16788de93b045 100644
+--- a/gfx/webrender_bindings/RenderCompositorNative.cpp
++++ b/gfx/webrender_bindings/RenderCompositorNative.cpp
+@@ -116,7 +116,10 @@ bool RenderCompositorNative::Resume() { return true; }
+ 
+ inline layers::WebRenderCompositor RenderCompositorNative::CompositorType()
+     const {
+-  if (gfx::gfxVars::UseWebRenderCompositor()) {
++  // Widgets that opt out of native compositing (zen/embed embedded windows)
++  // get one full-window layer even when the native compositor is enabled.
++  if (gfx::gfxVars::UseWebRenderCompositor() &&
++      GetWidget()->GetCompositorOptions().AllowNativeCompositor()) {
+ #if defined(XP_DARWIN)
+     return layers::WebRenderCompositor::CORE_ANIMATION;
+ #elif defined(MOZ_WAYLAND)
+@@ -131,7 +134,8 @@ LayoutDeviceIntSize RenderCompositorNative::GetBufferSize() {
+ }
+ 
+ bool RenderCompositorNative::ShouldUseNativeCompositor() {
+-  return gfx::gfxVars::UseWebRenderCompositor();
++  return gfx::gfxVars::UseWebRenderCompositor() &&
++         GetWidget()->GetCompositorOptions().AllowNativeCompositor();
+ }
+ 
+ void RenderCompositorNative::GetCompositorCapabilities(

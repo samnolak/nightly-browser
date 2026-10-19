@@ -1,0 +1,61 @@
+diff --git a/gfx/layers/NativeLayerCA.mm b/gfx/layers/NativeLayerCA.mm
+index 0d8cd5a8f8e611a32a879033c735db261f09d584..c56dd7f585ebd5fb6aca32be18a4590b8a6d8cbb 100644
+--- a/gfx/layers/NativeLayerCA.mm
++++ b/gfx/layers/NativeLayerCA.mm
+@@ -289,6 +289,19 @@ static void EmitTelemetryForVideoLowPower(VideoLowPowerType aVideoLowPower) {
+ 
+   mCommitPending = false;
+ 
++  if (mObserver) {
++    // Embedded windows have a single full-window layer (zen/embed).
++    for (const auto& layer : mSublayers) {
++      gfx::IntSize size;
++      bool isFlipped = false;
++      if (CFTypeRefPtr<IOSurfaceRef> surface =
++              layer->CurrentSurface(&size, &isFlipped)) {
++        mObserver->OnCommitToScreen(surface.get(), size, isFlipped);
++        break;
++      }
++    }
++  }
++
+   if (StaticPrefs::gfx_webrender_debug_dump_native_layer_tree_to_file()) {
+     static uint32_t sFrameID = 0;
+     uint32_t frameID = sFrameID++;
+@@ -323,6 +336,11 @@ static void EmitTelemetryForVideoLowPower(VideoLowPowerType aVideoLowPower) {
+   return true;
+ }
+ 
++void NativeLayerRootCA::SetObserver(NativeLayerRootCAObserver* aObserver) {
++  MutexAutoLock lock(mMutex);
++  mObserver = aObserver;
++}
++
+ UniquePtr<NativeLayerRootSnapshotter> NativeLayerRootCA::CreateSnapshotter() {
+ #ifdef XP_MACOSX
+   MutexAutoLock lock(mMutex);
+@@ -1527,6 +1545,24 @@ CGColorRef CGColorCreateForDeviceColor(const gfx::DeviceColor& aColor) {
+   return updateSucceeded;
+ }
+ 
++CFTypeRefPtr<IOSurfaceRef> NativeLayerCA::CurrentSurface(gfx::IntSize* aSize,
++                                                         bool* aIsFlipped) {
++  MutexAutoLock lock(mMutex);
++  *aSize = mSize;
++  *aIsFlipped = mSurfaceIsFlipped;
++  if (mSurfaceToPresent) {
++    return mSurfaceToPresent;
++  }
++  if (mSurfaceHandler) {
++    *aSize = mSurfaceHandler->Size();
++    *aIsFlipped = mSurfaceHandler->SurfaceIsFlipped();
++    if (auto frontSurface = mSurfaceHandler->FrontSurface()) {
++      return frontSurface->mSurface;
++    }
++  }
++  return nullptr;
++}
++
+ CALayer* NativeLayerCA::UnderlyingCALayer(WhichRepresentation aRepresentation) {
+   MutexAutoLock lock(mMutex);
+   return GetRepresentation(aRepresentation).UnderlyingCALayer();

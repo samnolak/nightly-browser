@@ -1,0 +1,22 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+# Bulk open (B4): when more tabs are opened at once than this many, background
+# tabs are created unloaded and loaded through a queue, at most this many at a
+# time. See src/zen/tabs/ZenTabLoadQueue.mjs.
+- name: zen.tabs.load-queue.enabled
+  value: true
+
+- name: zen.tabs.load-queue.max-concurrent
+  value: 6
+
+# Inactive tab unloading (B4). See src/zen/tabs/ZenTabUnloader.mjs.
+- name: zen.tab-unloader.enabled
+  value: true
+
+- name: zen.tab-unloader.timeout-minutes
+  value: 20
+
+- name: zen.tab-unloader.unload-pinned
+  value: false

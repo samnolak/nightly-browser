@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<!-- Image-heavy page: a gallery of incompressible PNGs (decoded ~1.2 MB each). -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>{{SITE}} · gallery</title>
+<style>
+  body { font: 15px system-ui, sans-serif; margin: 1em; background: #111; color: #eee; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px; }
+  img { width: 100%; height: auto; display: block; border-radius: 8px; }
+  figure { margin: 0; }
+</style>
+</head>
+<body>
+<h1>{{SITE}}: gallery</h1>
+<div class="grid">
+{{IMAGES}}
+</div>
+</body>
+</html>

@@ -1,8 +1,19 @@
 diff --git a/xpfe/appshell/AppWindow.cpp b/xpfe/appshell/AppWindow.cpp
-index 6b218ca7d704bcaffd16d741acb0e1d1f0a0cebb..ccd8a98827219fc8ba4ad9f226e81bae53b30836 100644
+index 27536c5541ba72d4100dca5661f170660bd9c967..5e7a578b87cc826a9f161225d37f11a8f8665ae3 100644
 --- a/xpfe/appshell/AppWindow.cpp
 +++ b/xpfe/appshell/AppWindow.cpp
-@@ -1847,7 +1847,7 @@ nsresult AppWindow::MaybeSaveEarlyWindowPersistentValues(
+@@ -78,6 +78,10 @@
+ 
+ #include "mozilla/dom/DocumentL10n.h"
+ 
++#ifdef XP_MACOSX
++#  include "mozilla/ZenEmbedHost.h"
++#endif
++
+ #if defined(XP_MACOSX) || defined(MOZ_WIDGET_GTK)
+ #  include "mozilla/widget/NativeMenuSupport.h"
+ #  define USE_NATIVE_MENUS
+@@ -1840,7 +1844,7 @@ nsresult AppWindow::MaybeSaveEarlyWindowPersistentValues(
      }
    }
  
@@ -11,3 +22,28 @@ index 6b218ca7d704bcaffd16d741acb0e1d1f0a0cebb..ccd8a98827219fc8ba4ad9f226e81bae
  
    (void)PersistPreXULSkeletonUIValues(settings);
  #endif
+@@ -2227,6 +2231,14 @@ NS_IMETHODIMP AppWindow::CreateNewContentWindow(
+   nsCOMPtr<nsIURI> uri;
+   nsAutoCString urlStr;
+   urlStr.AssignLiteral(BROWSER_CHROME_URL_QUOTED);
++#ifdef XP_MACOSX
++  // zen/embed: in an embedder's runtime a page's new window is an embed window
++  // too (its document makes the browser from mInitialOpenWindowInfo), and the
++  // embedder shows it as a tab.
++  if (zen::ZenEmbedHost::IsEnabled()) {
++    urlStr.Assign(zen::ZenEmbedHost::EmbedDocument());
++  }
++#endif
+ 
+   nsCOMPtr<nsIIOService> service(do_GetService(NS_IOSERVICE_CONTRACTID));
+   if (service) {
+@@ -2241,6 +2253,9 @@ NS_IMETHODIMP AppWindow::CreateNewContentWindow(
+   nsCOMPtr<nsIAppWindow> newWindow;
+   {
+     AutoNoJSAPI nojsapi;
++#ifdef XP_MACOSX
++    zen::ZenEmbedHost::AutoEmbedScope embedScope(uri);
++#endif
+     appShell->CreateTopLevelWindow(this, uri, aChromeFlags, 615, 480,
+                                    getter_AddRefs(newWindow));
+     NS_ENSURE_TRUE(newWindow, NS_ERROR_FAILURE);

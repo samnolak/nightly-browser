@@ -1,0 +1,14 @@
+diff --git a/widget/nsIWidget.cpp b/widget/nsIWidget.cpp
+index a9ec9dc330a4d8cd964e90504ae6a8a693754683..78aebf9b0f4f9198602920a7475e5ab6a6bc59e9 100644
+--- a/widget/nsIWidget.cpp
++++ b/widget/nsIWidget.cpp
+@@ -1504,6 +1504,9 @@ already_AddRefed<WebRenderLayerManager> nsIWidget::CreateCompositorSession(
+           gfx::gfxVars::AllowSoftwareWebRenderOGL());
+     }
+     options.SetAllowNativeCompositor(WidgetTypeSupportsNativeCompositing());
++#elif defined(XP_MACOSX)
++    // Embedded windows (zen/embed) need one full-window surface per frame.
++    options.SetAllowNativeCompositor(WidgetTypeSupportsNativeCompositing());
+ #endif
+ 
+ #ifdef MOZ_WIDGET_ANDROID

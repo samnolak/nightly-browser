@@ -325,3 +325,11 @@ zen-close-all-unpinned-tabs-shortcut = Закрыть все не закрепл
 zen-new-unsynced-window-shortcut = Новое пустое окно
 zen-duplicate-tab-shortcut = Дублировать вкладку
 zen-key-find-selection = Найти выбранное
+
+zen-tab-unloader-header = Выгрузка неактивных вкладок
+zen-tab-unloader-description = Освобождать память, выгружая вкладки, которыми вы давно не пользовались, во всех пространствах. Текущая вкладка, вкладки со звуком или видео, с доступом к камере, микрофону или экрану и страницы с несохранёнными данными форм не выгружаются. Выгруженные вкладки остаются в списке и загружаются снова при выборе.
+zen-tab-unloader-enabled =
+    .label = Автоматически выгружать неактивные вкладки
+zen-tab-unloader-timeout = Выгружать после стольких минут без использования
+zen-tab-unloader-unload-pinned =
+    .label = Выгружать также закреплённые вкладки и Essentials

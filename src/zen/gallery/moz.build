@@ -1,0 +1,20 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+EXTRA_JS_MODULES += [
+    "AboutGallery.sys.mjs",
+    "ZenGalleryCapture.sys.mjs",
+    "ZenGalleryScrollChild.sys.mjs",
+    "ZenGalleryStore.sys.mjs",
+    "ZenGalleryUI.sys.mjs",
+]
+
+FINAL_TARGET_FILES.actors += [
+    "actors/ZenGalleryCaptureChild.sys.mjs",
+    "actors/ZenGalleryCaptureParent.sys.mjs",
+]
+
+XPCOM_MANIFESTS += ["components.conf"]
+JAR_MANIFESTS += ["jar.mn"]
+BROWSER_CHROME_MANIFESTS += ["tests/browser.toml"]

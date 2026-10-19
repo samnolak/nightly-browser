@@ -1,0 +1,55 @@
+diff --git a/gfx/layers/NativeLayerCA.h b/gfx/layers/NativeLayerCA.h
+index 712e1cbbd11639677fe7ad7cc6b750634bdeec05..95dd8beed5f17d2d1bd6d98c7f18ba481ad4a554 100644
+--- a/gfx/layers/NativeLayerCA.h
++++ b/gfx/layers/NativeLayerCA.h
+@@ -85,6 +85,20 @@ class SnapshotterCADelegate {
+       NativeLayerRootSnapshotterCA* aSnapshotter) {}
+ };
+ 
++// Told about the surface a NativeLayerRootCA presents after each
++// CommitToScreen(). zen/embed uses it to export the frames of windows that an
++// external process embeds. Called on the committing thread with the root's
++// lock held; must not call back into the root.
++class NativeLayerRootCAObserver {
++ public:
++  NS_INLINE_DECL_THREADSAFE_REFCOUNTING(NativeLayerRootCAObserver)
++  virtual void OnCommitToScreen(IOSurfaceRef aSurface, const gfx::IntSize& aSize,
++                                bool aIsFlipped) = 0;
++
++ protected:
++  virtual ~NativeLayerRootCAObserver() = default;
++};
++
+ // NativeLayerRootCA is the CoreAnimation implementation of the NativeLayerRoot
+ // interface. A NativeLayerRootCA is created by the widget around an existing
+ // CALayer with a call to CreateForCALayer - this CALayer is the root of the
+@@ -173,6 +187,7 @@ class NativeLayerRootCA final : public NativeLayerRoot {
+   void SetWindowIsFullscreen(bool aFullscreen);
+ 
+   VideoLowPowerType CheckVideoLowPower(const MutexAutoLock& aProofOfLock);
++  void SetObserver(NativeLayerRootCAObserver* aObserver);
+ 
+  protected:
+   explicit NativeLayerRootCA(CALayer* aLayer);
+@@ -245,6 +260,9 @@ class NativeLayerRootCA final : public NativeLayerRoot {
+   // How many times have we committed since the last time we emitted
+   // telemetry?
+   unsigned int mTelemetryCommitCount = 0;
++
++  // Set for embedded windows only (zen/embed); see NativeLayerRootCAObserver.
++  RefPtr<NativeLayerRootCAObserver> mObserver;
+ };
+ 
+ class RenderSourceNLRS;
+@@ -400,6 +418,11 @@ class NativeLayerCA : public NativeLayer {
+   void SetSurfaceToPresent(CFTypeRefPtr<IOSurfaceRef> aSurfaceRef,
+                            gfx::IntSize& aSize, bool aIsDRM, bool aIsHDR);
+ 
++  // The surface this layer presents (what ApplyChanges would hand to its
++  // CALayer), with its size and orientation.
++  CFTypeRefPtr<IOSurfaceRef> CurrentSurface(gfx::IntSize* aSize,
++                                            bool* aIsFlipped);
++
+   void DumpLayer(std::ostream& aOutputStream);
+   static void LogSurface(const nsACString& aHeader, IOSurfaceRef aSurfaceRef,
+                          CVPixelBufferRef aBuffer,

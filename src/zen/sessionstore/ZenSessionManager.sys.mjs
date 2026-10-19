@@ -366,7 +366,7 @@ export class nsZenSessionManager {
     }
     // Clear the memory of the groups saved in the session file,
     // as we don't really need them anyways.
-    if (initialState?.savedGroups) {
+    if (initialState) {
       initialState.savedGroups = [];
     }
     if (!lazy.gWindowSyncEnabled) {
@@ -405,7 +405,7 @@ export class nsZenSessionManager {
     );
     if (!initialState?.windows?.length || !normalWindowsExist) {
       this.log("No windows found in initial state, creating an empty one");
-      initialState ||= {};
+      initialState ||= { savedGroups: [] };
       initialState.windows ||= [];
       initialState.windows.push({
         tabs: [],

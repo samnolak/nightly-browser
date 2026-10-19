@@ -1,0 +1,14 @@
+diff --git a/toolkit/modules/ActorManagerParent.sys.mjs b/toolkit/modules/ActorManagerParent.sys.mjs
+index c63bcb4c3bb23b25c183e755044cda2e55c551bd..f3f1088f3f94925f8e96a03920c465552f2d1bf3 100644
+--- a/toolkit/modules/ActorManagerParent.sys.mjs
++++ b/toolkit/modules/ActorManagerParent.sys.mjs
+@@ -454,6 +454,9 @@ let JSWINDOWACTORS = {
+       "browsers",
+       "webext-browsers",
+       "chatbot-browser",
++      // Zen embedder panes (zen-embed.js): ContextMenuChild and form
++      // autocomplete ask this actor for every page.
++      "zen-embed",
+       "",
+     ],
+     safeForUntrustedWebProcess: true,

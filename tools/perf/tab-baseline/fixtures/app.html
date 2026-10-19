@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<!-- Script-heavy "web app" page: large JS heap, big DOM table, a canvas
+     animated with requestAnimationFrame, a 1 s timer and a CSS animation. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>{{SITE}} · app</title>
+<style>
+  body { font: 13px system-ui, sans-serif; margin: 0; display: grid; grid-template-columns: 260px 1fr; height: 100vh; }
+  nav { background: #20232a; color: #ddd; padding: 1em; overflow: auto; }
+  main { overflow: auto; padding: 1em; }
+  table { border-collapse: collapse; width: 100%; }
+  td { border-bottom: 1px solid #eee; padding: 2px 6px; }
+  .spinner { width: 24px; height: 24px; border: 3px solid #61dafb; border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+<nav><div class="spinner"></div><p id="clock"></p><ul id="menu"></ul></nav>
+<main><canvas id="c" width="900" height="300"></canvas><table id="t"></table></main>
+<script>
+  "use strict";
+  let seed = {{SEED}};
+  const rand = () => ((seed = (seed * 1103515245 + 12345) % 2147483648) / 2147483648);
+  // ~200k small objects (tens of MB of JS heap), kept alive.
+  window.store = [];
+  for (let i = 0; i < 200000; i++) {
+    window.store.push({ id: i, name: "item-" + i, value: rand(), tags: ["a" + (i % 7), "b" + (i % 13)] });
+  }
+  const menu = document.getElementById("menu");
+  for (let i = 0; i < 200; i++) {
+    const li = document.createElement("li");
+    li.textContent = "Section " + i;
+    menu.append(li);
+  }
+  const table = document.getElementById("t");
+  const frag = document.createDocumentFragment();
+  for (let r = 0; r < 2000; r++) {
+    const tr = document.createElement("tr");
+    for (let c = 0; c < 5; c++) {
+      const td = document.createElement("td");
+      td.textContent = window.store[r * 5 + c].name;
+      tr.append(td);
+    }
+    frag.append(tr);
+  }
+  table.append(frag);
+  const ctx = document.getElementById("c").getContext("2d");
+  const dots = Array.from({ length: 300 }, () => ({ x: rand() * 900, y: rand() * 300, vx: rand() * 4 - 2, vy: rand() * 4 - 2 }));
+  function frame() {
+    ctx.clearRect(0, 0, 900, 300);
+    for (const d of dots) {
+      d.x = (d.x + d.vx + 900) % 900;
+      d.y = (d.y + d.vy + 300) % 300;
+      ctx.fillStyle = `hsl(${(d.x / 900) * 360} 70% 50%)`;
+      ctx.beginPath();
+      ctx.arc(d.x, d.y, 4, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+  setInterval(() => { document.getElementById("clock").textContent = new Date().toISOString(); }, 1000);
+</script>
+</body>
+</html>

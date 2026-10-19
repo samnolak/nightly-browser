@@ -32,6 +32,10 @@ ChromeUtils.defineESModuleGetters(
   { global: "current" }
 );
 
+ChromeUtils.defineESModuleGetters(lazy, {
+  ZenGalleryUI: "resource:///modules/ZenGalleryUI.sys.mjs",
+});
+
 const LAST_TAB_PREF = "zen.library.last-tab";
 const CLEANUP_DELAY_MS = 30000;
 const IDLE_CLEANUP_TIMEOUT_MS = 2000;
@@ -862,6 +866,23 @@ export class ZenLibrary extends MozLitElement {
     }
   }
 
+  /**
+   * The "Gallery" entry under the sections opens the encrypted screenshot
+   * gallery in a tab rather than a section of its own, and closes the library
+   * even when that only selects a gallery tab that was already open.
+   */
+  #openGallery() {
+    lazy.ZenGalleryUI.open(window);
+    ZenLibrary.animateProgress(0);
+  }
+
+  #onGalleryKeyDown(event) {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      this.#openGallery();
+    }
+  }
+
   #keepingOpen = false;
 
   /**
@@ -1001,6 +1022,20 @@ export class ZenLibrary extends MozLitElement {
                 </vbox>
               `
             )}
+            <vbox
+              class="zen-library-tab"
+              data-action="gallery"
+              role="button"
+              tabindex="0"
+              data-l10n-id="library-gallery-tab"
+              @click=${() => this.#openGallery()}
+              @keydown=${event => this.#onGalleryKeyDown(event)}
+            >
+              <div class="zen-library-tab-icon">
+                <div class="zen-library-tab-icon-image"></div>
+              </div>
+              <label data-l10n-id="library-gallery-section-title"></label>
+            </vbox>
           </vbox>
           <toolbar
             id="zen-library-footer"

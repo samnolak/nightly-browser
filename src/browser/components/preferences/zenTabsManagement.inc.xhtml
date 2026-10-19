@@ -44,6 +44,40 @@
             preference="zen.tabs.select-recently-used-on-close"/>
 </groupbox>
 
+<groupbox id="zenTabUnloaderGroup" data-category="paneZenTabManagement" hidden="true" class="highlighting-group">
+      <label><html:h2 data-l10n-id="zen-tab-unloader-header"/></label>
+      <description class="description-deemphasized" data-l10n-id="zen-tab-unloader-description"/>
+      <checkbox id="zenTabUnloaderEnabled" data-l10n-id="zen-tab-unloader-enabled"
+            preference="zen.tab-unloader.enabled"/>
+      <hbox align="center">
+            <label control="zenTabUnloaderTimeout" data-l10n-id="zen-tab-unloader-timeout"/>
+            <html:input id="zenTabUnloaderTimeout" type="number" min="1" max="1440"
+                  preference="zen.tab-unloader.timeout-minutes"/>
+      </hbox>
+      <checkbox id="zenTabUnloaderUnloadPinned" data-l10n-id="zen-tab-unloader-unload-pinned"
+            preference="zen.tab-unloader.unload-pinned"/>
+</groupbox>
+
+<groupbox id="zenAutoGroupsGroup" data-category="paneZenTabManagement" hidden="true" class="highlighting-group">
+      <label><html:h2 data-l10n-id="zen-auto-groups-header"/></label>
+      <description class="description-deemphasized" data-l10n-id="zen-auto-groups-description"/>
+      <checkbox id="zenAutoGroupsEnabled" data-l10n-id="zen-auto-groups-enabled"
+            preference="zen.tabs.auto-groups.enabled"/>
+      <hbox align="center">
+            <label control="zenAutoGroupsThreshold" data-l10n-id="zen-auto-groups-threshold"/>
+            <html:input id="zenAutoGroupsThreshold" type="number" min="3" max="10"
+                  preference="zen.tabs.auto-groups.threshold"/>
+      </hbox>
+      <label control="zenAutoGroupsExcluded" data-l10n-id="zen-auto-groups-excluded"/>
+      <html:textarea id="zenAutoGroupsExcluded" rows="2"/>
+      <label control="zenAutoGroupsPaths" data-l10n-id="zen-auto-groups-paths"/>
+      <description class="description-deemphasized" data-l10n-id="zen-auto-groups-paths-help"/>
+      <html:textarea id="zenAutoGroupsPaths" rows="3"/>
+      <description id="zenAutoGroupsError" role="alert" hidden="true"
+            data-l10n-id="zen-auto-groups-invalid"/>
+      <hbox><button id="zenAutoGroupsApply" data-l10n-id="zen-auto-groups-apply"/></hbox>
+</groupbox>
+
 <hbox id="zenPinnedTabsManagerCategory"
       class="subcategory"
       hidden="true"

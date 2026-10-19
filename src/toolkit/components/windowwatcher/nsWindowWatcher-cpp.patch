@@ -1,0 +1,38 @@
+diff --git a/toolkit/components/windowwatcher/nsWindowWatcher.cpp b/toolkit/components/windowwatcher/nsWindowWatcher.cpp
+index a1044338912d917f109fb89bda437cece4007e09..69f06b97df7e3cd618d26302484572fa0c3c9e38 100644
+--- a/toolkit/components/windowwatcher/nsWindowWatcher.cpp
++++ b/toolkit/components/windowwatcher/nsWindowWatcher.cpp
+@@ -77,6 +77,10 @@
+ #include "nsIXULBrowserWindow.h"
+ #include "ReferrerInfo.h"
+ 
++#ifdef XP_MACOSX
++#  include "mozilla/ZenEmbedHost.h"
++#endif
++
+ using namespace mozilla;
+ using namespace mozilla::dom;
+ 
+@@ -1095,10 +1099,18 @@ nsresult nsWindowWatcher::OpenWindowInternal(
+          completely honest: we clear that indicator if the opener is chrome, so
+          that the downstream consumer can treat the indicator to mean simply
+          that the new window is subject to popup control. */
+-      rv = CreateChromeWindow(
+-          parentChrome, chromeFlags,
+-          windowTypeIsChrome ? nullptr : openWindowInfo.get(),
+-          getter_AddRefs(newChrome));
++      {
++#ifdef XP_MACOSX
++        // zen/embed: only the chrome-less embed document renders for the
++        // embedder; the widget is created here, before its document loads.
++        zen::ZenEmbedHost::AutoEmbedScope embedScope(
++            windowTypeIsChrome ? aUri : nullptr);
++#endif
++        rv = CreateChromeWindow(
++            parentChrome, chromeFlags,
++            windowTypeIsChrome ? nullptr : openWindowInfo.get(),
++            getter_AddRefs(newChrome));
++      }
+       if (parentTopInnerWindow) {
+         parentTopInnerWindow->Resume();
+       }

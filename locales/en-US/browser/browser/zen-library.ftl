@@ -16,6 +16,9 @@ library-downloads-section-title = Downloads
 library-boosts-section-title = Boosts
 library-media-section-title = Media
 library-spaces-section-title = Spaces
+library-gallery-section-title = Gallery
+library-gallery-tab =
+    .title = Open the encrypted screenshot gallery
 
 library-filter-button = Filter
 library-open-legacy =

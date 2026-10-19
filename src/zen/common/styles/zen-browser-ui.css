@@ -331,3 +331,18 @@ body,
     contain: none;
   }
 }
+
+/* A browser window an embedder shows in its own window (zen/embed,
+ * ZenEmbedBrowser.sys.mjs): it sits on the embedder's sheet, which clips it to
+ * its rounded corners, and the embedder's traffic lights are the window's. The
+ * card's inset and radius are the embedder's (Ombra: GuiFrameInset 8,
+ * GuiRadiusCard 12); the window controls' place stays, empty, so the sidebar's
+ * top row clears the embedder's traffic lights as it clears its own. */
+:root[zen-embedded] {
+  --zen-element-separation: 8px;
+  --zen-native-inner-radius: 12px;
+
+  & .titlebar-buttonbox-container {
+    visibility: hidden;
+  }
+}

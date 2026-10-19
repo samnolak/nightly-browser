@@ -1,0 +1,20 @@
+diff --git a/browser/components/screenshots/ScreenshotsOverlayChild.sys.mjs b/browser/components/screenshots/ScreenshotsOverlayChild.sys.mjs
+--- a/browser/components/screenshots/ScreenshotsOverlayChild.sys.mjs
++++ b/browser/components/screenshots/ScreenshotsOverlayChild.sys.mjs
+@@ -78,4 +78,7 @@
+ export class ScreenshotsOverlay {
++  // Privileged overlay owners can isolate their actions from native screenshots.
++  eventPrefix = "Screenshots";
++
+   #content;
+   #initialized = false;
+   #state = "";
+@@ -1285,7 +1288,7 @@
+   #dispatchEvent(eventType, detail) {
+     this.window.windowUtils.dispatchEventToChromeOnly(
+       this.window,
+-      new CustomEvent(eventType, {
++      new CustomEvent(`${this.eventPrefix}:${eventType.slice("Screenshots:".length)}`, {
+         bubbles: true,
+         detail,
+       })

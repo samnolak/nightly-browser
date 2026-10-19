@@ -6,11 +6,16 @@
         content/browser/ZenPreloadedScripts.js                                  (../../zen/common/ZenPreloadedScripts.js)
         content/browser/zen-sets.js                                             (../../zen/common/zen-sets.js)
 
+        content/browser/zen-embed.xhtml                                         (../../zen/embed/zen-embed.xhtml)
+        content/browser/zen-embed.js                                            (../../zen/embed/zen-embed.js)
+
         content/browser/ZenStartup.mjs                                          (../../zen/common/modules/ZenStartup.mjs)
         content/browser/ZenUpdates.mjs                                          (../../zen/common/modules/ZenUpdates.mjs)
         content/browser/ZenUIManager.mjs                                        (../../zen/common/modules/ZenUIManager.mjs)
         content/browser/zen-components/ZenCommonUtils.mjs                       (../../zen/common/modules/ZenCommonUtils.mjs)
         content/browser/zen-components/ZenSessionStore.mjs                      (../../zen/common/modules/ZenSessionStore.mjs)
+        content/browser/zen-components/ZenAutoGroups.mjs                        (../../zen/common/modules/ZenAutoGroups.mjs)
+        content/browser/zen-components/ZenAutoGroupRules.mjs                    (../../zen/common/modules/ZenAutoGroupRules.mjs)
         content/browser/zen-components/ZenHasPolyfill.mjs                       (../../zen/common/modules/ZenHasPolyfill.mjs)
         content/browser/zen-components/ZenSidebarNotification.mjs               (../../zen/common/modules/ZenSidebarNotification.mjs)
         content/browser/zen-components/ZenMenubar.mjs                           (../../zen/common/modules/ZenMenubar.mjs)

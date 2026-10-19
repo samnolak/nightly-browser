@@ -441,6 +441,10 @@
   list-style-image: url("share.svg");
 }
 
+#zen-open-in-app-open-here-button {
+  list-style-image: url("tab.svg");
+}
+
 .bookmark-item[container] {
   list-style-image: url("folder.svg") !important;
 }

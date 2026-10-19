@@ -399,6 +399,11 @@ menuseparator {
         width: 14px;
         opacity: 0.6;
       }
+
+      /* A button whose action needs words (team "Open"): its label shows. */
+      &.zen-toast-labelled .button-text {
+        display: revert;
+      }
     }
   }
 }

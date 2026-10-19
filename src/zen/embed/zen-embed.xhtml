@@ -1,0 +1,82 @@
+<?xml version="1.0"?>
+<!-- This Source Code Form is subject to the terms of the Mozilla Public
+   - License, v. 2.0. If a copy of the MPL was not distributed with this
+   - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
+
+<!-- Chrome-less window for an embedder (ZenEmbedHost): one remote browser and
+     nothing else, so the exported frames are page content only. Opened with
+     -chrome "chrome://browser/content/zen-embed.xhtml?pane=<token>" (optionally
+     &url=<first page>), and for every window a page opens; the embedder then
+     drives it with Command messages (navigate, reload, back, forward, stop,
+     close) and runs its agent tools' scripts through the ZenEmbedAgent actor
+     (messagemanagergroup). zen-embed.js makes the browser (from the window's
+     initialOpenWindowInfo when a page opened it) and the popup stand-ins the
+     embedder draws instead. -->
+<!DOCTYPE window>
+<window id="zen-embed-window"
+        xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+        xmlns:html="http://www.w3.org/1999/xhtml"
+        windowtype="zen:embed"
+        width="1200"
+        height="800">
+  <!-- The Edit menu's shortcuts (the window has no menu bar of its own): they
+       reach the page's editor through the remote browser's controller. -->
+  <keyset id="zen-embed-keys">
+    <key id="zen-embed-key-selectall" key="a" modifiers="accel" data-command="cmd_selectAll"/>
+    <key id="zen-embed-key-copy" key="c" modifiers="accel" data-command="cmd_copy"/>
+    <key id="zen-embed-key-cut" key="x" modifiers="accel" data-command="cmd_cut"/>
+    <key id="zen-embed-key-paste" key="v" modifiers="accel" data-command="cmd_paste"/>
+    <key id="zen-embed-key-undo" key="z" modifiers="accel" data-command="cmd_undo"/>
+    <key id="zen-embed-key-redo" key="z" modifiers="accel,shift" data-command="cmd_redo"/>
+  </keyset>
+  <!-- The <select> dropdown, autocomplete and context menu stand-ins. -->
+  <popupset id="zen-embed-popups"/>
+  <!-- What WebRTCParent fills in and reads when a page asks for the camera or
+       microphone (browser's popup-notifications.inc.xhtml): never shown; the
+       embedder's permission card answers, and the first device of each list
+       is shared (ZenEmbedDialogs). -->
+  <vbox id="zen-embed-webrtc" hidden="true">
+    <popupnotification id="webRTC-shareDevices-notification" hidden="true">
+      <popupnotificationcontent id="webRTC-selectCamera" orient="vertical">
+        <label id="webRTC-selectCamera-label" control="webRTC-selectCamera-menulist"/>
+        <html:div class="webRTC-selectDevice-selector-container">
+          <image id="webRTC-selectCamera-icon"/>
+          <menulist id="webRTC-selectCamera-menulist">
+            <menupopup id="webRTC-selectCamera-menupopup"/>
+          </menulist>
+          <label id="webRTC-selectCamera-single-device-label"/>
+        </html:div>
+      </popupnotificationcontent>
+      <popupnotificationcontent id="webRTC-selectWindowOrScreen" orient="vertical">
+        <label id="webRTC-selectWindow-label" control="webRTC-selectWindow-menulist"/>
+        <menulist id="webRTC-selectWindow-menulist">
+          <menupopup id="webRTC-selectWindow-menupopup"/>
+        </menulist>
+        <description id="webRTC-all-windows-shared" hidden="true"/>
+      </popupnotificationcontent>
+      <popupnotificationcontent id="webRTC-preview-section" orient="vertical">
+        <vbox id="webRTC-previewWarningBox">
+          <description id="webRTC-previewWarning"/>
+        </vbox>
+      </popupnotificationcontent>
+      <popupnotificationcontent id="webRTC-selectMicrophone" orient="vertical">
+        <label id="webRTC-selectMicrophone-label" control="webRTC-selectMicrophone-menulist"/>
+        <html:div class="webRTC-selectDevice-selector-container">
+          <image id="webRTC-selectMicrophone-icon"/>
+          <menulist id="webRTC-selectMicrophone-menulist">
+            <menupopup id="webRTC-selectMicrophone-menupopup"/>
+          </menulist>
+          <label id="webRTC-selectMicrophone-single-device-label"/>
+        </html:div>
+      </popupnotificationcontent>
+      <popupnotificationcontent id="webRTC-selectSpeaker" orient="vertical">
+        <html:div class="webRTC-selectDevice-selector-container">
+          <image id="webRTC-selectSpeaker-icon"/>
+          <richlistbox id="webRTC-selectSpeaker-richlistbox"/>
+          <label id="webRTC-selectSpeaker-single-device-label"/>
+        </html:div>
+      </popupnotificationcontent>
+    </popupnotification>
+  </vbox>
+  <html:script src="chrome://browser/content/zen-embed.js"/>
+</window>

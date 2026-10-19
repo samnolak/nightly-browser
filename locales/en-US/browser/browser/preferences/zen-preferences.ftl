@@ -375,3 +375,23 @@ zen-close-all-unpinned-tabs-shortcut = Close All Unpinned Tabs
 zen-new-unsynced-window-shortcut = New Blank Window
 zen-duplicate-tab-shortcut = Duplicate Tab
 zen-key-find-selection = Find Selection
+
+zen-auto-groups-header = Automatic URL groups
+zen-auto-groups-description = Group temporary tabs from the same site within each workspace. Pinned tabs, folders, and manual groups are never collected. Groups stay with three tabs and dissolve at two. Extracting a tab excludes it; renaming or recoloring a group makes it manual. These groups stay on this device and are not shared with a team.
+zen-auto-groups-enabled =
+    .label = Automatically group tabs by site
+zen-auto-groups-threshold = Create a group at this many tabs (3–10)
+zen-auto-groups-excluded = Excluded domains (separate with spaces or commas)
+zen-auto-groups-paths = Group by path
+zen-auto-groups-paths-help = Enter domain=depth rules, separated by spaces or commas. For example, github.com=1 groups by organization; github.com=2 groups by repository. Depth may be 1–5. Without a rule, subdomains share their registrable site domain. Paths are case-sensitive; query strings and fragments are ignored.
+zen-auto-groups-invalid = Use domains without URLs, and path rules such as github.com=1 with a depth from 1 to 5. Changes have not been saved.
+zen-auto-groups-apply =
+    .label = Apply domain and path rules
+
+zen-tab-unloader-header = Unload inactive tabs
+zen-tab-unloader-description = Free memory by unloading tabs you have not used for a while, in every space. The current tab, tabs playing audio or video, tabs sharing your camera, microphone or screen, and pages with unsaved form input are never unloaded. Unloaded tabs stay in the list and load again when selected.
+zen-tab-unloader-enabled =
+    .label = Unload inactive tabs automatically
+zen-tab-unloader-timeout = Unload after this many minutes without use
+zen-tab-unloader-unload-pinned =
+    .label = Also unload pinned tabs and Essentials

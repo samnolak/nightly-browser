@@ -61,6 +61,13 @@ zen-tabs-renamed = Вкладка успешно переименована!
 zen-background-tab-opened-toast = Открыта новая фоновая вкладка!
 zen-workspace-renamed-toast = Пространство успешно переименовано!
 zen-split-view-limit-toast = Невозможно добавить больше панелей в раздельный вид!
+
+# Tab tooltip line for a tab that was opened in bulk and waits to load.
+# $position (Number) - place of the tab in the load queue, starting at 1.
+# $count (Number) - number of tabs waiting in the load queue.
+zen-tab-load-queued-tooltip = Ожидает загрузки ({ $position } из { $count })
+# Tab tooltip line for a background tab that is not loaded (unloaded to save memory).
+zen-tab-unloaded-tooltip = Не загружена — выберите, чтобы загрузить
 zen-toggle-compact-mode-button = 
     .label = Компактный режим
     .tooltiptext = Переключить компактный режим

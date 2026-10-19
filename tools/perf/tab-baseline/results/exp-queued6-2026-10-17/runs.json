@@ -1,0 +1,6749 @@
+{
+ "meta": {
+  "generated": "2026-10-17T14:46:07",
+  "app": "/Users/igo.shulga/Developer/arclike/desktop/engine/obj-aarch64-apple-darwin/dist/Nightly.app",
+  "gitHead": "7ca93c9 Empty tab: aurora backdrop, glass URL bar and most visited sites",
+  "gitDirty": true,
+  "machine": "Apple M5 Pro / 24 GB / 18 cpus / macOS 26.6.2",
+  "command": "python3 tools/perf/tab-baseline/run.py --tabs 120 --runs 2 --no-restore --max-load 6 --open-mode queued --queue-size 6 --workdir /Users/igo.shulga/Documents/omp/.temp/NightlyBaseline/work --out tools/perf/tab-baseline/results/exp-queued6-2026-10-17",
+  "args": {
+   "app": "/Users/igo.shulga/Developer/arclike/desktop/engine/obj-aarch64-apple-darwin/dist/Nightly.app",
+   "tabs": "120",
+   "runs": 2,
+   "out": "tools/perf/tab-baseline/results/exp-queued6-2026-10-17",
+   "workdir": "/Users/igo.shulga/Documents/omp/.temp/NightlyBaseline/work",
+   "width": 1440,
+   "height": 900,
+   "warmup": 5,
+   "settle": 10,
+   "idle": 60,
+   "switches": 30,
+   "switch_gap": 300,
+   "scroll_passes": 2,
+   "scroll_step": 40,
+   "open_timeout": 300,
+   "startup_timeout": 90,
+   "max_load": 6.0,
+   "max_load_wait": 300,
+   "restore": false,
+   "probe_unloader": false,
+   "keep_profiles": false,
+   "open_mode": "queued",
+   "queue_size": 6,
+   "pref": [],
+   "profile_open": false,
+   "pref_overrides": {},
+   "out_dir": "tools/perf/tab-baseline/results/exp-queued6-2026-10-17"
+  },
+  "appVersion": "1.23.2b",
+  "appBuildID": "20261016052538"
+ },
+ "runs": [
+  {
+   "tabs": 120,
+   "run": 1,
+   "loadBefore": [
+    5.87,
+    6.77,
+    6.09
+   ],
+   "loadWaitS": 60.052834333,
+   "started": "2026-10-17T14:47:07",
+   "environment": {
+    "appVersion": "1.23.2b",
+    "appBuildID": "20261016052538",
+    "platformVersion": "158.0",
+    "fissionEnabled": true,
+    "prefs": {
+     "browser.lowMemoryResponseMask": {
+      "value": 0,
+      "defined": true,
+      "userSet": false
+     },
+     "browser.lowMemoryResponseOnWarn": {
+      "value": false,
+      "defined": true,
+      "userSet": false
+     },
+     "browser.lowMemoryPollingIntervalMS": {
+      "value": 10000,
+      "defined": true,
+      "userSet": false
+     },
+     "browser.tabs.unloadOnLowMemory": {
+      "value": true,
+      "defined": true,
+      "userSet": false
+     },
+     "browser.tabs.min_inactive_duration_before_unload": {
+      "value": 600000,
+      "defined": true,
+      "userSet": false
+     },
+     "browser.sessionstore.restore_on_demand": {
+      "value": true,
+      "defined": true,
+      "userSet": false
+     },
+     "browser.sessionstore.restore_tabs_lazily": {
+      "value": true,
+      "defined": true,
+      "userSet": false
+     },
+     "browser.startup.page": {
+      "value": 3,
+      "defined": true,
+      "userSet": true
+     },
+     "dom.ipc.processCount": {
+      "value": 8,
+      "defined": true,
+      "userSet": false
+     },
+     "dom.ipc.processCount.webIsolated": {
+      "value": 4,
+      "defined": true,
+      "userSet": false
+     },
+     "fission.autostart": {
+      "value": true,
+      "defined": true,
+      "userSet": false
+     },
+     "remote.prefs.recommended": {
+      "value": false,
+      "defined": true,
+      "userSet": true
+     },
+     "zen.tab-unloader.enabled": {
+      "value": null,
+      "defined": false,
+      "userSet": false
+     },
+     "zen.tab-unloader.timeout-minutes": {
+      "value": null,
+      "defined": false,
+      "userSet": false
+     },
+     "zen.tabs.auto-groups.enabled": {
+      "value": true,
+      "defined": true,
+      "userSet": false
+     },
+     "zen.workspaces.enabled": {
+      "value": null,
+      "defined": false,
+      "userSet": false
+     },
+     "zen.view.use-single-toolbar": {
+      "value": true,
+      "defined": true,
+      "userSet": false
+     },
+     "gfx.webrender.compositor": {
+      "value": true,
+      "defined": true,
+      "userSet": false
+     }
+    },
+    "zenTimerUnloaderGlobal": false,
+    "zenTimerUnloaderModule": false,
+    "devicePixelRatio": 2,
+    "windowSize": [
+     1440,
+     900
+    ]
+   },
+   "startup": {
+    "at": 7263.531083333332,
+    "tabs": {
+     "total": 1,
+     "loaded": 1,
+     "busy": 0,
+     "pending": 0,
+     "unloaded": 0,
+     "groups": 0
+    },
+    "procs": [
+     {
+      "pid": 82509,
+      "type": "browser",
+      "origin": "",
+      "memory": 300160520,
+      "cpuTimeMs": 2313.27075,
+      "threads": 61,
+      "windows": 0,
+      "rss": 435093504
+     },
+     {
+      "pid": 82536,
+      "type": "utility",
+      "origin": "",
+      "memory": 16450232,
+      "cpuTimeMs": 72.747041,
+      "threads": 5,
+      "windows": 0,
+      "rss": 46825472
+     },
+     {
+      "pid": 82528,
+      "type": "rdd",
+      "origin": "",
+      "memory": 15925920,
+      "cpuTimeMs": 80.683583,
+      "threads": 5,
+      "windows": 0,
+      "rss": 56655872
+     },
+     {
+      "pid": 82541,
+      "type": "preallocated",
+      "origin": "",
+      "memory": 21955616,
+      "cpuTimeMs": 88.99125,
+      "threads": 24,
+      "windows": 0,
+      "rss": 73564160
+     },
+     {
+      "pid": 82522,
+      "type": "gpu",
+      "origin": "",
+      "memory": 598754480,
+      "cpuTimeMs": 885.678208,
+      "threads": 29,
+      "windows": 0,
+      "rss": 93913088
+     },
+     {
+      "pid": 82527,
+      "type": "extension",
+      "origin": "",
+      "memory": 55381064,
+      "cpuTimeMs": 171.465708,
+      "threads": 27,
+      "windows": 6,
+      "rss": 91455488
+     },
+     {
+      "pid": 82519,
+      "type": "socket",
+      "origin": "",
+      "memory": 15860384,
+      "cpuTimeMs": 105.109458,
+      "threads": 8,
+      "windows": 0,
+      "rss": 33423360
+     },
+     {
+      "pid": 82532,
+      "type": "web",
+      "origin": "",
+      "memory": 24511712,
+      "cpuTimeMs": 91.111041,
+      "threads": 25,
+      "windows": 1,
+      "rss": 79478784
+     },
+     {
+      "pid": 82540,
+      "type": "preallocated",
+      "origin": "",
+      "memory": 21627936,
+      "cpuTimeMs": 86.01125,
+      "threads": 24,
+      "windows": 0,
+      "rss": 73482240
+     },
+     {
+      "pid": 82530,
+      "type": "privilegedabout",
+      "origin": "",
+      "memory": 24216800,
+      "cpuTimeMs": 70.581041,
+      "threads": 25,
+      "windows": 0,
+      "rss": 71925760
+     },
+     {
+      "pid": 82539,
+      "type": "preallocated",
+      "origin": "",
+      "memory": 21840928,
+      "cpuTimeMs": 86.708416,
+      "threads": 24,
+      "windows": 0,
+      "rss": 73695232
+     }
+    ],
+    "label": "startup",
+    "loadavg": [
+     5.58,
+     6.68,
+     6.06
+    ],
+    "parentPid": 82509,
+    "rssTotalMB": 1077.1875,
+    "footprintTotalMB": 1064.9543685913086,
+    "processCount": 11,
+    "contentProcessCount": 3,
+    "byType": {
+     "browser": {
+      "count": 1,
+      "rssMB": 414.9375,
+      "footprintMB": 286.25537872314453
+     },
+     "utility": {
+      "count": 1,
+      "rssMB": 44.65625,
+      "footprintMB": 15.688163757324219
+     },
+     "rdd": {
+      "count": 1,
+      "rssMB": 54.03125,
+      "footprintMB": 15.188140869140625
+     },
+     "preallocated": {
+      "count": 3,
+      "rssMB": 210.515625,
+      "footprintMB": 62.393646240234375
+     },
+     "gpu": {
+      "count": 1,
+      "rssMB": 89.5625,
+      "footprintMB": 571.0167694091797
+     },
+     "extension": {
+      "count": 1,
+      "rssMB": 87.21875,
+      "footprintMB": 52.81549835205078
+     },
+     "socket": {
+      "count": 1,
+      "rssMB": 31.875,
+      "footprintMB": 15.125640869140625
+     },
+     "web": {
+      "count": 1,
+      "rssMB": 75.796875,
+      "footprintMB": 23.376190185546875
+     },
+     "privilegedabout": {
+      "count": 1,
+      "rssMB": 68.59375,
+      "footprintMB": 23.094940185546875
+     }
+    }
+   },
+   "open": {
+    "requested": 120,
+    "created": 120,
+    "createMs": 57.11987500000032,
+    "allLoadedMs": 8650.409958333332,
+    "timedOut": false,
+    "notLoaded": 0,
+    "parentLag": {
+     "n": 357,
+     "min": 0,
+     "median": 3.0502083333340124,
+     "p95": 25.69558333333225,
+     "max": 70.88233333333392,
+     "mean": 8.208746965452846,
+     "over50": 1,
+     "over200": 0
+    },
+    "mode": "queued:6"
+   },
+   "loaded": {
+    "at": 25959.27729166666,
+    "tabs": {
+     "total": 121,
+     "loaded": 121,
+     "busy": 0,
+     "pending": 0,
+     "unloaded": 0,
+     "groups": 0
+    },
+    "procs": [
+     {
+      "pid": 82509,
+      "type": "browser",
+      "origin": "",
+      "memory": 313285904,
+      "cpuTimeMs": 7259.390166,
+      "threads": 59,
+      "windows": 0,
+      "rss": 408764416
+     },
+     {
+      "pid": 82633,
+      "type": "webIsolated",
+      "origin": "http://site09.test",
+      "memory": 27919704,
+      "cpuTimeMs": 131.409958,
+      "threads": 25,
+      "windows": 1,
+      "rss": 70664192
+     },
+     {
+      "pid": 82722,
+      "type": "webIsolated",
+      "origin": "http://site23.test",
+      "memory": 32621960,
+      "cpuTimeMs": 120.144208,
+      "threads": 26,
+      "windows": 1,
+      "rss": 79101952
+     },
+     {
+      "pid": 82806,
+      "type": "webIsolated",
+      "origin": "http://site36.test",
+      "memory": 27952472,
+      "cpuTimeMs": 113.15025,
+      "threads": 26,
+      "windows": 1,
+      "rss": 72908800
+     },
+     {
+      "pid": 82756,
+      "type": "webIsolated",
+      "origin": "http://site27.test",
+      "memory": 78302208,
+      "cpuTimeMs": 350.079083,
+      "threads": 26,
+      "windows": 1,
+      "rss": 90669056
+     },
+     {
+      "pid": 82612,
+      "type": "webIsolated",
+      "origin": "http://site05.test",
+      "memory": 32130368,
+      "cpuTimeMs": 131.040833,
+      "threads": 25,
+      "windows": 1,
+      "rss": 78200832
+     },
+     {
+      "pid": 82790,
+      "type": "webIsolated",
+      "origin": "http://site33.test",
+      "memory": 33097096,
+      "cpuTimeMs": 115.890708,
+      "threads": 26,
+      "windows": 1,
+      "rss": 79675392
+     },
+     {
+      "pid": 82646,
+      "type": "webIsolated",
+      "origin": "http://site11.test",
+      "memory": 28018032,
+      "cpuTimeMs": 127.61475,
+      "threads": 25,
+      "windows": 1,
+      "rss": 71221248
+     },
+     {
+      "pid": 82591,
+      "type": "webIsolated",
+      "origin": "http://site01.test",
+      "memory": 77253584,
+      "cpuTimeMs": 456.652666,
+      "threads": 25,
+      "windows": 1,
+      "rss": 81297408
+     },
+     {
+      "pid": 82680,
+      "type": "webIsolated",
+      "origin": "http://site16.test",
+      "memory": 78269392,
+      "cpuTimeMs": 377.026583,
+      "threads": 26,
+      "windows": 1,
+      "rss": 90652672
+     },
+     {
+      "pid": 82536,
+      "type": "utility",
+      "origin": "",
+      "memory": 16401080,
+      "cpuTimeMs": 73.43475,
+      "threads": 5,
+      "windows": 0,
+      "rss": 32194560
+     },
+     {
+      "pid": 82625,
+      "type": "webIsolated",
+      "origin": "http://site07.test",
+      "memory": 77302760,
+      "cpuTimeMs": 460.79025,
+      "threads": 25,
+      "windows": 1,
+      "rss": 79740928
+     },
+     {
+      "pid": 82714,
+      "type": "webIsolated",
+      "origin": "http://site22.test",
+      "memory": 27952496,
+      "cpuTimeMs": 118.095,
+      "threads": 26,
+      "windows": 1,
+      "rss": 72941568
+     },
+     {
+      "pid": 82732,
+      "type": "webIsolated",
+      "origin": "http://site23.test",
+      "memory": 79563728,
+      "cpuTimeMs": 390.537875,
+      "threads": 26,
+      "windows": 1,
+      "rss": 123895808
+     },
+     {
+      "pid": 82816,
+      "type": "webIsolated",
+      "origin": "http://site37.test",
+      "memory": 79383456,
+      "cpuTimeMs": 354.437625,
+      "threads": 26,
+      "windows": 1,
+      "rss": 87228416
+     },
+     {
+      "pid": 82528,
+      "type": "rdd",
+      "origin": "",
+      "memory": 15942304,
+      "cpuTimeMs": 81.795791,
+      "threads": 5,
+      "windows": 0,
+      "rss": 54411264
+     },
+     {
+      "pid": 82617,
+      "type": "webIsolated",
+      "origin": "http://site06.test",
+      "memory": 32048448,
+      "cpuTimeMs": 124.3945,
+      "threads": 25,
+      "windows": 1,
+      "rss": 76791808
+     },
+     {
+      "pid": 82651,
+      "type": "webIsolated",
+      "origin": "http://site12.test",
+      "memory": 26821952,
+      "cpuTimeMs": 136.192166,
+      "threads": 25,
+      "windows": 1,
+      "rss": 77873152
+     },
+     {
+      "pid": 82740,
+      "type": "webIsolated",
+      "origin": "http://site25.test",
+      "memory": 28034416,
+      "cpuTimeMs": 117.948458,
+      "threads": 26,
+      "windows": 1,
+      "rss": 72957952
+     },
+     {
+      "pid": 82774,
+      "type": "webIsolated",
+      "origin": "http://site30.test",
+      "memory": 78318592,
+      "cpuTimeMs": 349.6985,
+      "threads": 26,
+      "windows": 1,
+      "rss": 91209728
+     },
+     {
+      "pid": 82808,
+      "type": "webIsolated",
+      "origin": "http://site36.test",
+      "memory": 33031536,
+      "cpuTimeMs": 111.233958,
+      "threads": 26,
+      "windows": 1,
+      "rss": 79724544
+     },
+     {
+      "pid": 82664,
+      "type": "webIsolated",
+      "origin": "http://site14.test",
+      "memory": 28001648,
+      "cpuTimeMs": 116.057,
+      "threads": 26,
+      "windows": 1,
+      "rss": 71106560
+     },
+     {
+      "pid": 82698,
+      "type": "webIsolated",
+      "origin": "http://site19.test",
+      "memory": 32572760,
+      "cpuTimeMs": 116.099375,
+      "threads": 26,
+      "windows": 1,
+      "rss": 79314944
+     },
+     {
+      "pid": 82643,
+      "type": "webIsolated",
+      "origin": "http://site10.test",
+      "memory": 77237200,
+      "cpuTimeMs": 477.018041,
+      "threads": 25,
+      "windows": 1,
+      "rss": 81543168
+     },
+     {
+      "pid": 82588,
+      "type": "webIsolated",
+      "origin": "http://site01.test",
+      "memory": 28083568,
+      "cpuTimeMs": 132.781875,
+      "threads": 25,
+      "windows": 1,
+      "rss": 70303744
+     },
+     {
+      "pid": 82846,
+      "type": "preallocated",
+      "origin": "",
+      "memory": 21693472,
+      "cpuTimeMs": 73.534375,
+      "threads": 24,
+      "windows": 0,
+      "rss": 59785216
+     },
+     {
+      "pid": 82766,
+      "type": "webIsolated",
+      "origin": "http://site29.test",
+      "memory": 33244528,
+      "cpuTimeMs": 112.076083,
+      "threads": 26,
+      "windows": 1,
+      "rss": 79740928
+     },
+     {
+      "pid": 82832,
+      "type": "webIsolated",
+      "origin": "http://site40.test",
+      "memory": 33637768,
+      "cpuTimeMs": 130.689333,
+      "threads": 25,
+      "windows": 1,
+      "rss": 85786624
+     },
+     {
+      "pid": 82800,
+      "type": "webIsolated",
+      "origin": "http://site35.test",
+      "memory": 28001648,
+      "cpuTimeMs": 104.111666,
+      "threads": 26,
+      "windows": 1,
+      "rss": 73007104
+     },
+     {
+      "pid": 82601,
+      "type": "webIsolated",
+      "origin": "http://site03.test",
+      "memory": 77237176,
+      "cpuTimeMs": 452.391958,
+      "threads": 25,
+      "windows": 1,
+      "rss": 81199104
+     },
+     {
+      "pid": 82834,
+      "type": "webIsolated",
+      "origin": "http://site40.test",
+      "memory": 80350160,
+      "cpuTimeMs": 406.02325,
+      "threads": 25,
+      "windows": 1,
+      "rss": 128516096
+     },
+     {
+      "pid": 82690,
+      "type": "webIsolated",
+      "origin": "http://site18.test",
+      "memory": 27903344,
+      "cpuTimeMs": 111.045125,
+      "threads": 26,
+      "windows": 1,
+      "rss": 73023488
+     },
+     {
+      "pid": 82635,
+      "type": "webIsolated",
+      "origin": "http://site09.test",
+      "memory": 32081216,
+      "cpuTimeMs": 126.931875,
+      "threads": 25,
+      "windows": 1,
+      "rss": 78938112
+     },
+     {
+      "pid": 82758,
+      "type": "webIsolated",
+      "origin": "http://site28.test",
+      "memory": 27985240,
+      "cpuTimeMs": 108.483291,
+      "threads": 26,
+      "windows": 1,
+      "rss": 73023488
+     },
+     {
+      "pid": 82847,
+      "type": "preallocated",
+      "origin": "",
+      "memory": 21660704,
+      "cpuTimeMs": 70.608625,
+      "threads": 24,
+      "windows": 0,
+      "rss": 59785216
+     },
+     {
+      "pid": 82792,
+      "type": "webIsolated",
+      "origin": "http://site33.test",
+      "memory": 80284600,
+      "cpuTimeMs": 367.858541,
+      "threads": 26,
+      "windows": 1,
+      "rss": 92798976
+     },
+     {
+      "pid": 82826,
+      "type": "webIsolated",
+      "origin": "http://site39.test",
+      "memory": 33801584,
+      "cpuTimeMs": 113.788666,
+      "threads": 25,
+      "windows": 1,
+      "rss": 80035840
+     },
+     {
+      "pid": 82682,
+      "type": "webIsolated",
+      "origin": "http://site17.test",
+      "memory": 28050800,
+      "cpuTimeMs": 111.148,
+      "threads": 26,
+      "windows": 1,
+      "rss": 71204864
+     },
+     {
+      "pid": 82627,
+      "type": "webIsolated",
+      "origin": "http://site08.test",
+      "memory": 28001624,
+      "cpuTimeMs": 117.106583,
+      "threads": 25,
+      "windows": 1,
+      "rss": 69468160
+     },
+     {
+      "pid": 82716,
+      "type": "webIsolated",
+      "origin": "http://site22.test",
+      "memory": 32769320,
+      "cpuTimeMs": 122.175291,
+      "threads": 26,
+      "windows": 1,
+      "rss": 79560704
+     },
+     {
+      "pid": 82760,
+      "type": "webIsolated",
+      "origin": "http://site28.test",
+      "memory": 32556400,
+      "cpuTimeMs": 113.698208,
+      "threads": 26,
+      "windows": 1,
+      "rss": 79085568
+     },
+     {
+      "pid": 82750,
+      "type": "webIsolated",
+      "origin": "http://site26.test",
+      "memory": 78302112,
+      "cpuTimeMs": 358.306875,
+      "threads": 26,
+      "windows": 1,
+      "rss": 90587136
+     },
+     {
+      "pid": 82784,
+      "type": "webIsolated",
+      "origin": "http://site32.test",
+      "memory": 33228120,
+      "cpuTimeMs": 128.201125,
+      "threads": 26,
+      "windows": 1,
+      "rss": 79822848
+     },
+     {
+      "pid": 82818,
+      "type": "webIsolated",
+      "origin": "http://site38.test",
+      "memory": 27919704,
+      "cpuTimeMs": 103.798916,
+      "threads": 25,
+      "windows": 1,
+      "rss": 69861376
+     },
+     {
+      "pid": 82674,
+      "type": "webIsolated",
+      "origin": "http://site15.test",
+      "memory": 77286352,
+      "cpuTimeMs": 354.73775,
+      "threads": 26,
+      "windows": 1,
+      "rss": 81854464
+     },
+     {
+      "pid": 82530,
+      "type": "privilegedabout",
+      "origin": "",
+      "memory": 22185136,
+      "cpuTimeMs": 84.992458,
+      "threads": 25,
+      "windows": 0,
+      "rss": 61685760
+     },
+     {
+      "pid": 82619,
+      "type": "webIsolated",
+      "origin": "http://site06.test",
+      "memory": 77237248,
+      "cpuTimeMs": 452.279,
+      "threads": 25,
+      "windows": 1,
+      "rss": 79249408
+     },
+     {
+      "pid": 82708,
+      "type": "webIsolated",
+      "origin": "http://site21.test",
+      "memory": 28018032,
+      "cpuTimeMs": 116.719416,
+      "threads": 26,
+      "windows": 1,
+      "rss": 72990720
+     },
+     {
+      "pid": 82653,
+      "type": "webIsolated",
+      "origin": "http://site12.test",
+      "memory": 32064832,
+      "cpuTimeMs": 122.509583,
+      "threads": 26,
+      "windows": 1,
+      "rss": 78692352
+     },
+     {
+      "pid": 82742,
+      "type": "webIsolated",
+      "origin": "http://site25.test",
+      "memory": 32490840,
+      "cpuTimeMs": 116.583583,
+      "threads": 26,
+      "windows": 1,
+      "rss": 79085568
+     },
+     {
+      "pid": 82810,
+      "type": "webIsolated",
+      "origin": "http://site36.test",
+      "memory": 79776744,
+      "cpuTimeMs": 386.954375,
+      "threads": 26,
+      "windows": 1,
+      "rss": 87785472
+     },
+     {
+      "pid": 82776,
+      "type": "webIsolated",
+      "origin": "http://site31.test",
+      "memory": 27903344,
+      "cpuTimeMs": 102.267833,
+      "threads": 26,
+      "windows": 1,
+      "rss": 72908800
+     },
+     {
+      "pid": 82820,
+      "type": "webIsolated",
+      "origin": "http://site38.test",
+      "memory": 33408368,
+      "cpuTimeMs": 115.657833,
+      "threads": 25,
+      "windows": 1,
+      "rss": 79544320
+     },
+     {
+      "pid": 82666,
+      "type": "webIsolated",
+      "origin": "http://site14.test",
+      "memory": 32458048,
+      "cpuTimeMs": 128.682041,
+      "threads": 26,
+      "windows": 1,
+      "rss": 79167488
+     },
+     {
+      "pid": 82522,
+      "type": "gpu",
+      "origin": "",
+      "memory": 475628720,
+      "cpuTimeMs": 1910.122083,
+      "threads": 31,
+      "windows": 0,
+      "rss": 80314368
+     },
+     {
+      "pid": 82700,
+      "type": "webIsolated",
+      "origin": "http://site19.test",
+      "memory": 78433280,
+      "cpuTimeMs": 336.229958,
+      "threads": 26,
+      "windows": 1,
+      "rss": 90619904
+     },
+     {
+      "pid": 82845,
+      "type": "preallocated",
+      "origin": "",
+      "memory": 21562376,
+      "cpuTimeMs": 73.229625,
+      "threads": 24,
+      "windows": 0,
+      "rss": 60014592
+     },
+     {
+      "pid": 82734,
+      "type": "webIsolated",
+      "origin": "http://site24.test",
+      "memory": 27919704,
+      "cpuTimeMs": 120.087041,
+      "threads": 26,
+      "windows": 1,
+      "rss": 72990720
+     },
+     {
+      "pid": 82768,
+      "type": "webIsolated",
+      "origin": "http://site29.test",
+      "memory": 78302112,
+      "cpuTimeMs": 356.120083,
+      "threads": 26,
+      "windows": 1,
+      "rss": 90767360
+     },
+     {
+      "pid": 82802,
+      "type": "webIsolated",
+      "origin": "http://site35.test",
+      "memory": 33015152,
+      "cpuTimeMs": 119.453333,
+      "threads": 26,
+      "windows": 1,
+      "rss": 79691776
+     },
+     {
+      "pid": 82658,
+      "type": "webIsolated",
+      "origin": "http://site13.test",
+      "memory": 28001648,
+      "cpuTimeMs": 116.578416,
+      "threads": 26,
+      "windows": 1,
+      "rss": 71106560
+     },
+     {
+      "pid": 82603,
+      "type": "webIsolated",
+      "origin": "http://site04.test",
+      "memory": 27854192,
+      "cpuTimeMs": 118.548625,
+      "threads": 25,
+      "windows": 1,
+      "rss": 70565888
+     },
+     {
+      "pid": 82692,
+      "type": "webIsolated",
+      "origin": "http://site18.test",
+      "memory": 32671064,
+      "cpuTimeMs": 117.859708,
+      "threads": 26,
+      "windows": 1,
+      "rss": 79478784
+     },
+     {
+      "pid": 82637,
+      "type": "webIsolated",
+      "origin": "http://site09.test",
+      "memory": 77237248,
+      "cpuTimeMs": 471.351083,
+      "threads": 25,
+      "windows": 1,
+      "rss": 81608704
+     },
+     {
+      "pid": 82527,
+      "type": "extension",
+      "origin": "",
+      "memory": 45091576,
+      "cpuTimeMs": 334.928791,
+      "threads": 27,
+      "windows": 6,
+      "rss": 76218368
+     },
+     {
+      "pid": 82748,
+      "type": "webIsolated",
+      "origin": "http://site26.test",
+      "memory": 32605552,
+      "cpuTimeMs": 127.33325,
+      "threads": 26,
+      "windows": 1,
+      "rss": 79118336
+     },
+     {
+      "pid": 82794,
+      "type": "webIsolated",
+      "origin": "http://site34.test",
+      "memory": 27903344,
+      "cpuTimeMs": 105.97325,
+      "threads": 26,
+      "windows": 1,
+      "rss": 72974336
+     },
+     {
+      "pid": 82595,
+      "type": "webIsolated",
+      "origin": "http://site02.test",
+      "memory": 77302688,
+      "cpuTimeMs": 452.54675,
+      "threads": 25,
+      "windows": 1,
+      "rss": 81199104
+     },
+     {
+      "pid": 82684,
+      "type": "webIsolated",
+      "origin": "http://site17.test",
+      "memory": 32392512,
+      "cpuTimeMs": 125.619166,
+      "threads": 26,
+      "windows": 1,
+      "rss": 79118336
+     },
+     {
+      "pid": 82629,
+      "type": "webIsolated",
+      "origin": "http://site08.test",
+      "memory": 32097624,
+      "cpuTimeMs": 135.320583,
+      "threads": 25,
+      "windows": 1,
+      "rss": 77660160
+     },
+     {
+      "pid": 82718,
+      "type": "webIsolated",
+      "origin": "http://site22.test",
+      "memory": 78629840,
+      "cpuTimeMs": 376.058166,
+      "threads": 26,
+      "windows": 1,
+      "rss": 124059648
+     },
+     {
+      "pid": 82783,
+      "type": "webIsolated",
+      "origin": "http://site32.test",
+      "memory": 27919728,
+      "cpuTimeMs": 116.35825,
+      "threads": 26,
+      "windows": 1,
+      "rss": 72974336
+     },
+     {
+      "pid": 82519,
+      "type": "socket",
+      "origin": "",
+      "memory": 15811232,
+      "cpuTimeMs": 105.223833,
+      "threads": 7,
+      "windows": 0,
+      "rss": 30031872
+     },
+     {
+      "pid": 82752,
+      "type": "webIsolated",
+      "origin": "http://site27.test",
+      "memory": 27936112,
+      "cpuTimeMs": 111.43325,
+      "threads": 26,
+      "windows": 1,
+      "rss": 73039872
+     },
+     {
+      "pid": 82786,
+      "type": "webIsolated",
+      "origin": "http://site32.test",
+      "memory": 82873296,
+      "cpuTimeMs": 373.711583,
+      "threads": 26,
+      "windows": 1,
+      "rss": 127811584
+     },
+     {
+      "pid": 82822,
+      "type": "webIsolated",
+      "origin": "http://site38.test",
+      "memory": 82807784,
+      "cpuTimeMs": 383.884875,
+      "threads": 25,
+      "windows": 1,
+      "rss": 133562368
+     },
+     {
+      "pid": 82676,
+      "type": "webIsolated",
+      "origin": "http://site16.test",
+      "memory": 27952496,
+      "cpuTimeMs": 112.7365,
+      "threads": 26,
+      "windows": 1,
+      "rss": 71008256
+     },
+     {
+      "pid": 82532,
+      "type": "web",
+      "origin": "",
+      "memory": 24003808,
+      "cpuTimeMs": 100.870375,
+      "threads": 25,
+      "windows": 1,
+      "rss": 64700416
+     },
+     {
+      "pid": 82621,
+      "type": "webIsolated",
+      "origin": "http://site07.test",
+      "memory": 27903344,
+      "cpuTimeMs": 129.322166,
+      "threads": 25,
+      "windows": 1,
+      "rss": 69468160
+     },
+     {
+      "pid": 82710,
+      "type": "webIsolated",
+      "origin": "http://site21.test",
+      "memory": 32671064,
+      "cpuTimeMs": 120.211291,
+      "threads": 26,
+      "windows": 1,
+      "rss": 79396864
+     },
+     {
+      "pid": 82655,
+      "type": "webIsolated",
+      "origin": "http://site12.test",
+      "memory": 76827432,
+      "cpuTimeMs": 400.245333,
+      "threads": 26,
+      "windows": 1,
+      "rss": 121372672
+     },
+     {
+      "pid": 82744,
+      "type": "webIsolated",
+      "origin": "http://site25.test",
+      "memory": 78384080,
+      "cpuTimeMs": 376.9545,
+      "threads": 26,
+      "windows": 1,
+      "rss": 90800128
+     },
+     {
+      "pid": 82778,
+      "type": "webIsolated",
+      "origin": "http://site31.test",
+      "memory": 32916872,
+      "cpuTimeMs": 104.659291,
+      "threads": 26,
+      "windows": 1,
+      "rss": 79609856
+     },
+     {
+      "pid": 82812,
+      "type": "webIsolated",
+      "origin": "http://site37.test",
+      "memory": 28083568,
+      "cpuTimeMs": 119.062208,
+      "threads": 26,
+      "windows": 1,
+      "rss": 78790656
+     },
+     {
+      "pid": 82668,
+      "type": "webIsolated",
+      "origin": "http://site14.test",
+      "memory": 76712768,
+      "cpuTimeMs": 395.376625,
+      "threads": 26,
+      "windows": 1,
+      "rss": 121503744
+     },
+     {
+      "pid": 82613,
+      "type": "webIsolated",
+      "origin": "http://site05.test",
+      "memory": 77220840,
+      "cpuTimeMs": 455.828333,
+      "threads": 25,
+      "windows": 1,
+      "rss": 80297984
+     },
+     {
+      "pid": 82702,
+      "type": "webIsolated",
+      "origin": "http://site20.test",
+      "memory": 27886936,
+      "cpuTimeMs": 109.1225,
+      "threads": 26,
+      "windows": 1,
+      "rss": 72941568
+     },
+     {
+      "pid": 82647,
+      "type": "webIsolated",
+      "origin": "http://site11.test",
+      "memory": 32195904,
+      "cpuTimeMs": 132.698041,
+      "threads": 25,
+      "windows": 1,
+      "rss": 78921728
+     },
+     {
+      "pid": 82736,
+      "type": "webIsolated",
+      "origin": "http://site24.test",
+      "memory": 32589192,
+      "cpuTimeMs": 124.70875,
+      "threads": 26,
+      "windows": 1,
+      "rss": 79003648
+     },
+     {
+      "pid": 82592,
+      "type": "webIsolated",
+      "origin": "http://site02.test",
+      "memory": 28050800,
+      "cpuTimeMs": 131.618916,
+      "threads": 25,
+      "windows": 1,
+      "rss": 70615040
+     },
+     {
+      "pid": 82770,
+      "type": "webIsolated",
+      "origin": "http://site30.test",
+      "memory": 28050800,
+      "cpuTimeMs": 108.486291,
+      "threads": 26,
+      "windows": 1,
+      "rss": 78430208
+     },
+     {
+      "pid": 82828,
+      "type": "webIsolated",
+      "origin": "http://site39.test",
+      "memory": 80333776,
+      "cpuTimeMs": 383.155583,
+      "threads": 25,
+      "windows": 1,
+      "rss": 111394816
+     },
+     {
+      "pid": 82804,
+      "type": "webIsolated",
+      "origin": "http://site35.test",
+      "memory": 80514000,
+      "cpuTimeMs": 376.215166,
+      "threads": 26,
+      "windows": 1,
+      "rss": 92700672
+     },
+     {
+      "pid": 82660,
+      "type": "webIsolated",
+      "origin": "http://site13.test",
+      "memory": 32064832,
+      "cpuTimeMs": 117.998125,
+      "threads": 26,
+      "windows": 1,
+      "rss": 78790656
+     },
+     {
+      "pid": 82605,
+      "type": "webIsolated",
+      "origin": "http://site04.test",
+      "memory": 32032040,
+      "cpuTimeMs": 120.430958,
+      "threads": 25,
+      "windows": 1,
+      "rss": 78217216
+     },
+     {
+      "pid": 82694,
+      "type": "webIsolated",
+      "origin": "http://site18.test",
+      "memory": 78367720,
+      "cpuTimeMs": 364.977791,
+      "threads": 26,
+      "windows": 1,
+      "rss": 90832896
+     },
+     {
+      "pid": 82639,
+      "type": "webIsolated",
+      "origin": "http://site10.test",
+      "memory": 27968880,
+      "cpuTimeMs": 126.258958,
+      "threads": 25,
+      "windows": 1,
+      "rss": 71204864
+     },
+     {
+      "pid": 82762,
+      "type": "webIsolated",
+      "origin": "http://site28.test",
+      "memory": 80726992,
+      "cpuTimeMs": 347.159041,
+      "threads": 26,
+      "windows": 1,
+      "rss": 125976576
+     },
+     {
+      "pid": 82707,
+      "type": "webIsolated",
+      "origin": "http://site20.test",
+      "memory": 78302160,
+      "cpuTimeMs": 340.935208,
+      "threads": 26,
+      "windows": 1,
+      "rss": 90767360
+     },
+     {
+      "pid": 82796,
+      "type": "webIsolated",
+      "origin": "http://site34.test",
+      "memory": 33260936,
+      "cpuTimeMs": 109.581125,
+      "threads": 26,
+      "windows": 1,
+      "rss": 79937536
+     },
+     {
+      "pid": 82597,
+      "type": "webIsolated",
+      "origin": "http://site03.test",
+      "memory": 26887488,
+      "cpuTimeMs": 140.787958,
+      "threads": 25,
+      "windows": 1,
+      "rss": 77594624
+     },
+     {
+      "pid": 82830,
+      "type": "webIsolated",
+      "origin": "http://site40.test",
+      "memory": 28493168,
+      "cpuTimeMs": 118.180916,
+      "threads": 25,
+      "windows": 1,
+      "rss": 85032960
+     },
+     {
+      "pid": 82686,
+      "type": "webIsolated",
+      "origin": "http://site17.test",
+      "memory": 76860200,
+      "cpuTimeMs": 402.777833,
+      "threads": 26,
+      "windows": 1,
+      "rss": 121503744
+     },
+     {
+      "pid": 82631,
+      "type": "webIsolated",
+      "origin": "http://site08.test",
+      "memory": 76073816,
+      "cpuTimeMs": 491.28825,
+      "threads": 25,
+      "windows": 1,
+      "rss": 120471552
+     },
+     {
+      "pid": 82720,
+      "type": "webIsolated",
+      "origin": "http://site23.test",
+      "memory": 28018032,
+      "cpuTimeMs": 105.61225,
+      "threads": 26,
+      "windows": 1,
+      "rss": 73039872
+     },
+     {
+      "pid": 82754,
+      "type": "webIsolated",
+      "origin": "http://site27.test",
+      "memory": 32589168,
+      "cpuTimeMs": 121.716125,
+      "threads": 26,
+      "windows": 1,
+      "rss": 79036416
+     },
+     {
+      "pid": 82610,
+      "type": "webIsolated",
+      "origin": "http://site05.test",
+      "memory": 27985264,
+      "cpuTimeMs": 124.273666,
+      "threads": 25,
+      "windows": 1,
+      "rss": 70434816
+     },
+     {
+      "pid": 82788,
+      "type": "webIsolated",
+      "origin": "http://site33.test",
+      "memory": 28001648,
+      "cpuTimeMs": 102.845833,
+      "threads": 26,
+      "windows": 1,
+      "rss": 72941568
+     },
+     {
+      "pid": 82589,
+      "type": "webIsolated",
+      "origin": "http://site01.test",
+      "memory": 32146752,
+      "cpuTimeMs": 134.322916,
+      "threads": 25,
+      "windows": 1,
+      "rss": 78299136
+     },
+     {
+      "pid": 82678,
+      "type": "webIsolated",
+      "origin": "http://site16.test",
+      "memory": 32654632,
+      "cpuTimeMs": 119.421625,
+      "threads": 26,
+      "windows": 1,
+      "rss": 79314944
+     },
+     {
+      "pid": 82623,
+      "type": "webIsolated",
+      "origin": "http://site07.test",
+      "memory": 32048448,
+      "cpuTimeMs": 126.096625,
+      "threads": 25,
+      "windows": 1,
+      "rss": 77037568
+     },
+     {
+      "pid": 82712,
+      "type": "webIsolated",
+      "origin": "http://site21.test",
+      "memory": 78596976,
+      "cpuTimeMs": 363.700375,
+      "threads": 26,
+      "windows": 1,
+      "rss": 122781696
+     },
+     {
+      "pid": 82746,
+      "type": "webIsolated",
+      "origin": "http://site26.test",
+      "memory": 27362672,
+      "cpuTimeMs": 124.589458,
+      "threads": 26,
+      "windows": 1,
+      "rss": 77905920
+     },
+     {
+      "pid": 82780,
+      "type": "webIsolated",
+      "origin": "http://site31.test",
+      "memory": 78351336,
+      "cpuTimeMs": 354.756458,
+      "threads": 26,
+      "windows": 1,
+      "rss": 90636288
+     },
+     {
+      "pid": 82814,
+      "type": "webIsolated",
+      "origin": "http://site37.test",
+      "memory": 33457496,
+      "cpuTimeMs": 117.561791,
+      "threads": 26,
+      "windows": 1,
+      "rss": 80003072
+     },
+     {
+      "pid": 82670,
+      "type": "webIsolated",
+      "origin": "http://site15.test",
+      "memory": 27952496,
+      "cpuTimeMs": 110.2115,
+      "threads": 26,
+      "windows": 1,
+      "rss": 71090176
+     },
+     {
+      "pid": 82615,
+      "type": "webIsolated",
+      "origin": "http://site06.test",
+      "memory": 27886936,
+      "cpuTimeMs": 125.704958,
+      "threads": 25,
+      "windows": 1,
+      "rss": 69910528
+     },
+     {
+      "pid": 82704,
+      "type": "webIsolated",
+      "origin": "http://site20.test",
+      "memory": 32752960,
+      "cpuTimeMs": 127.388875,
+      "threads": 26,
+      "windows": 1,
+      "rss": 79593472
+     },
+     {
+      "pid": 82649,
+      "type": "webIsolated",
+      "origin": "http://site11.test",
+      "memory": 77286328,
+      "cpuTimeMs": 469.617166,
+      "threads": 25,
+      "windows": 1,
+      "rss": 81526784
+     },
+     {
+      "pid": 82738,
+      "type": "webIsolated",
+      "origin": "http://site24.test",
+      "memory": 80268192,
+      "cpuTimeMs": 402.386166,
+      "threads": 26,
+      "windows": 1,
+      "rss": 124387328
+     },
+     {
+      "pid": 82594,
+      "type": "webIsolated",
+      "origin": "http://site02.test",
+      "memory": 32130368,
+      "cpuTimeMs": 132.550291,
+      "threads": 25,
+      "windows": 1,
+      "rss": 78495744
+     },
+     {
+      "pid": 82772,
+      "type": "webIsolated",
+      "origin": "http://site30.test",
+      "memory": 32982408,
+      "cpuTimeMs": 113.388125,
+      "threads": 26,
+      "windows": 1,
+      "rss": 79527936
+     },
+     {
+      "pid": 82662,
+      "type": "webIsolated",
+      "origin": "http://site13.test",
+      "memory": 77269944,
+      "cpuTimeMs": 377.017125,
+      "threads": 26,
+      "windows": 1,
+      "rss": 81444864
+     },
+     {
+      "pid": 82607,
+      "type": "webIsolated",
+      "origin": "http://site04.test",
+      "memory": 76237680,
+      "cpuTimeMs": 491.910375,
+      "threads": 25,
+      "windows": 1,
+      "rss": 119767040
+     },
+     {
+      "pid": 82696,
+      "type": "webIsolated",
+      "origin": "http://site19.test",
+      "memory": 27886960,
+      "cpuTimeMs": 112.781375,
+      "threads": 26,
+      "windows": 1,
+      "rss": 72990720
+     },
+     {
+      "pid": 82641,
+      "type": "webIsolated",
+      "origin": "http://site10.test",
+      "memory": 32015680,
+      "cpuTimeMs": 117.663208,
+      "threads": 25,
+      "windows": 1,
+      "rss": 78921728
+     },
+     {
+      "pid": 82764,
+      "type": "webIsolated",
+      "origin": "http://site29.test",
+      "memory": 27903344,
+      "cpuTimeMs": 104.302958,
+      "threads": 26,
+      "windows": 1,
+      "rss": 72925184
+     },
+     {
+      "pid": 82798,
+      "type": "webIsolated",
+      "origin": "http://site34.test",
+      "memory": 80366496,
+      "cpuTimeMs": 380.595708,
+      "threads": 26,
+      "windows": 1,
+      "rss": 92848128
+     },
+     {
+      "pid": 82599,
+      "type": "webIsolated",
+      "origin": "http://site03.test",
+      "memory": 32097600,
+      "cpuTimeMs": 135.939,
+      "threads": 25,
+      "windows": 1,
+      "rss": 78413824
+     },
+     {
+      "pid": 82672,
+      "type": "webIsolated",
+      "origin": "http://site15.test",
+      "memory": 32605528,
+      "cpuTimeMs": 116.401,
+      "threads": 26,
+      "windows": 1,
+      "rss": 79396864
+     },
+     {
+      "pid": 82824,
+      "type": "webIsolated",
+      "origin": "http://site39.test",
+      "memory": 28034392,
+      "cpuTimeMs": 109.964583,
+      "threads": 25,
+      "windows": 1,
+      "rss": 69238784
+     }
+    ],
+    "label": "loaded",
+    "loadavg": [
+     5.52,
+     6.63,
+     6.05
+    ],
+    "parentPid": 82509,
+    "rssTotalMB": 10538.78125,
+    "footprintTotalMB": 6251.628456115723,
+    "processCount": 131,
+    "contentProcessCount": 123,
+    "byType": {
+     "browser": {
+      "count": 1,
+      "rssMB": 389.828125,
+      "footprintMB": 298.77272033691406
+     },
+     "webIsolated": {
+      "count": 120,
+      "rssMB": 9596.640625,
+      "footprintMB": 5304.375885009766
+     },
+     "utility": {
+      "count": 1,
+      "rssMB": 30.703125,
+      "footprintMB": 15.641288757324219
+     },
+     "rdd": {
+      "count": 1,
+      "rssMB": 51.890625,
+      "footprintMB": 15.203765869140625
+     },
+     "preallocated": {
+      "count": 3,
+      "rssMB": 171.265625,
+      "footprintMB": 61.90924835205078
+     },
+     "privilegedabout": {
+      "count": 1,
+      "rssMB": 58.828125,
+      "footprintMB": 21.157394409179688
+     },
+     "gpu": {
+      "count": 1,
+      "rssMB": 76.59375,
+      "footprintMB": 453.5948944091797
+     },
+     "extension": {
+      "count": 1,
+      "rssMB": 72.6875,
+      "footprintMB": 43.00267791748047
+     },
+     "socket": {
+      "count": 1,
+      "rssMB": 28.640625,
+      "footprintMB": 15.078765869140625
+     },
+     "web": {
+      "count": 1,
+      "rssMB": 61.703125,
+      "footprintMB": 22.891815185546875
+     }
+    }
+   },
+   "switch": {
+    "switches": 30,
+    "timeouts": 0,
+    "layers": {
+     "n": 30,
+     "min": 3.329958333320974,
+     "median": 6.587625000000116,
+     "p95": 22.3797083333302,
+     "max": 31.75545833333308,
+     "mean": 7.965291666667084
+    },
+    "paint": {
+     "n": 30,
+     "min": 8.74020833333634,
+     "median": 12.906833333334362,
+     "p95": 36.555333333330054,
+     "max": 113.00712500000009,
+     "mean": 17.234686111111294
+    },
+    "over50Layers": 0,
+    "samples": [
+     {
+      "timedOut": false,
+      "layersMs": 31.75545833333308,
+      "paintMs": 113.00712500000009,
+      "state": "loaded",
+      "index": 76
+     },
+     {
+      "timedOut": false,
+      "layersMs": 8.845708333334187,
+      "paintMs": 14.779833333333954,
+      "state": "loaded",
+      "index": 90
+     },
+     {
+      "timedOut": false,
+      "layersMs": 8.949458333336224,
+      "paintMs": 10.244166666667297,
+      "state": "loaded",
+      "index": 15
+     },
+     {
+      "timedOut": false,
+      "layersMs": 7.778083333330869,
+      "paintMs": 12.690499999996973,
+      "state": "loaded",
+      "index": 56
+     },
+     {
+      "timedOut": false,
+      "layersMs": 7.67391666666299,
+      "paintMs": 14.232124999998632,
+      "state": "loaded",
+      "index": 3
+     },
+     {
+      "timedOut": false,
+      "layersMs": 6.836958333333314,
+      "paintMs": 9.396833333332324,
+      "state": "loaded",
+      "index": 1
+     },
+     {
+      "timedOut": false,
+      "layersMs": 6.214333333333343,
+      "paintMs": 11.52391666666881,
+      "state": "loaded",
+      "index": 22
+     },
+     {
+      "timedOut": false,
+      "layersMs": 22.3797083333302,
+      "paintMs": 36.555333333330054,
+      "state": "loaded",
+      "index": 75
+     },
+     {
+      "timedOut": false,
+      "layersMs": 4.711791666668432,
+      "paintMs": 17.889625000003434,
+      "state": "loaded",
+      "index": 37
+     },
+     {
+      "timedOut": false,
+      "layersMs": 8.266166666668141,
+      "paintMs": 9.644958333330578,
+      "state": "loaded",
+      "index": 98
+     },
+     {
+      "timedOut": false,
+      "layersMs": 5.2447083333354385,
+      "paintMs": 17.35649999999805,
+      "state": "loaded",
+      "index": 79
+     },
+     {
+      "timedOut": false,
+      "layersMs": 5.938041666668141,
+      "paintMs": 12.906833333334362,
+      "state": "loaded",
+      "index": 20
+     },
+     {
+      "timedOut": false,
+      "layersMs": 6.755291666675475,
+      "paintMs": 9.257041666671284,
+      "state": "loaded",
+      "index": 62
+     },
+     {
+      "timedOut": false,
+      "layersMs": 5.009750000004715,
+      "paintMs": 8.74020833333634,
+      "state": "loaded",
+      "index": 22
+     },
+     {
+      "timedOut": false,
+      "layersMs": 9.330041666667967,
+      "paintMs": 10.526041666671517,
+      "state": "loaded",
+      "index": 57
+     },
+     {
+      "timedOut": false,
+      "layersMs": 6.579083333337621,
+      "paintMs": 9.26908333333995,
+      "state": "loaded",
+      "index": 25
+     },
+     {
+      "timedOut": false,
+      "layersMs": 8.238166666669713,
+      "paintMs": 14.87270833333605,
+      "state": "loaded",
+      "index": 24
+     },
+     {
+      "timedOut": false,
+      "layersMs": 7.063666666668723,
+      "paintMs": 9.175791666668374,
+      "state": "loaded",
+      "index": 55
+     },
+     {
+      "timedOut": false,
+      "layersMs": 4.527999999991152,
+      "paintMs": 16.176166666657082,
+      "state": "loaded",
+      "index": 61
+     },
+     {
+      "timedOut": false,
+      "layersMs": 4.890333333336457,
+      "paintMs": 15.42495833333669,
+      "state": "loaded",
+      "index": 118
+     },
+     {
+      "timedOut": false,
+      "layersMs": 5.932625000001281,
+      "paintMs": 17.301083333331917,
+      "state": "loaded",
+      "index": 80
+     },
+     {
+      "timedOut": false,
+      "layersMs": 4.377375000003667,
+      "paintMs": 12.311833333333198,
+      "state": "loaded",
+      "index": 32
+     },
+     {
+      "timedOut": false,
+      "layersMs": 6.4038333333373885,
+      "paintMs": 11.42416666666395,
+      "state": "loaded",
+      "index": 97
+     },
+     {
+      "timedOut": false,
+      "layersMs": 6.587625000000116,
+      "paintMs": 10.781999999999243,
+      "state": "loaded",
+      "index": 110
+     },
+     {
+      "timedOut": false,
+      "layersMs": 7.596208333336108,
+      "paintMs": 12.711958333333314,
+      "state": "loaded",
+      "index": 0
+     },
+     {
+      "timedOut": false,
+      "layersMs": 7.70004166666331,
+      "paintMs": 13.81245833333378,
+      "state": "loaded",
+      "index": 39
+     },
+     {
+      "timedOut": false,
+      "layersMs": 9.287749999995867,
+      "paintMs": 13.539791666662495,
+      "state": "loaded",
+      "index": 69
+     },
+     {
+      "timedOut": false,
+      "layersMs": 3.329958333320974,
+      "paintMs": 16.05533333332278,
+      "state": "loaded",
+      "index": 61
+     },
+     {
+      "timedOut": false,
+      "layersMs": 6.342166666661797,
+      "paintMs": 21.184333333338145,
+      "state": "loaded",
+      "index": 76
+     },
+     {
+      "timedOut": false,
+      "layersMs": 4.412500000005821,
+      "paintMs": 14.247875000008207,
+      "state": "loaded",
+      "index": 104
+     }
+    ]
+   },
+   "scroll": {
+    "scrollRangePx": 4250,
+    "clientHeightPx": 728,
+    "totalMs": 2675.534291666663,
+    "frames": {
+     "n": 428,
+     "min": 5.4821666666684905,
+     "median": 6.246708333332208,
+     "p95": 6.923333333332266,
+     "max": 7.082458333337854,
+     "mean": 6.249895735981303
+    },
+    "framesOver33": 0,
+    "framesOver50": 0,
+    "framesOver200": 0,
+    "parentLag": {
+     "n": 141,
+     "min": 0.0783750000045984,
+     "median": 3.086041666676465,
+     "p95": 4.437916666662204,
+     "max": 5.137750000001688,
+     "mean": 2.8559867021276726,
+     "over50": 0,
+     "over200": 0
+    }
+   },
+   "idle": {
+    "at": 107209.27008333332,
+    "tabs": {
+     "total": 121,
+     "loaded": 121,
+     "busy": 0,
+     "pending": 0,
+     "unloaded": 0,
+     "groups": 0
+    },
+    "procs": [
+     {
+      "pid": 82509,
+      "type": "browser",
+      "origin": "",
+      "memory": 303146344,
+      "cpuTimeMs": 14227.436,
+      "threads": 51,
+      "windows": 0,
+      "rss": 405241856
+     },
+     {
+      "pid": 82633,
+      "type": "webIsolated",
+      "origin": "http://site09.test",
+      "memory": 27936088,
+      "cpuTimeMs": 136.528458,
+      "threads": 25,
+      "windows": 1,
+      "rss": 70549504
+     },
+     {
+      "pid": 82722,
+      "type": "webIsolated",
+      "origin": "http://site23.test",
+      "memory": 32097624,
+      "cpuTimeMs": 132.838083,
+      "threads": 25,
+      "windows": 1,
+      "rss": 77070336
+     },
+     {
+      "pid": 82806,
+      "type": "webIsolated",
+      "origin": "http://site36.test",
+      "memory": 27919704,
+      "cpuTimeMs": 117.887333,
+      "threads": 25,
+      "windows": 1,
+      "rss": 71352320
+     },
+     {
+      "pid": 82756,
+      "type": "webIsolated",
+      "origin": "http://site27.test",
+      "memory": 76565504,
+      "cpuTimeMs": 452.227041,
+      "threads": 25,
+      "windows": 1,
+      "rss": 83968000
+     },
+     {
+      "pid": 82612,
+      "type": "webIsolated",
+      "origin": "http://site05.test",
+      "memory": 32113984,
+      "cpuTimeMs": 142.242625,
+      "threads": 25,
+      "windows": 1,
+      "rss": 75907072
+     },
+     {
+      "pid": 82790,
+      "type": "webIsolated",
+      "origin": "http://site33.test",
+      "memory": 42272088,
+      "cpuTimeMs": 139.0175,
+      "threads": 25,
+      "windows": 1,
+      "rss": 79282176
+     },
+     {
+      "pid": 82646,
+      "type": "webIsolated",
+      "origin": "http://site11.test",
+      "memory": 28034416,
+      "cpuTimeMs": 132.476666,
+      "threads": 25,
+      "windows": 1,
+      "rss": 70696960
+     },
+     {
+      "pid": 82591,
+      "type": "webIsolated",
+      "origin": "http://site01.test",
+      "memory": 75713488,
+      "cpuTimeMs": 483.19125,
+      "threads": 25,
+      "windows": 1,
+      "rss": 83165184
+     },
+     {
+      "pid": 82680,
+      "type": "webIsolated",
+      "origin": "http://site16.test",
+      "memory": 75680720,
+      "cpuTimeMs": 401.613125,
+      "threads": 25,
+      "windows": 1,
+      "rss": 83181568
+     },
+     {
+      "pid": 82536,
+      "type": "utility",
+      "origin": "",
+      "memory": 16401080,
+      "cpuTimeMs": 76.519541,
+      "threads": 5,
+      "windows": 0,
+      "rss": 32374784
+     },
+     {
+      "pid": 82625,
+      "type": "webIsolated",
+      "origin": "http://site07.test",
+      "memory": 75762664,
+      "cpuTimeMs": 485.288958,
+      "threads": 25,
+      "windows": 1,
+      "rss": 82132992
+     },
+     {
+      "pid": 82714,
+      "type": "webIsolated",
+      "origin": "http://site22.test",
+      "memory": 28329328,
+      "cpuTimeMs": 130.505083,
+      "threads": 25,
+      "windows": 1,
+      "rss": 74235904
+     },
+     {
+      "pid": 82732,
+      "type": "webIsolated",
+      "origin": "http://site23.test",
+      "memory": 73173800,
+      "cpuTimeMs": 444.921583,
+      "threads": 25,
+      "windows": 1,
+      "rss": 115097600
+     },
+     {
+      "pid": 82816,
+      "type": "webIsolated",
+      "origin": "http://site37.test",
+      "memory": 75647904,
+      "cpuTimeMs": 383.190625,
+      "threads": 25,
+      "windows": 1,
+      "rss": 83394560
+     },
+     {
+      "pid": 82528,
+      "type": "rdd",
+      "origin": "",
+      "memory": 15942304,
+      "cpuTimeMs": 84.875958,
+      "threads": 5,
+      "windows": 0,
+      "rss": 54591488
+     },
+     {
+      "pid": 82617,
+      "type": "webIsolated",
+      "origin": "http://site06.test",
+      "memory": 32032064,
+      "cpuTimeMs": 136.770666,
+      "threads": 25,
+      "windows": 1,
+      "rss": 77037568
+     },
+     {
+      "pid": 82651,
+      "type": "webIsolated",
+      "origin": "http://site12.test",
+      "memory": 26805568,
+      "cpuTimeMs": 145.266291,
+      "threads": 25,
+      "windows": 1,
+      "rss": 75710464
+     },
+     {
+      "pid": 82740,
+      "type": "webIsolated",
+      "origin": "http://site25.test",
+      "memory": 27985264,
+      "cpuTimeMs": 122.996208,
+      "threads": 25,
+      "windows": 1,
+      "rss": 71352320
+     },
+     {
+      "pid": 82774,
+      "type": "webIsolated",
+      "origin": "http://site30.test",
+      "memory": 75746304,
+      "cpuTimeMs": 376.556833,
+      "threads": 25,
+      "windows": 1,
+      "rss": 83132416
+     },
+     {
+      "pid": 82808,
+      "type": "webIsolated",
+      "origin": "http://site36.test",
+      "memory": 32113984,
+      "cpuTimeMs": 123.386375,
+      "threads": 25,
+      "windows": 1,
+      "rss": 77135872
+     },
+     {
+      "pid": 82664,
+      "type": "webIsolated",
+      "origin": "http://site14.test",
+      "memory": 28394864,
+      "cpuTimeMs": 128.936333,
+      "threads": 25,
+      "windows": 1,
+      "rss": 74072064
+     },
+     {
+      "pid": 82698,
+      "type": "webIsolated",
+      "origin": "http://site19.test",
+      "memory": 32064856,
+      "cpuTimeMs": 126.582333,
+      "threads": 25,
+      "windows": 1,
+      "rss": 77053952
+     },
+     {
+      "pid": 82643,
+      "type": "webIsolated",
+      "origin": "http://site10.test",
+      "memory": 76549072,
+      "cpuTimeMs": 588.675083,
+      "threads": 25,
+      "windows": 1,
+      "rss": 83640320
+     },
+     {
+      "pid": 82588,
+      "type": "webIsolated",
+      "origin": "http://site01.test",
+      "memory": 28099952,
+      "cpuTimeMs": 138.366833,
+      "threads": 25,
+      "windows": 1,
+      "rss": 70434816
+     },
+     {
+      "pid": 82846,
+      "type": "preallocated",
+      "origin": "",
+      "memory": 21742624,
+      "cpuTimeMs": 76.634,
+      "threads": 24,
+      "windows": 0,
+      "rss": 54591488
+     },
+     {
+      "pid": 82766,
+      "type": "webIsolated",
+      "origin": "http://site29.test",
+      "memory": 32081216,
+      "cpuTimeMs": 125.306208,
+      "threads": 25,
+      "windows": 1,
+      "rss": 77348864
+     },
+     {
+      "pid": 82832,
+      "type": "webIsolated",
+      "origin": "http://site40.test",
+      "memory": 42141016,
+      "cpuTimeMs": 150.965875,
+      "threads": 25,
+      "windows": 1,
+      "rss": 79593472
+     },
+     {
+      "pid": 82800,
+      "type": "webIsolated",
+      "origin": "http://site35.test",
+      "memory": 28001648,
+      "cpuTimeMs": 109.420208,
+      "threads": 25,
+      "windows": 1,
+      "rss": 71368704
+     },
+     {
+      "pid": 82601,
+      "type": "webIsolated",
+      "origin": "http://site03.test",
+      "memory": 75697080,
+      "cpuTimeMs": 477.272,
+      "threads": 25,
+      "windows": 1,
+      "rss": 82919424
+     },
+     {
+      "pid": 82834,
+      "type": "webIsolated",
+      "origin": "http://site40.test",
+      "memory": 76630992,
+      "cpuTimeMs": 522.671,
+      "threads": 25,
+      "windows": 1,
+      "rss": 83755008
+     },
+     {
+      "pid": 82690,
+      "type": "webIsolated",
+      "origin": "http://site18.test",
+      "memory": 27903344,
+      "cpuTimeMs": 115.901958,
+      "threads": 25,
+      "windows": 1,
+      "rss": 71417856
+     },
+     {
+      "pid": 82635,
+      "type": "webIsolated",
+      "origin": "http://site09.test",
+      "memory": 32064832,
+      "cpuTimeMs": 137.40575,
+      "threads": 25,
+      "windows": 1,
+      "rss": 77004800
+     },
+     {
+      "pid": 82758,
+      "type": "webIsolated",
+      "origin": "http://site28.test",
+      "memory": 27952472,
+      "cpuTimeMs": 113.017833,
+      "threads": 25,
+      "windows": 1,
+      "rss": 71385088
+     },
+     {
+      "pid": 82847,
+      "type": "preallocated",
+      "origin": "",
+      "memory": 21611552,
+      "cpuTimeMs": 73.690416,
+      "threads": 24,
+      "windows": 0,
+      "rss": 54706176
+     },
+     {
+      "pid": 82792,
+      "type": "webIsolated",
+      "origin": "http://site33.test",
+      "memory": 75615160,
+      "cpuTimeMs": 393.954875,
+      "threads": 25,
+      "windows": 1,
+      "rss": 86327296
+     },
+     {
+      "pid": 82826,
+      "type": "webIsolated",
+      "origin": "http://site39.test",
+      "memory": 32490816,
+      "cpuTimeMs": 126.328375,
+      "threads": 25,
+      "windows": 1,
+      "rss": 78086144
+     },
+     {
+      "pid": 82682,
+      "type": "webIsolated",
+      "origin": "http://site17.test",
+      "memory": 28018032,
+      "cpuTimeMs": 115.7065,
+      "threads": 25,
+      "windows": 1,
+      "rss": 71385088
+     },
+     {
+      "pid": 82627,
+      "type": "webIsolated",
+      "origin": "http://site08.test",
+      "memory": 28296536,
+      "cpuTimeMs": 130.259708,
+      "threads": 25,
+      "windows": 1,
+      "rss": 73170944
+     },
+     {
+      "pid": 82716,
+      "type": "webIsolated",
+      "origin": "http://site22.test",
+      "memory": 42042688,
+      "cpuTimeMs": 142.103,
+      "threads": 25,
+      "windows": 1,
+      "rss": 79495168
+     },
+     {
+      "pid": 82760,
+      "type": "webIsolated",
+      "origin": "http://site28.test",
+      "memory": 42485080,
+      "cpuTimeMs": 135.290958,
+      "threads": 25,
+      "windows": 1,
+      "rss": 80084992
+     },
+     {
+      "pid": 82750,
+      "type": "webIsolated",
+      "origin": "http://site26.test",
+      "memory": 75697056,
+      "cpuTimeMs": 389.148,
+      "threads": 25,
+      "windows": 1,
+      "rss": 83230720
+     },
+     {
+      "pid": 82784,
+      "type": "webIsolated",
+      "origin": "http://site32.test",
+      "memory": 42042688,
+      "cpuTimeMs": 152.337333,
+      "threads": 25,
+      "windows": 1,
+      "rss": 79527936
+     },
+     {
+      "pid": 82818,
+      "type": "webIsolated",
+      "origin": "http://site38.test",
+      "memory": 27936088,
+      "cpuTimeMs": 109.785083,
+      "threads": 25,
+      "windows": 1,
+      "rss": 71368704
+     },
+     {
+      "pid": 82674,
+      "type": "webIsolated",
+      "origin": "http://site15.test",
+      "memory": 76614608,
+      "cpuTimeMs": 485.455791,
+      "threads": 25,
+      "windows": 1,
+      "rss": 83591168
+     },
+     {
+      "pid": 82530,
+      "type": "privilegedabout",
+      "origin": "",
+      "memory": 22135984,
+      "cpuTimeMs": 96.534291,
+      "threads": 25,
+      "windows": 0,
+      "rss": 65732608
+     },
+     {
+      "pid": 82619,
+      "type": "webIsolated",
+      "origin": "http://site06.test",
+      "memory": 75697152,
+      "cpuTimeMs": 477.361875,
+      "threads": 25,
+      "windows": 1,
+      "rss": 82624512
+     },
+     {
+      "pid": 82708,
+      "type": "webIsolated",
+      "origin": "http://site21.test",
+      "memory": 27985264,
+      "cpuTimeMs": 121.004833,
+      "threads": 25,
+      "windows": 1,
+      "rss": 71368704
+     },
+     {
+      "pid": 82653,
+      "type": "webIsolated",
+      "origin": "http://site12.test",
+      "memory": 32032064,
+      "cpuTimeMs": 131.59675,
+      "threads": 25,
+      "windows": 1,
+      "rss": 76906496
+     },
+     {
+      "pid": 82742,
+      "type": "webIsolated",
+      "origin": "http://site25.test",
+      "memory": 31999272,
+      "cpuTimeMs": 128.167333,
+      "threads": 25,
+      "windows": 1,
+      "rss": 77037568
+     },
+     {
+      "pid": 82810,
+      "type": "webIsolated",
+      "origin": "http://site36.test",
+      "memory": 75828200,
+      "cpuTimeMs": 415.609916,
+      "threads": 25,
+      "windows": 1,
+      "rss": 83214336
+     },
+     {
+      "pid": 82776,
+      "type": "webIsolated",
+      "origin": "http://site31.test",
+      "memory": 27870576,
+      "cpuTimeMs": 106.708458,
+      "threads": 25,
+      "windows": 1,
+      "rss": 71335936
+     },
+     {
+      "pid": 82820,
+      "type": "webIsolated",
+      "origin": "http://site38.test",
+      "memory": 32572736,
+      "cpuTimeMs": 128.408208,
+      "threads": 25,
+      "windows": 1,
+      "rss": 78151680
+     },
+     {
+      "pid": 82666,
+      "type": "webIsolated",
+      "origin": "http://site14.test",
+      "memory": 42108248,
+      "cpuTimeMs": 148.58875,
+      "threads": 25,
+      "windows": 1,
+      "rss": 79151104
+     },
+     {
+      "pid": 82522,
+      "type": "gpu",
+      "origin": "",
+      "memory": 674252120,
+      "cpuTimeMs": 7117.809208,
+      "threads": 30,
+      "windows": 0,
+      "rss": 85180416
+     },
+     {
+      "pid": 82700,
+      "type": "webIsolated",
+      "origin": "http://site19.test",
+      "memory": 75828224,
+      "cpuTimeMs": 363.535416,
+      "threads": 25,
+      "windows": 1,
+      "rss": 83247104
+     },
+     {
+      "pid": 82845,
+      "type": "preallocated",
+      "origin": "",
+      "memory": 21562376,
+      "cpuTimeMs": 76.313916,
+      "threads": 24,
+      "windows": 0,
+      "rss": 54706176
+     },
+     {
+      "pid": 82734,
+      "type": "webIsolated",
+      "origin": "http://site24.test",
+      "memory": 27886936,
+      "cpuTimeMs": 124.920375,
+      "threads": 25,
+      "windows": 1,
+      "rss": 71401472
+     },
+     {
+      "pid": 82768,
+      "type": "webIsolated",
+      "origin": "http://site29.test",
+      "memory": 75713440,
+      "cpuTimeMs": 382.427083,
+      "threads": 25,
+      "windows": 1,
+      "rss": 83165184
+     },
+     {
+      "pid": 82802,
+      "type": "webIsolated",
+      "origin": "http://site35.test",
+      "memory": 32064832,
+      "cpuTimeMs": 130.897083,
+      "threads": 25,
+      "windows": 1,
+      "rss": 77135872
+     },
+     {
+      "pid": 82658,
+      "type": "webIsolated",
+      "origin": "http://site13.test",
+      "memory": 28001648,
+      "cpuTimeMs": 121.039333,
+      "threads": 25,
+      "windows": 1,
+      "rss": 70533120
+     },
+     {
+      "pid": 82603,
+      "type": "webIsolated",
+      "origin": "http://site04.test",
+      "memory": 28296560,
+      "cpuTimeMs": 130.685,
+      "threads": 25,
+      "windows": 1,
+      "rss": 72679424
+     },
+     {
+      "pid": 82692,
+      "type": "webIsolated",
+      "origin": "http://site18.test",
+      "memory": 32097624,
+      "cpuTimeMs": 126.316333,
+      "threads": 25,
+      "windows": 1,
+      "rss": 77103104
+     },
+     {
+      "pid": 82637,
+      "type": "webIsolated",
+      "origin": "http://site09.test",
+      "memory": 75697152,
+      "cpuTimeMs": 495.686375,
+      "threads": 25,
+      "windows": 1,
+      "rss": 83230720
+     },
+     {
+      "pid": 82527,
+      "type": "extension",
+      "origin": "",
+      "memory": 40995480,
+      "cpuTimeMs": 372.511291,
+      "threads": 26,
+      "windows": 6,
+      "rss": 88834048
+     },
+     {
+      "pid": 82748,
+      "type": "webIsolated",
+      "origin": "http://site26.test",
+      "memory": 32113984,
+      "cpuTimeMs": 140.311333,
+      "threads": 25,
+      "windows": 1,
+      "rss": 77086720
+     },
+     {
+      "pid": 82794,
+      "type": "webIsolated",
+      "origin": "http://site34.test",
+      "memory": 28312944,
+      "cpuTimeMs": 117.288708,
+      "threads": 25,
+      "windows": 1,
+      "rss": 74268672
+     },
+     {
+      "pid": 82595,
+      "type": "webIsolated",
+      "origin": "http://site02.test",
+      "memory": 75762592,
+      "cpuTimeMs": 479.519333,
+      "threads": 25,
+      "windows": 1,
+      "rss": 82935808
+     },
+     {
+      "pid": 82684,
+      "type": "webIsolated",
+      "origin": "http://site17.test",
+      "memory": 32081216,
+      "cpuTimeMs": 134.386833,
+      "threads": 25,
+      "windows": 1,
+      "rss": 77070336
+     },
+     {
+      "pid": 82629,
+      "type": "webIsolated",
+      "origin": "http://site08.test",
+      "memory": 42075480,
+      "cpuTimeMs": 156.528083,
+      "threads": 25,
+      "windows": 1,
+      "rss": 80166912
+     },
+     {
+      "pid": 82718,
+      "type": "webIsolated",
+      "origin": "http://site22.test",
+      "memory": 73091880,
+      "cpuTimeMs": 421.275166,
+      "threads": 25,
+      "windows": 1,
+      "rss": 115146752
+     },
+     {
+      "pid": 82783,
+      "type": "webIsolated",
+      "origin": "http://site32.test",
+      "memory": 27886960,
+      "cpuTimeMs": 121.130791,
+      "threads": 25,
+      "windows": 1,
+      "rss": 71319552
+     },
+     {
+      "pid": 82519,
+      "type": "socket",
+      "origin": "",
+      "memory": 15844024,
+      "cpuTimeMs": 105.79425,
+      "threads": 7,
+      "windows": 0,
+      "rss": 31490048
+     },
+     {
+      "pid": 82752,
+      "type": "webIsolated",
+      "origin": "http://site27.test",
+      "memory": 27903344,
+      "cpuTimeMs": 116.171125,
+      "threads": 25,
+      "windows": 1,
+      "rss": 71368704
+     },
+     {
+      "pid": 82786,
+      "type": "webIsolated",
+      "origin": "http://site32.test",
+      "memory": 74337064,
+      "cpuTimeMs": 514.289291,
+      "threads": 25,
+      "windows": 1,
+      "rss": 121536512
+     },
+     {
+      "pid": 82822,
+      "type": "webIsolated",
+      "origin": "http://site38.test",
+      "memory": 73812800,
+      "cpuTimeMs": 431.508041,
+      "threads": 25,
+      "windows": 1,
+      "rss": 118538240
+     },
+     {
+      "pid": 82676,
+      "type": "webIsolated",
+      "origin": "http://site16.test",
+      "memory": 27936112,
+      "cpuTimeMs": 117.188291,
+      "threads": 25,
+      "windows": 1,
+      "rss": 71335936
+     },
+     {
+      "pid": 82532,
+      "type": "web",
+      "origin": "",
+      "memory": 23512288,
+      "cpuTimeMs": 107.316875,
+      "threads": 25,
+      "windows": 1,
+      "rss": 66093056
+     },
+     {
+      "pid": 82621,
+      "type": "webIsolated",
+      "origin": "http://site07.test",
+      "memory": 27919728,
+      "cpuTimeMs": 134.31475,
+      "threads": 25,
+      "windows": 1,
+      "rss": 70451200
+     },
+     {
+      "pid": 82710,
+      "type": "webIsolated",
+      "origin": "http://site21.test",
+      "memory": 32064856,
+      "cpuTimeMs": 130.992041,
+      "threads": 25,
+      "windows": 1,
+      "rss": 77070336
+     },
+     {
+      "pid": 82655,
+      "type": "webIsolated",
+      "origin": "http://site12.test",
+      "memory": 73206520,
+      "cpuTimeMs": 443.513833,
+      "threads": 25,
+      "windows": 1,
+      "rss": 115752960
+     },
+     {
+      "pid": 82744,
+      "type": "webIsolated",
+      "origin": "http://site25.test",
+      "memory": 75779024,
+      "cpuTimeMs": 404.385083,
+      "threads": 25,
+      "windows": 1,
+      "rss": 83230720
+     },
+     {
+      "pid": 82778,
+      "type": "webIsolated",
+      "origin": "http://site31.test",
+      "memory": 32015704,
+      "cpuTimeMs": 118.222208,
+      "threads": 25,
+      "windows": 1,
+      "rss": 77103104
+     },
+     {
+      "pid": 82812,
+      "type": "webIsolated",
+      "origin": "http://site37.test",
+      "memory": 26756416,
+      "cpuTimeMs": 130.418666,
+      "threads": 25,
+      "windows": 1,
+      "rss": 75825152
+     },
+     {
+      "pid": 82668,
+      "type": "webIsolated",
+      "origin": "http://site14.test",
+      "memory": 73091856,
+      "cpuTimeMs": 432.752208,
+      "threads": 25,
+      "windows": 1,
+      "rss": 115671040
+     },
+     {
+      "pid": 82613,
+      "type": "webIsolated",
+      "origin": "http://site05.test",
+      "memory": 75680744,
+      "cpuTimeMs": 481.209,
+      "threads": 25,
+      "windows": 1,
+      "rss": 82886656
+     },
+     {
+      "pid": 82702,
+      "type": "webIsolated",
+      "origin": "http://site20.test",
+      "memory": 28329328,
+      "cpuTimeMs": 120.53525,
+      "threads": 25,
+      "windows": 1,
+      "rss": 74268672
+     },
+     {
+      "pid": 82647,
+      "type": "webIsolated",
+      "origin": "http://site11.test",
+      "memory": 32179520,
+      "cpuTimeMs": 144.3415,
+      "threads": 25,
+      "windows": 1,
+      "rss": 76922880
+     },
+     {
+      "pid": 82736,
+      "type": "webIsolated",
+      "origin": "http://site24.test",
+      "memory": 32114008,
+      "cpuTimeMs": 136.443333,
+      "threads": 25,
+      "windows": 1,
+      "rss": 77086720
+     },
+     {
+      "pid": 82592,
+      "type": "webIsolated",
+      "origin": "http://site02.test",
+      "memory": 28050800,
+      "cpuTimeMs": 136.983166,
+      "threads": 25,
+      "windows": 1,
+      "rss": 70270976
+     },
+     {
+      "pid": 82770,
+      "type": "webIsolated",
+      "origin": "http://site30.test",
+      "memory": 27297088,
+      "cpuTimeMs": 128.655875,
+      "threads": 25,
+      "windows": 1,
+      "rss": 79626240
+     },
+     {
+      "pid": 82828,
+      "type": "webIsolated",
+      "origin": "http://site39.test",
+      "memory": 76532688,
+      "cpuTimeMs": 503.474083,
+      "threads": 25,
+      "windows": 1,
+      "rss": 86884352
+     },
+     {
+      "pid": 82804,
+      "type": "webIsolated",
+      "origin": "http://site35.test",
+      "memory": 76630992,
+      "cpuTimeMs": 492.64025,
+      "threads": 25,
+      "windows": 1,
+      "rss": 86982656
+     },
+     {
+      "pid": 82660,
+      "type": "webIsolated",
+      "origin": "http://site13.test",
+      "memory": 32032064,
+      "cpuTimeMs": 128.3075,
+      "threads": 25,
+      "windows": 1,
+      "rss": 77021184
+     },
+     {
+      "pid": 82605,
+      "type": "webIsolated",
+      "origin": "http://site04.test",
+      "memory": 32015656,
+      "cpuTimeMs": 132.288541,
+      "threads": 25,
+      "windows": 1,
+      "rss": 75874304
+     },
+     {
+      "pid": 82694,
+      "type": "webIsolated",
+      "origin": "http://site18.test",
+      "memory": 75762664,
+      "cpuTimeMs": 392.082291,
+      "threads": 25,
+      "windows": 1,
+      "rss": 83017728
+     },
+     {
+      "pid": 82639,
+      "type": "webIsolated",
+      "origin": "http://site10.test",
+      "memory": 27985264,
+      "cpuTimeMs": 131.143625,
+      "threads": 25,
+      "windows": 1,
+      "rss": 70664192
+     },
+     {
+      "pid": 82762,
+      "type": "webIsolated",
+      "origin": "http://site28.test",
+      "memory": 73304872,
+      "cpuTimeMs": 397.427791,
+      "threads": 25,
+      "windows": 1,
+      "rss": 115965952
+     },
+     {
+      "pid": 82707,
+      "type": "webIsolated",
+      "origin": "http://site20.test",
+      "memory": 75697104,
+      "cpuTimeMs": 369.3085,
+      "threads": 25,
+      "windows": 1,
+      "rss": 83148800
+     },
+     {
+      "pid": 82796,
+      "type": "webIsolated",
+      "origin": "http://site34.test",
+      "memory": 32114008,
+      "cpuTimeMs": 121.602833,
+      "threads": 25,
+      "windows": 1,
+      "rss": 77185024
+     },
+     {
+      "pid": 82597,
+      "type": "webIsolated",
+      "origin": "http://site03.test",
+      "memory": 26838336,
+      "cpuTimeMs": 150.168166,
+      "threads": 25,
+      "windows": 1,
+      "rss": 74694656
+     },
+     {
+      "pid": 82830,
+      "type": "webIsolated",
+      "origin": "http://site40.test",
+      "memory": 27362624,
+      "cpuTimeMs": 130.394708,
+      "threads": 25,
+      "windows": 1,
+      "rss": 76922880
+     },
+     {
+      "pid": 82686,
+      "type": "webIsolated",
+      "origin": "http://site17.test",
+      "memory": 74042128,
+      "cpuTimeMs": 542.257666,
+      "threads": 25,
+      "windows": 1,
+      "rss": 118112256
+     },
+     {
+      "pid": 82631,
+      "type": "webIsolated",
+      "origin": "http://site08.test",
+      "memory": 73075496,
+      "cpuTimeMs": 545.150375,
+      "threads": 25,
+      "windows": 1,
+      "rss": 114769920
+     },
+     {
+      "pid": 82720,
+      "type": "webIsolated",
+      "origin": "http://site23.test",
+      "memory": 27985264,
+      "cpuTimeMs": 110.28875,
+      "threads": 25,
+      "windows": 1,
+      "rss": 71368704
+     },
+     {
+      "pid": 82754,
+      "type": "webIsolated",
+      "origin": "http://site27.test",
+      "memory": 32163136,
+      "cpuTimeMs": 134.731791,
+      "threads": 25,
+      "windows": 1,
+      "rss": 77398016
+     },
+     {
+      "pid": 82610,
+      "type": "webIsolated",
+      "origin": "http://site05.test",
+      "memory": 28001648,
+      "cpuTimeMs": 128.938166,
+      "threads": 25,
+      "windows": 1,
+      "rss": 69484544
+     },
+     {
+      "pid": 82788,
+      "type": "webIsolated",
+      "origin": "http://site33.test",
+      "memory": 28001648,
+      "cpuTimeMs": 106.738791,
+      "threads": 25,
+      "windows": 1,
+      "rss": 71368704
+     },
+     {
+      "pid": 82589,
+      "type": "webIsolated",
+      "origin": "http://site01.test",
+      "memory": 42141016,
+      "cpuTimeMs": 154.998375,
+      "threads": 25,
+      "windows": 1,
+      "rss": 79478784
+     },
+     {
+      "pid": 82678,
+      "type": "webIsolated",
+      "origin": "http://site16.test",
+      "memory": 32032040,
+      "cpuTimeMs": 128.872208,
+      "threads": 25,
+      "windows": 1,
+      "rss": 77086720
+     },
+     {
+      "pid": 82623,
+      "type": "webIsolated",
+      "origin": "http://site07.test",
+      "memory": 32032064,
+      "cpuTimeMs": 136.854041,
+      "threads": 25,
+      "windows": 1,
+      "rss": 76759040
+     },
+     {
+      "pid": 82712,
+      "type": "webIsolated",
+      "origin": "http://site21.test",
+      "memory": 73943752,
+      "cpuTimeMs": 509.661333,
+      "threads": 25,
+      "windows": 1,
+      "rss": 118030336
+     },
+     {
+      "pid": 82746,
+      "type": "webIsolated",
+      "origin": "http://site26.test",
+      "memory": 26854720,
+      "cpuTimeMs": 137.982208,
+      "threads": 25,
+      "windows": 1,
+      "rss": 75759616
+     },
+     {
+      "pid": 82780,
+      "type": "webIsolated",
+      "origin": "http://site31.test",
+      "memory": 75795432,
+      "cpuTimeMs": 381.655916,
+      "threads": 25,
+      "windows": 1,
+      "rss": 86540288
+     },
+     {
+      "pid": 82814,
+      "type": "webIsolated",
+      "origin": "http://site37.test",
+      "memory": 31999272,
+      "cpuTimeMs": 130.55375,
+      "threads": 25,
+      "windows": 1,
+      "rss": 77627392
+     },
+     {
+      "pid": 82670,
+      "type": "webIsolated",
+      "origin": "http://site15.test",
+      "memory": 27919728,
+      "cpuTimeMs": 114.83375,
+      "threads": 25,
+      "windows": 1,
+      "rss": 71368704
+     },
+     {
+      "pid": 82615,
+      "type": "webIsolated",
+      "origin": "http://site06.test",
+      "memory": 28640600,
+      "cpuTimeMs": 141.550333,
+      "threads": 25,
+      "windows": 1,
+      "rss": 79183872
+     },
+     {
+      "pid": 82704,
+      "type": "webIsolated",
+      "origin": "http://site20.test",
+      "memory": 42108224,
+      "cpuTimeMs": 147.1945,
+      "threads": 25,
+      "windows": 1,
+      "rss": 79577088
+     },
+     {
+      "pid": 82649,
+      "type": "webIsolated",
+      "origin": "http://site11.test",
+      "memory": 75746232,
+      "cpuTimeMs": 494.781791,
+      "threads": 25,
+      "windows": 1,
+      "rss": 83181568
+     },
+     {
+      "pid": 82738,
+      "type": "webIsolated",
+      "origin": "http://site24.test",
+      "memory": 73140984,
+      "cpuTimeMs": 445.883666,
+      "threads": 25,
+      "windows": 1,
+      "rss": 115163136
+     },
+     {
+      "pid": 82594,
+      "type": "webIsolated",
+      "origin": "http://site02.test",
+      "memory": 32113984,
+      "cpuTimeMs": 141.877208,
+      "threads": 25,
+      "windows": 1,
+      "rss": 76644352
+     },
+     {
+      "pid": 82772,
+      "type": "webIsolated",
+      "origin": "http://site30.test",
+      "memory": 32032088,
+      "cpuTimeMs": 127.346958,
+      "threads": 25,
+      "windows": 1,
+      "rss": 77168640
+     },
+     {
+      "pid": 82662,
+      "type": "webIsolated",
+      "origin": "http://site13.test",
+      "memory": 75713464,
+      "cpuTimeMs": 401.191458,
+      "threads": 25,
+      "windows": 1,
+      "rss": 83247104
+     },
+     {
+      "pid": 82607,
+      "type": "webIsolated",
+      "origin": "http://site04.test",
+      "memory": 73239360,
+      "cpuTimeMs": 533.149208,
+      "threads": 25,
+      "windows": 1,
+      "rss": 115458048
+     },
+     {
+      "pid": 82696,
+      "type": "webIsolated",
+      "origin": "http://site19.test",
+      "memory": 27886960,
+      "cpuTimeMs": 117.990333,
+      "threads": 25,
+      "windows": 1,
+      "rss": 71368704
+     },
+     {
+      "pid": 82641,
+      "type": "webIsolated",
+      "origin": "http://site10.test",
+      "memory": 31999296,
+      "cpuTimeMs": 128.29225,
+      "threads": 25,
+      "windows": 1,
+      "rss": 77053952
+     },
+     {
+      "pid": 82764,
+      "type": "webIsolated",
+      "origin": "http://site29.test",
+      "memory": 27870576,
+      "cpuTimeMs": 108.822625,
+      "threads": 25,
+      "windows": 1,
+      "rss": 71335936
+     },
+     {
+      "pid": 82798,
+      "type": "webIsolated",
+      "origin": "http://site34.test",
+      "memory": 75697056,
+      "cpuTimeMs": 407.533208,
+      "threads": 25,
+      "windows": 1,
+      "rss": 86278144
+     },
+     {
+      "pid": 82599,
+      "type": "webIsolated",
+      "origin": "http://site03.test",
+      "memory": 32097600,
+      "cpuTimeMs": 145.456958,
+      "threads": 25,
+      "windows": 1,
+      "rss": 75825152
+     },
+     {
+      "pid": 82672,
+      "type": "webIsolated",
+      "origin": "http://site15.test",
+      "memory": 42009944,
+      "cpuTimeMs": 145.819791,
+      "threads": 25,
+      "windows": 1,
+      "rss": 79527936
+     },
+     {
+      "pid": 82824,
+      "type": "webIsolated",
+      "origin": "http://site39.test",
+      "memory": 28018008,
+      "cpuTimeMs": 115.155833,
+      "threads": 25,
+      "windows": 1,
+      "rss": 71368704
+     }
+    ],
+    "label": "idle",
+    "loadavg": [
+     3.88,
+     5.83,
+     5.8
+    ],
+    "parentPid": 82509,
+    "rssTotalMB": 10247.546875,
+    "footprintTotalMB": 6374.315887451172,
+    "processCount": 131,
+    "contentProcessCount": 123,
+    "byType": {
+     "browser": {
+      "count": 1,
+      "rssMB": 386.46875,
+      "footprintMB": 289.1028823852539
+     },
+     "webIsolated": {
+      "count": 120,
+      "rssMB": 9300.03125,
+      "footprintMB": 5251.701812744141
+     },
+     "utility": {
+      "count": 1,
+      "rssMB": 30.875,
+      "footprintMB": 15.641288757324219
+     },
+     "rdd": {
+      "count": 1,
+      "rssMB": 52.0625,
+      "footprintMB": 15.203765869140625
+     },
+     "preallocated": {
+      "count": 3,
+      "rssMB": 156.40625,
+      "footprintMB": 61.90924835205078
+     },
+     "privilegedabout": {
+      "count": 1,
+      "rssMB": 62.6875,
+      "footprintMB": 21.110519409179688
+     },
+     "gpu": {
+      "count": 1,
+      "rssMB": 81.234375,
+      "footprintMB": 643.0169296264648
+     },
+     "extension": {
+      "count": 1,
+      "rssMB": 84.71875,
+      "footprintMB": 39.096336364746094
+     },
+     "socket": {
+      "count": 1,
+      "rssMB": 30.03125,
+      "footprintMB": 15.110038757324219
+     },
+     "web": {
+      "count": 1,
+      "rssMB": 63.03125,
+      "footprintMB": 22.423065185546875
+     }
+    }
+   },
+   "loadAfter": [
+    3.88,
+    5.83,
+    5.8
+   ],
+   "finished": "2026-10-17T14:48:55"
+  },
+  {
+   "tabs": 120,
+   "run": 2,
+   "loadBefore": [
+    3.88,
+    5.83,
+    5.8
+   ],
+   "loadWaitS": 0.004518500000017411,
+   "started": "2026-10-17T14:48:55",
+   "environment": {
+    "appVersion": "1.23.2b",
+    "appBuildID": "20261016052538",
+    "platformVersion": "158.0",
+    "fissionEnabled": true,
+    "prefs": {
+     "browser.lowMemoryResponseMask": {
+      "value": 0,
+      "defined": true,
+      "userSet": false
+     },
+     "browser.lowMemoryResponseOnWarn": {
+      "value": false,
+      "defined": true,
+      "userSet": false
+     },
+     "browser.lowMemoryPollingIntervalMS": {
+      "value": 10000,
+      "defined": true,
+      "userSet": false
+     },
+     "browser.tabs.unloadOnLowMemory": {
+      "value": true,
+      "defined": true,
+      "userSet": false
+     },
+     "browser.tabs.min_inactive_duration_before_unload": {
+      "value": 600000,
+      "defined": true,
+      "userSet": false
+     },
+     "browser.sessionstore.restore_on_demand": {
+      "value": true,
+      "defined": true,
+      "userSet": false
+     },
+     "browser.sessionstore.restore_tabs_lazily": {
+      "value": true,
+      "defined": true,
+      "userSet": false
+     },
+     "browser.startup.page": {
+      "value": 3,
+      "defined": true,
+      "userSet": true
+     },
+     "dom.ipc.processCount": {
+      "value": 8,
+      "defined": true,
+      "userSet": false
+     },
+     "dom.ipc.processCount.webIsolated": {
+      "value": 4,
+      "defined": true,
+      "userSet": false
+     },
+     "fission.autostart": {
+      "value": true,
+      "defined": true,
+      "userSet": false
+     },
+     "remote.prefs.recommended": {
+      "value": false,
+      "defined": true,
+      "userSet": true
+     },
+     "zen.tab-unloader.enabled": {
+      "value": null,
+      "defined": false,
+      "userSet": false
+     },
+     "zen.tab-unloader.timeout-minutes": {
+      "value": null,
+      "defined": false,
+      "userSet": false
+     },
+     "zen.tabs.auto-groups.enabled": {
+      "value": true,
+      "defined": true,
+      "userSet": false
+     },
+     "zen.workspaces.enabled": {
+      "value": null,
+      "defined": false,
+      "userSet": false
+     },
+     "zen.view.use-single-toolbar": {
+      "value": true,
+      "defined": true,
+      "userSet": false
+     },
+     "gfx.webrender.compositor": {
+      "value": true,
+      "defined": true,
+      "userSet": false
+     }
+    },
+    "zenTimerUnloaderGlobal": false,
+    "zenTimerUnloaderModule": false,
+    "devicePixelRatio": 2,
+    "windowSize": [
+     1440,
+     900
+    ]
+   },
+   "startup": {
+    "at": 7249.849791666666,
+    "tabs": {
+     "total": 1,
+     "loaded": 1,
+     "busy": 0,
+     "pending": 0,
+     "unloaded": 0,
+     "groups": 0
+    },
+    "procs": [
+     {
+      "pid": 83739,
+      "type": "browser",
+      "origin": "",
+      "memory": 325817936,
+      "cpuTimeMs": 2280.68725,
+      "threads": 61,
+      "windows": 0,
+      "rss": 499630080
+     },
+     {
+      "pid": 83756,
+      "type": "utility",
+      "origin": "",
+      "memory": 16433848,
+      "cpuTimeMs": 67.271625,
+      "threads": 5,
+      "windows": 0,
+      "rss": 46809088
+     },
+     {
+      "pid": 83760,
+      "type": "preallocated",
+      "origin": "",
+      "memory": 21791776,
+      "cpuTimeMs": 80.850791,
+      "threads": 24,
+      "windows": 0,
+      "rss": 73629696
+     },
+     {
+      "pid": 83761,
+      "type": "preallocated",
+      "origin": "",
+      "memory": 21742624,
+      "cpuTimeMs": 78.007,
+      "threads": 24,
+      "windows": 0,
+      "rss": 73580544
+     },
+     {
+      "pid": 83753,
+      "type": "web",
+      "origin": "",
+      "memory": 24118448,
+      "cpuTimeMs": 82.277375,
+      "threads": 25,
+      "windows": 1,
+      "rss": 86261760
+     },
+     {
+      "pid": 83745,
+      "type": "gpu",
+      "origin": "",
+      "memory": 424756376,
+      "cpuTimeMs": 805.727958,
+      "threads": 30,
+      "windows": 0,
+      "rss": 106577920
+     },
+     {
+      "pid": 83750,
+      "type": "privilegedabout",
+      "origin": "",
+      "memory": 23790816,
+      "cpuTimeMs": 72.262458,
+      "threads": 25,
+      "windows": 0,
+      "rss": 81805312
+     },
+     {
+      "pid": 83747,
+      "type": "rdd",
+      "origin": "",
+      "memory": 16040608,
+      "cpuTimeMs": 81.063041,
+      "threads": 5,
+      "windows": 0,
+      "rss": 68501504
+     },
+     {
+      "pid": 83744,
+      "type": "socket",
+      "origin": "",
+      "memory": 15925920,
+      "cpuTimeMs": 118.16725,
+      "threads": 8,
+      "windows": 0,
+      "rss": 45416448
+     },
+     {
+      "pid": 83746,
+      "type": "extension",
+      "origin": "",
+      "memory": 55987296,
+      "cpuTimeMs": 171.923083,
+      "threads": 27,
+      "windows": 6,
+      "rss": 121683968
+     },
+     {
+      "pid": 83759,
+      "type": "preallocated",
+      "origin": "",
+      "memory": 21791776,
+      "cpuTimeMs": 81.6375,
+      "threads": 24,
+      "windows": 0,
+      "rss": 73629696
+     }
+    ],
+    "label": "startup",
+    "loadavg": [
+     3.65,
+     5.75,
+     5.77
+    ],
+    "parentPid": 83739,
+    "rssTotalMB": 1218.34375,
+    "footprintTotalMB": 923.3450164794922,
+    "processCount": 11,
+    "contentProcessCount": 3,
+    "byType": {
+     "browser": {
+      "count": 1,
+      "rssMB": 476.484375,
+      "footprintMB": 310.7241973876953
+     },
+     "utility": {
+      "count": 1,
+      "rssMB": 44.640625,
+      "footprintMB": 15.672538757324219
+     },
+     "preallocated": {
+      "count": 3,
+      "rssMB": 210.609375,
+      "footprintMB": 62.299896240234375
+     },
+     "web": {
+      "count": 1,
+      "rssMB": 82.265625,
+      "footprintMB": 23.001144409179688
+     },
+     "gpu": {
+      "count": 1,
+      "rssMB": 101.640625,
+      "footprintMB": 405.0792465209961
+     },
+     "privilegedabout": {
+      "count": 1,
+      "rssMB": 78.015625,
+      "footprintMB": 22.688690185546875
+     },
+     "rdd": {
+      "count": 1,
+      "rssMB": 65.328125,
+      "footprintMB": 15.297515869140625
+     },
+     "socket": {
+      "count": 1,
+      "rssMB": 43.3125,
+      "footprintMB": 15.188140869140625
+     },
+     "extension": {
+      "count": 1,
+      "rssMB": 116.046875,
+      "footprintMB": 53.393646240234375
+     }
+    }
+   },
+   "open": {
+    "requested": 120,
+    "created": 120,
+    "createMs": 59.08575000000019,
+    "allLoadedMs": 8435.407291666668,
+    "timedOut": false,
+    "notLoaded": 0,
+    "parentLag": {
+     "n": 357,
+     "min": 0,
+     "median": 3.1332916666651727,
+     "p95": 24.037666666667064,
+     "max": 75.891791666666,
+     "mean": 7.576731209150328,
+     "over50": 1,
+     "over200": 0
+    },
+    "mode": "queued:6"
+   },
+   "loaded": {
+    "at": 25717.201166666666,
+    "tabs": {
+     "total": 121,
+     "loaded": 121,
+     "busy": 0,
+     "pending": 0,
+     "unloaded": 0,
+     "groups": 0
+    },
+    "procs": [
+     {
+      "pid": 83739,
+      "type": "browser",
+      "origin": "",
+      "memory": 306060152,
+      "cpuTimeMs": 7246.992541,
+      "threads": 57,
+      "windows": 0,
+      "rss": 428523520
+     },
+     {
+      "pid": 84120,
+      "type": "webIsolated",
+      "origin": "http://site39.test",
+      "memory": 27870552,
+      "cpuTimeMs": 105.898291,
+      "threads": 25,
+      "windows": 1,
+      "rss": 81133568
+     },
+     {
+      "pid": 83976,
+      "type": "webIsolated",
+      "origin": "http://site19.test",
+      "memory": 28132768,
+      "cpuTimeMs": 110.629958,
+      "threads": 26,
+      "windows": 1,
+      "rss": 82968576
+     },
+     {
+      "pid": 84060,
+      "type": "webIsolated",
+      "origin": "http://site30.test",
+      "memory": 80317344,
+      "cpuTimeMs": 358.24575,
+      "threads": 26,
+      "windows": 1,
+      "rss": 124256256
+     },
+     {
+      "pid": 83955,
+      "type": "webIsolated",
+      "origin": "http://site15.test",
+      "memory": 76942168,
+      "cpuTimeMs": 443.62925,
+      "threads": 26,
+      "windows": 1,
+      "rss": 137527296
+     },
+     {
+      "pid": 83756,
+      "type": "utility",
+      "origin": "",
+      "memory": 16384696,
+      "cpuTimeMs": 67.527333,
+      "threads": 5,
+      "windows": 0,
+      "rss": 32440320
+     },
+     {
+      "pid": 83968,
+      "type": "webIsolated",
+      "origin": "http://site17.test",
+      "memory": 78400512,
+      "cpuTimeMs": 373.140166,
+      "threads": 26,
+      "windows": 1,
+      "rss": 118374400
+     },
+     {
+      "pid": 83947,
+      "type": "webIsolated",
+      "origin": "http://site14.test",
+      "memory": 32687448,
+      "cpuTimeMs": 108.951458,
+      "threads": 26,
+      "windows": 1,
+      "rss": 83345408
+     },
+     {
+      "pid": 83892,
+      "type": "webIsolated",
+      "origin": "http://site06.test",
+      "memory": 27919728,
+      "cpuTimeMs": 123.525083,
+      "threads": 25,
+      "windows": 1,
+      "rss": 76234752
+     },
+     {
+      "pid": 84114,
+      "type": "webIsolated",
+      "origin": "http://site38.test",
+      "memory": 33572184,
+      "cpuTimeMs": 121.457583,
+      "threads": 25,
+      "windows": 1,
+      "rss": 83640320
+     },
+     {
+      "pid": 84125,
+      "type": "webIsolated",
+      "origin": "http://site39.test",
+      "memory": 80301008,
+      "cpuTimeMs": 392.796125,
+      "threads": 25,
+      "windows": 1,
+      "rss": 118898688
+     },
+     {
+      "pid": 84104,
+      "type": "webIsolated",
+      "origin": "http://site37.test",
+      "memory": 27968880,
+      "cpuTimeMs": 105.852833,
+      "threads": 26,
+      "windows": 1,
+      "rss": 82558976
+     },
+     {
+      "pid": 84193,
+      "type": "preallocated",
+      "origin": "",
+      "memory": 21546016,
+      "cpuTimeMs": 72.005458,
+      "threads": 24,
+      "windows": 0,
+      "rss": 59015168
+     },
+     {
+      "pid": 83905,
+      "type": "webIsolated",
+      "origin": "http://site08.test",
+      "memory": 27952472,
+      "cpuTimeMs": 122.199916,
+      "threads": 25,
+      "windows": 1,
+      "rss": 75972608
+     },
+     {
+      "pid": 83939,
+      "type": "webIsolated",
+      "origin": "http://site13.test",
+      "memory": 28001648,
+      "cpuTimeMs": 108.2105,
+      "threads": 25,
+      "windows": 1,
+      "rss": 80723968
+     },
+     {
+      "pid": 84062,
+      "type": "webIsolated",
+      "origin": "http://site31.test",
+      "memory": 27903344,
+      "cpuTimeMs": 111.441916,
+      "threads": 26,
+      "windows": 1,
+      "rss": 83345408
+     },
+     {
+      "pid": 84007,
+      "type": "webIsolated",
+      "origin": "http://site23.test",
+      "memory": 79711208,
+      "cpuTimeMs": 339.606541,
+      "threads": 26,
+      "windows": 1,
+      "rss": 139739136
+     },
+     {
+      "pid": 83863,
+      "type": "webIsolated",
+      "origin": "http://site02.test",
+      "memory": 78236624,
+      "cpuTimeMs": 452.852083,
+      "threads": 25,
+      "windows": 1,
+      "rss": 93978624
+     },
+     {
+      "pid": 83897,
+      "type": "webIsolated",
+      "origin": "http://site06.test",
+      "memory": 78236624,
+      "cpuTimeMs": 466.552416,
+      "threads": 25,
+      "windows": 1,
+      "rss": 99614720
+     },
+     {
+      "pid": 83753,
+      "type": "web",
+      "origin": "",
+      "memory": 23397552,
+      "cpuTimeMs": 91.267083,
+      "threads": 25,
+      "windows": 1,
+      "rss": 66453504
+     },
+     {
+      "pid": 83931,
+      "type": "webIsolated",
+      "origin": "http://site11.test",
+      "memory": 76761944,
+      "cpuTimeMs": 496.038333,
+      "threads": 25,
+      "windows": 1,
+      "rss": 137183232
+     },
+     {
+      "pid": 84109,
+      "type": "webIsolated",
+      "origin": "http://site37.test",
+      "memory": 80546840,
+      "cpuTimeMs": 351.242666,
+      "threads": 26,
+      "windows": 1,
+      "rss": 122126336
+     },
+     {
+      "pid": 84054,
+      "type": "webIsolated",
+      "origin": "http://site29.test",
+      "memory": 78384080,
+      "cpuTimeMs": 336.168875,
+      "threads": 26,
+      "windows": 1,
+      "rss": 119226368
+     },
+     {
+      "pid": 83855,
+      "type": "webIsolated",
+      "origin": "http://site01.test",
+      "memory": 33129864,
+      "cpuTimeMs": 120.411666,
+      "threads": 25,
+      "windows": 1,
+      "rss": 74170368
+     },
+     {
+      "pid": 83944,
+      "type": "webIsolated",
+      "origin": "http://site13.test",
+      "memory": 76729128,
+      "cpuTimeMs": 396.799666,
+      "threads": 25,
+      "windows": 1,
+      "rss": 131645440
+     },
+     {
+      "pid": 83889,
+      "type": "webIsolated",
+      "origin": "http://site05.test",
+      "memory": 78334952,
+      "cpuTimeMs": 465.823666,
+      "threads": 25,
+      "windows": 1,
+      "rss": 102629376
+     },
+     {
+      "pid": 83745,
+      "type": "gpu",
+      "origin": "",
+      "memory": 531809408,
+      "cpuTimeMs": 1787.615458,
+      "threads": 29,
+      "windows": 0,
+      "rss": 81526784
+     },
+     {
+      "pid": 83978,
+      "type": "webIsolated",
+      "origin": "http://site19.test",
+      "memory": 32769344,
+      "cpuTimeMs": 130.051791,
+      "threads": 26,
+      "windows": 1,
+      "rss": 87212032
+     },
+     {
+      "pid": 84067,
+      "type": "webIsolated",
+      "origin": "http://site31.test",
+      "memory": 81300384,
+      "cpuTimeMs": 374.178166,
+      "threads": 26,
+      "windows": 1,
+      "rss": 142671872
+     },
+     {
+      "pid": 83923,
+      "type": "webIsolated",
+      "origin": "http://site10.test",
+      "memory": 33326472,
+      "cpuTimeMs": 115.983666,
+      "threads": 25,
+      "windows": 1,
+      "rss": 79249408
+     },
+     {
+      "pid": 83868,
+      "type": "webIsolated",
+      "origin": "http://site03.test",
+      "memory": 27985264,
+      "cpuTimeMs": 129.616916,
+      "threads": 25,
+      "windows": 1,
+      "rss": 74022912
+     },
+     {
+      "pid": 83957,
+      "type": "webIsolated",
+      "origin": "http://site16.test",
+      "memory": 27886960,
+      "cpuTimeMs": 122.934791,
+      "threads": 26,
+      "windows": 1,
+      "rss": 81854464
+     },
+     {
+      "pid": 84025,
+      "type": "webIsolated",
+      "origin": "http://site25.test",
+      "memory": 78400512,
+      "cpuTimeMs": 337.749166,
+      "threads": 26,
+      "windows": 1,
+      "rss": 116047872
+     },
+     {
+      "pid": 83881,
+      "type": "webIsolated",
+      "origin": "http://site04.test",
+      "memory": 78400488,
+      "cpuTimeMs": 444.601208,
+      "threads": 25,
+      "windows": 1,
+      "rss": 99598336
+     },
+     {
+      "pid": 83970,
+      "type": "webIsolated",
+      "origin": "http://site18.test",
+      "memory": 27870552,
+      "cpuTimeMs": 110.693,
+      "threads": 26,
+      "windows": 1,
+      "rss": 83574784
+     },
+     {
+      "pid": 84059,
+      "type": "webIsolated",
+      "origin": "http://site30.test",
+      "memory": 33408392,
+      "cpuTimeMs": 119.061291,
+      "threads": 26,
+      "windows": 1,
+      "rss": 84525056
+     },
+     {
+      "pid": 83915,
+      "type": "webIsolated",
+      "origin": "http://site09.test",
+      "memory": 33342832,
+      "cpuTimeMs": 109.614541,
+      "threads": 25,
+      "windows": 1,
+      "rss": 73957376
+     },
+     {
+      "pid": 84123,
+      "type": "webIsolated",
+      "origin": "http://site39.test",
+      "memory": 33277320,
+      "cpuTimeMs": 110.731291,
+      "threads": 25,
+      "windows": 1,
+      "rss": 77742080
+     },
+     {
+      "pid": 83949,
+      "type": "webIsolated",
+      "origin": "http://site14.test",
+      "memory": 78449616,
+      "cpuTimeMs": 385.691166,
+      "threads": 26,
+      "windows": 1,
+      "rss": 113311744
+     },
+     {
+      "pid": 83750,
+      "type": "privilegedabout",
+      "origin": "",
+      "memory": 22152368,
+      "cpuTimeMs": 87.74625,
+      "threads": 25,
+      "windows": 0,
+      "rss": 67239936
+     },
+     {
+      "pid": 84195,
+      "type": "preallocated",
+      "origin": "",
+      "memory": 21578784,
+      "cpuTimeMs": 70.730875,
+      "threads": 24,
+      "windows": 0,
+      "rss": 59572224
+     },
+     {
+      "pid": 83907,
+      "type": "webIsolated",
+      "origin": "http://site08.test",
+      "memory": 33162608,
+      "cpuTimeMs": 117.493833,
+      "threads": 25,
+      "windows": 1,
+      "rss": 74842112
+     },
+     {
+      "pid": 83996,
+      "type": "webIsolated",
+      "origin": "http://site22.test",
+      "memory": 27919728,
+      "cpuTimeMs": 117.807,
+      "threads": 26,
+      "windows": 1,
+      "rss": 82804736
+     },
+     {
+      "pid": 84085,
+      "type": "webIsolated",
+      "origin": "http://site34.test",
+      "memory": 27919728,
+      "cpuTimeMs": 122.668875,
+      "threads": 26,
+      "windows": 1,
+      "rss": 83869696
+     },
+     {
+      "pid": 83941,
+      "type": "webIsolated",
+      "origin": "http://site13.test",
+      "memory": 32605528,
+      "cpuTimeMs": 112.688041,
+      "threads": 25,
+      "windows": 1,
+      "rss": 83050496
+     },
+     {
+      "pid": 84030,
+      "type": "webIsolated",
+      "origin": "http://site26.test",
+      "memory": 33342856,
+      "cpuTimeMs": 114.252458,
+      "threads": 26,
+      "windows": 1,
+      "rss": 83148800
+     },
+     {
+      "pid": 83886,
+      "type": "webIsolated",
+      "origin": "http://site05.test",
+      "memory": 33195400,
+      "cpuTimeMs": 119.231583,
+      "threads": 25,
+      "windows": 1,
+      "rss": 73678848
+     },
+     {
+      "pid": 84064,
+      "type": "webIsolated",
+      "origin": "http://site31.test",
+      "memory": 33408368,
+      "cpuTimeMs": 110.89675,
+      "threads": 26,
+      "windows": 1,
+      "rss": 81166336
+     },
+     {
+      "pid": 84116,
+      "type": "webIsolated",
+      "origin": "http://site38.test",
+      "memory": 80317392,
+      "cpuTimeMs": 370.707583,
+      "threads": 25,
+      "windows": 1,
+      "rss": 117817344
+     },
+     {
+      "pid": 84009,
+      "type": "webIsolated",
+      "origin": "http://site24.test",
+      "memory": 28050800,
+      "cpuTimeMs": 117.638833,
+      "threads": 26,
+      "windows": 1,
+      "rss": 84115456
+     },
+     {
+      "pid": 84098,
+      "type": "webIsolated",
+      "origin": "http://site36.test",
+      "memory": 28116336,
+      "cpuTimeMs": 119.092,
+      "threads": 26,
+      "windows": 1,
+      "rss": 83116032
+     },
+     {
+      "pid": 84043,
+      "type": "webIsolated",
+      "origin": "http://site28.test",
+      "memory": 27854168,
+      "cpuTimeMs": 109.535291,
+      "threads": 26,
+      "windows": 1,
+      "rss": 80445440
+     },
+     {
+      "pid": 83899,
+      "type": "webIsolated",
+      "origin": "http://site07.test",
+      "memory": 28001648,
+      "cpuTimeMs": 117.015541,
+      "threads": 25,
+      "windows": 1,
+      "rss": 76234752
+     },
+     {
+      "pid": 83988,
+      "type": "webIsolated",
+      "origin": "http://site21.test",
+      "memory": 27886960,
+      "cpuTimeMs": 111.854125,
+      "threads": 26,
+      "windows": 1,
+      "rss": 83247104
+     },
+     {
+      "pid": 84077,
+      "type": "webIsolated",
+      "origin": "http://site33.test",
+      "memory": 28542296,
+      "cpuTimeMs": 112.218166,
+      "threads": 26,
+      "windows": 1,
+      "rss": 85032960
+     },
+     {
+      "pid": 83933,
+      "type": "webIsolated",
+      "origin": "http://site12.test",
+      "memory": 28018032,
+      "cpuTimeMs": 124.043791,
+      "threads": 25,
+      "windows": 1,
+      "rss": 81461248
+     },
+     {
+      "pid": 84111,
+      "type": "webIsolated",
+      "origin": "http://site38.test",
+      "memory": 28018032,
+      "cpuTimeMs": 109.599958,
+      "threads": 26,
+      "windows": 1,
+      "rss": 83378176
+     },
+     {
+      "pid": 83967,
+      "type": "webIsolated",
+      "origin": "http://site17.test",
+      "memory": 33310088,
+      "cpuTimeMs": 112.992916,
+      "threads": 26,
+      "windows": 1,
+      "rss": 83017728
+     },
+     {
+      "pid": 84056,
+      "type": "webIsolated",
+      "origin": "http://site30.test",
+      "memory": 27952496,
+      "cpuTimeMs": 106.032291,
+      "threads": 26,
+      "windows": 1,
+      "rss": 83148800
+     },
+     {
+      "pid": 84001,
+      "type": "webIsolated",
+      "origin": "http://site22.test",
+      "memory": 78384056,
+      "cpuTimeMs": 370.480583,
+      "threads": 26,
+      "windows": 1,
+      "rss": 112263168
+     },
+     {
+      "pid": 84035,
+      "type": "webIsolated",
+      "origin": "http://site27.test",
+      "memory": 27968880,
+      "cpuTimeMs": 122.45325,
+      "threads": 26,
+      "windows": 1,
+      "rss": 84148224
+     },
+     {
+      "pid": 83986,
+      "type": "webIsolated",
+      "origin": "http://site20.test",
+      "memory": 79547344,
+      "cpuTimeMs": 390.565916,
+      "threads": 26,
+      "windows": 1,
+      "rss": 137691136
+     },
+     {
+      "pid": 83747,
+      "type": "rdd",
+      "origin": "",
+      "memory": 15876768,
+      "cpuTimeMs": 81.759416,
+      "threads": 5,
+      "windows": 0,
+      "rss": 55066624
+     },
+     {
+      "pid": 84069,
+      "type": "webIsolated",
+      "origin": "http://site32.test",
+      "memory": 28427632,
+      "cpuTimeMs": 115.966333,
+      "threads": 26,
+      "windows": 1,
+      "rss": 85295104
+     },
+     {
+      "pid": 83925,
+      "type": "webIsolated",
+      "origin": "http://site10.test",
+      "memory": 78302184,
+      "cpuTimeMs": 487.268625,
+      "threads": 25,
+      "windows": 1,
+      "rss": 105676800
+     },
+     {
+      "pid": 84014,
+      "type": "webIsolated",
+      "origin": "http://site24.test",
+      "memory": 80890856,
+      "cpuTimeMs": 351.481333,
+      "threads": 26,
+      "windows": 1,
+      "rss": 141950976
+     },
+     {
+      "pid": 83870,
+      "type": "webIsolated",
+      "origin": "http://site03.test",
+      "memory": 32261440,
+      "cpuTimeMs": 130.402666,
+      "threads": 25,
+      "windows": 1,
+      "rss": 79052800
+     },
+     {
+      "pid": 83959,
+      "type": "webIsolated",
+      "origin": "http://site16.test",
+      "memory": 33228168,
+      "cpuTimeMs": 122.268166,
+      "threads": 26,
+      "windows": 1,
+      "rss": 81985536
+     },
+     {
+      "pid": 84048,
+      "type": "webIsolated",
+      "origin": "http://site28.test",
+      "memory": 78302184,
+      "cpuTimeMs": 342.406541,
+      "threads": 26,
+      "windows": 1,
+      "rss": 115408896
+     },
+     {
+      "pid": 84082,
+      "type": "webIsolated",
+      "origin": "http://site33.test",
+      "memory": 80448488,
+      "cpuTimeMs": 368.344333,
+      "threads": 26,
+      "windows": 1,
+      "rss": 118816768
+     },
+     {
+      "pid": 83883,
+      "type": "webIsolated",
+      "origin": "http://site05.test",
+      "memory": 26740008,
+      "cpuTimeMs": 132.146916,
+      "threads": 25,
+      "windows": 1,
+      "rss": 77135872
+     },
+     {
+      "pid": 83862,
+      "type": "webIsolated",
+      "origin": "http://site02.test",
+      "memory": 33195376,
+      "cpuTimeMs": 125.507625,
+      "threads": 25,
+      "windows": 1,
+      "rss": 74301440
+     },
+     {
+      "pid": 83951,
+      "type": "webIsolated",
+      "origin": "http://site15.test",
+      "memory": 27919728,
+      "cpuTimeMs": 110.757041,
+      "threads": 26,
+      "windows": 1,
+      "rss": 78528512
+     },
+     {
+      "pid": 84040,
+      "type": "webIsolated",
+      "origin": "http://site27.test",
+      "memory": 78334928,
+      "cpuTimeMs": 361.739875,
+      "threads": 26,
+      "windows": 1,
+      "rss": 117047296
+     },
+     {
+      "pid": 83896,
+      "type": "webIsolated",
+      "origin": "http://site06.test",
+      "memory": 33342832,
+      "cpuTimeMs": 121.634416,
+      "threads": 25,
+      "windows": 1,
+      "rss": 76185600
+     },
+     {
+      "pid": 84074,
+      "type": "webIsolated",
+      "origin": "http://site32.test",
+      "memory": 80399360,
+      "cpuTimeMs": 376.79575,
+      "threads": 26,
+      "windows": 1,
+      "rss": 123158528
+     },
+     {
+      "pid": 83875,
+      "type": "webIsolated",
+      "origin": "http://site04.test",
+      "memory": 27886960,
+      "cpuTimeMs": 130.18775,
+      "threads": 25,
+      "windows": 1,
+      "rss": 74612736
+     },
+     {
+      "pid": 84108,
+      "type": "webIsolated",
+      "origin": "http://site37.test",
+      "memory": 33408392,
+      "cpuTimeMs": 113.187041,
+      "threads": 26,
+      "windows": 1,
+      "rss": 83345408
+     },
+     {
+      "pid": 83909,
+      "type": "webIsolated",
+      "origin": "http://site08.test",
+      "memory": 78187544,
+      "cpuTimeMs": 441.572208,
+      "threads": 25,
+      "windows": 1,
+      "rss": 100827136
+     },
+     {
+      "pid": 83998,
+      "type": "webIsolated",
+      "origin": "http://site22.test",
+      "memory": 33310064,
+      "cpuTimeMs": 128.522625,
+      "threads": 26,
+      "windows": 1,
+      "rss": 81510400
+     },
+     {
+      "pid": 84087,
+      "type": "webIsolated",
+      "origin": "http://site34.test",
+      "memory": 33195376,
+      "cpuTimeMs": 131.090291,
+      "threads": 26,
+      "windows": 1,
+      "rss": 84230144
+     },
+     {
+      "pid": 84032,
+      "type": "webIsolated",
+      "origin": "http://site26.test",
+      "memory": 80513976,
+      "cpuTimeMs": 375.576833,
+      "threads": 26,
+      "windows": 1,
+      "rss": 142000128
+     },
+     {
+      "pid": 83744,
+      "type": "socket",
+      "origin": "",
+      "memory": 15876768,
+      "cpuTimeMs": 118.2245,
+      "threads": 7,
+      "windows": 0,
+      "rss": 30343168
+     },
+     {
+      "pid": 83922,
+      "type": "webIsolated",
+      "origin": "http://site10.test",
+      "memory": 27903344,
+      "cpuTimeMs": 119.911833,
+      "threads": 25,
+      "windows": 1,
+      "rss": 77742080
+     },
+     {
+      "pid": 84011,
+      "type": "webIsolated",
+      "origin": "http://site24.test",
+      "memory": 33277272,
+      "cpuTimeMs": 125.944125,
+      "threads": 26,
+      "windows": 1,
+      "rss": 84230144
+     },
+     {
+      "pid": 84100,
+      "type": "webIsolated",
+      "origin": "http://site36.test",
+      "memory": 33277296,
+      "cpuTimeMs": 122.125166,
+      "threads": 26,
+      "windows": 1,
+      "rss": 83181568
+     },
+     {
+      "pid": 83901,
+      "type": "webIsolated",
+      "origin": "http://site07.test",
+      "memory": 33342856,
+      "cpuTimeMs": 118.902291,
+      "threads": 25,
+      "windows": 1,
+      "rss": 73842688
+     },
+     {
+      "pid": 83990,
+      "type": "webIsolated",
+      "origin": "http://site21.test",
+      "memory": 33391984,
+      "cpuTimeMs": 123.760833,
+      "threads": 26,
+      "windows": 1,
+      "rss": 85704704
+     },
+     {
+      "pid": 83935,
+      "type": "webIsolated",
+      "origin": "http://site12.test",
+      "memory": 32900416,
+      "cpuTimeMs": 117.633083,
+      "threads": 25,
+      "windows": 1,
+      "rss": 82771968
+     },
+     {
+      "pid": 84089,
+      "type": "webIsolated",
+      "origin": "http://site34.test",
+      "memory": 82643944,
+      "cpuTimeMs": 389.031,
+      "threads": 26,
+      "windows": 1,
+      "rss": 144801792
+     },
+     {
+      "pid": 84003,
+      "type": "webIsolated",
+      "origin": "http://site23.test",
+      "memory": 28034416,
+      "cpuTimeMs": 115.800791,
+      "threads": 26,
+      "windows": 1,
+      "rss": 80019456
+     },
+     {
+      "pid": 83859,
+      "type": "webIsolated",
+      "origin": "http://site01.test",
+      "memory": 77220792,
+      "cpuTimeMs": 455.029,
+      "threads": 25,
+      "windows": 1,
+      "rss": 91734016
+     },
+     {
+      "pid": 84037,
+      "type": "webIsolated",
+      "origin": "http://site27.test",
+      "memory": 33244528,
+      "cpuTimeMs": 128.081583,
+      "threads": 26,
+      "windows": 1,
+      "rss": 83902464
+     },
+     {
+      "pid": 83972,
+      "type": "webIsolated",
+      "origin": "http://site18.test",
+      "memory": 33293656,
+      "cpuTimeMs": 118.733291,
+      "threads": 26,
+      "windows": 1,
+      "rss": 83230720
+     },
+     {
+      "pid": 83982,
+      "type": "webIsolated",
+      "origin": "http://site20.test",
+      "memory": 27952472,
+      "cpuTimeMs": 110.581083,
+      "threads": 26,
+      "windows": 1,
+      "rss": 82984960
+     },
+     {
+      "pid": 84071,
+      "type": "webIsolated",
+      "origin": "http://site32.test",
+      "memory": 33342832,
+      "cpuTimeMs": 121.644208,
+      "threads": 26,
+      "windows": 1,
+      "rss": 84623360
+     },
+     {
+      "pid": 83927,
+      "type": "webIsolated",
+      "origin": "http://site11.test",
+      "memory": 27559232,
+      "cpuTimeMs": 123.341416,
+      "threads": 25,
+      "windows": 1,
+      "rss": 82395136
+     },
+     {
+      "pid": 83961,
+      "type": "webIsolated",
+      "origin": "http://site16.test",
+      "memory": 78285752,
+      "cpuTimeMs": 378.430166,
+      "threads": 26,
+      "windows": 1,
+      "rss": 112836608
+     },
+     {
+      "pid": 84050,
+      "type": "webIsolated",
+      "origin": "http://site29.test",
+      "memory": 27919728,
+      "cpuTimeMs": 114.86775,
+      "threads": 26,
+      "windows": 1,
+      "rss": 83361792
+     },
+     {
+      "pid": 83974,
+      "type": "webIsolated",
+      "origin": "http://site18.test",
+      "memory": 78367696,
+      "cpuTimeMs": 381.944125,
+      "threads": 26,
+      "windows": 1,
+      "rss": 118800384
+     },
+     {
+      "pid": 83919,
+      "type": "webIsolated",
+      "origin": "http://site09.test",
+      "memory": 78253032,
+      "cpuTimeMs": 452.465041,
+      "threads": 25,
+      "windows": 1,
+      "rss": 102400000
+     },
+     {
+      "pid": 84096,
+      "type": "webIsolated",
+      "origin": "http://site35.test",
+      "memory": 80415744,
+      "cpuTimeMs": 359.590041,
+      "threads": 26,
+      "windows": 1,
+      "rss": 120995840
+     },
+     {
+      "pid": 83953,
+      "type": "webIsolated",
+      "origin": "http://site15.test",
+      "memory": 33195400,
+      "cpuTimeMs": 101.908083,
+      "threads": 26,
+      "windows": 1,
+      "rss": 81330176
+     },
+     {
+      "pid": 84131,
+      "type": "webIsolated",
+      "origin": "http://site40.test",
+      "memory": 33375552,
+      "cpuTimeMs": 118.680583,
+      "threads": 25,
+      "windows": 1,
+      "rss": 81854464
+     },
+     {
+      "pid": 84047,
+      "type": "webIsolated",
+      "origin": "http://site28.test",
+      "memory": 33359216,
+      "cpuTimeMs": 114.831041,
+      "threads": 26,
+      "windows": 1,
+      "rss": 80691200
+     },
+     {
+      "pid": 84021,
+      "type": "webIsolated",
+      "origin": "http://site25.test",
+      "memory": 33375624,
+      "cpuTimeMs": 118.203666,
+      "threads": 26,
+      "windows": 1,
+      "rss": 83640320
+     },
+     {
+      "pid": 83877,
+      "type": "webIsolated",
+      "origin": "http://site04.test",
+      "memory": 32081216,
+      "cpuTimeMs": 127.597208,
+      "threads": 25,
+      "windows": 1,
+      "rss": 77479936
+     },
+     {
+      "pid": 83911,
+      "type": "webIsolated",
+      "origin": "http://site09.test",
+      "memory": 27903344,
+      "cpuTimeMs": 127.042041,
+      "threads": 25,
+      "windows": 1,
+      "rss": 74825728
+     },
+     {
+      "pid": 83856,
+      "type": "webIsolated",
+      "origin": "http://site01.test",
+      "memory": 28018032,
+      "cpuTimeMs": 131.193708,
+      "threads": 25,
+      "windows": 1,
+      "rss": 72761344
+     },
+     {
+      "pid": 83945,
+      "type": "webIsolated",
+      "origin": "http://site14.test",
+      "memory": 27493696,
+      "cpuTimeMs": 124.627833,
+      "threads": 25,
+      "windows": 1,
+      "rss": 84213760
+     },
+     {
+      "pid": 83746,
+      "type": "extension",
+      "origin": "",
+      "memory": 45206288,
+      "cpuTimeMs": 333.920666,
+      "threads": 27,
+      "windows": 6,
+      "rss": 91799552
+     },
+     {
+      "pid": 84194,
+      "type": "preallocated",
+      "origin": "",
+      "memory": 21627936,
+      "cpuTimeMs": 71.740708,
+      "threads": 24,
+      "windows": 0,
+      "rss": 58720256
+     },
+     {
+      "pid": 84092,
+      "type": "webIsolated",
+      "origin": "http://site35.test",
+      "memory": 27870576,
+      "cpuTimeMs": 110.419583,
+      "threads": 26,
+      "windows": 1,
+      "rss": 83656704
+     },
+     {
+      "pid": 84102,
+      "type": "webIsolated",
+      "origin": "http://site36.test",
+      "memory": 80432128,
+      "cpuTimeMs": 362.380666,
+      "threads": 26,
+      "windows": 1,
+      "rss": 124977152
+     },
+     {
+      "pid": 83903,
+      "type": "webIsolated",
+      "origin": "http://site07.test",
+      "memory": 78236624,
+      "cpuTimeMs": 461.438125,
+      "threads": 25,
+      "windows": 1,
+      "rss": 100155392
+     },
+     {
+      "pid": 83992,
+      "type": "webIsolated",
+      "origin": "http://site21.test",
+      "memory": 78449616,
+      "cpuTimeMs": 373.452458,
+      "threads": 26,
+      "windows": 1,
+      "rss": 121421824
+     },
+     {
+      "pid": 84081,
+      "type": "webIsolated",
+      "origin": "http://site33.test",
+      "memory": 33424752,
+      "cpuTimeMs": 116.878708,
+      "threads": 26,
+      "windows": 1,
+      "rss": 81952768
+     },
+     {
+      "pid": 83937,
+      "type": "webIsolated",
+      "origin": "http://site12.test",
+      "memory": 76663640,
+      "cpuTimeMs": 489.199291,
+      "threads": 25,
+      "windows": 1,
+      "rss": 138084352
+     },
+     {
+      "pid": 84026,
+      "type": "webIsolated",
+      "origin": "http://site26.test",
+      "memory": 28312944,
+      "cpuTimeMs": 111.219041,
+      "threads": 26,
+      "windows": 1,
+      "rss": 84557824
+     },
+     {
+      "pid": 83980,
+      "type": "webIsolated",
+      "origin": "http://site19.test",
+      "memory": 78416896,
+      "cpuTimeMs": 380.422958,
+      "threads": 26,
+      "windows": 1,
+      "rss": 117489664
+     },
+     {
+      "pid": 84132,
+      "type": "webIsolated",
+      "origin": "http://site40.test",
+      "memory": 80333800,
+      "cpuTimeMs": 417.576625,
+      "threads": 25,
+      "windows": 1,
+      "rss": 115916800
+     },
+     {
+      "pid": 84005,
+      "type": "webIsolated",
+      "origin": "http://site23.test",
+      "memory": 33310064,
+      "cpuTimeMs": 119.296875,
+      "threads": 26,
+      "windows": 1,
+      "rss": 80838656
+     },
+     {
+      "pid": 83861,
+      "type": "webIsolated",
+      "origin": "http://site02.test",
+      "memory": 27968880,
+      "cpuTimeMs": 134.982791,
+      "threads": 25,
+      "windows": 1,
+      "rss": 73596928
+     },
+     {
+      "pid": 84094,
+      "type": "webIsolated",
+      "origin": "http://site35.test",
+      "memory": 33375624,
+      "cpuTimeMs": 121.242875,
+      "threads": 26,
+      "windows": 1,
+      "rss": 84688896
+     },
+     {
+      "pid": 84128,
+      "type": "webIsolated",
+      "origin": "http://site40.test",
+      "memory": 27985264,
+      "cpuTimeMs": 112.663166,
+      "threads": 25,
+      "windows": 1,
+      "rss": 81723392
+     },
+     {
+      "pid": 83984,
+      "type": "webIsolated",
+      "origin": "http://site20.test",
+      "memory": 32884032,
+      "cpuTimeMs": 121.506875,
+      "threads": 26,
+      "windows": 1,
+      "rss": 85196800
+     },
+     {
+      "pid": 83929,
+      "type": "webIsolated",
+      "origin": "http://site11.test",
+      "memory": 33162632,
+      "cpuTimeMs": 109.011833,
+      "threads": 25,
+      "windows": 1,
+      "rss": 81281024
+     },
+     {
+      "pid": 84018,
+      "type": "webIsolated",
+      "origin": "http://site25.test",
+      "memory": 27903344,
+      "cpuTimeMs": 118.21025,
+      "threads": 26,
+      "windows": 1,
+      "rss": 82608128
+     },
+     {
+      "pid": 83874,
+      "type": "webIsolated",
+      "origin": "http://site03.test",
+      "memory": 78351312,
+      "cpuTimeMs": 446.142791,
+      "threads": 25,
+      "windows": 1,
+      "rss": 98058240
+     },
+     {
+      "pid": 83963,
+      "type": "webIsolated",
+      "origin": "http://site17.test",
+      "memory": 27510080,
+      "cpuTimeMs": 115.772791,
+      "threads": 26,
+      "windows": 1,
+      "rss": 83214336
+     },
+     {
+      "pid": 84052,
+      "type": "webIsolated",
+      "origin": "http://site29.test",
+      "memory": 33375624,
+      "cpuTimeMs": 121.716583,
+      "threads": 26,
+      "windows": 1,
+      "rss": 83099648
+     }
+    ],
+    "label": "loaded",
+    "loadavg": [
+     5.44,
+     6.03,
+     5.87
+    ],
+    "parentPid": 83739,
+    "rssTotalMB": 11702.90625,
+    "footprintTotalMB": 6337.348304748535,
+    "processCount": 131,
+    "contentProcessCount": 123,
+    "byType": {
+     "browser": {
+      "count": 1,
+      "rssMB": 408.671875,
+      "footprintMB": 291.88170623779297
+     },
+     "webIsolated": {
+      "count": 120,
+      "rssMB": 10719.953125,
+      "footprintMB": 5344.080543518066
+     },
+     "utility": {
+      "count": 1,
+      "rssMB": 30.9375,
+      "footprintMB": 15.625663757324219
+     },
+     "preallocated": {
+      "count": 3,
+      "rssMB": 169.09375,
+      "footprintMB": 61.753021240234375
+     },
+     "web": {
+      "count": 1,
+      "rssMB": 63.375,
+      "footprintMB": 22.313644409179688
+     },
+     "gpu": {
+      "count": 1,
+      "rssMB": 77.75,
+      "footprintMB": 507.1729736328125
+     },
+     "privilegedabout": {
+      "count": 1,
+      "rssMB": 64.125,
+      "footprintMB": 21.126144409179688
+     },
+     "rdd": {
+      "count": 1,
+      "rssMB": 52.515625,
+      "footprintMB": 15.141265869140625
+     },
+     "socket": {
+      "count": 1,
+      "rssMB": 28.9375,
+      "footprintMB": 15.141265869140625
+     },
+     "extension": {
+      "count": 1,
+      "rssMB": 87.546875,
+      "footprintMB": 43.11207580566406
+     }
+    }
+   },
+   "switch": {
+    "switches": 30,
+    "timeouts": 0,
+    "layers": {
+     "n": 30,
+     "min": 4.088333333340415,
+     "median": 6.37358333334123,
+     "p95": 8.276666666664823,
+     "max": 17.438541666662786,
+     "mean": 6.73872777777821
+    },
+    "paint": {
+     "n": 30,
+     "min": 8.553583333334245,
+     "median": 12.208958333329065,
+     "p95": 19.876458333332266,
+     "max": 33.77075000000332,
+     "mean": 13.325698611110784
+    },
+    "over50Layers": 0,
+    "samples": [
+     {
+      "timedOut": false,
+      "layersMs": 17.438541666662786,
+      "paintMs": 33.77075000000332,
+      "state": "loaded",
+      "index": 76
+     },
+     {
+      "timedOut": false,
+      "layersMs": 8.238458333329618,
+      "paintMs": 11.309291666664649,
+      "state": "loaded",
+      "index": 90
+     },
+     {
+      "timedOut": false,
+      "layersMs": 7.653125000000728,
+      "paintMs": 13.732291666663514,
+      "state": "loaded",
+      "index": 15
+     },
+     {
+      "timedOut": false,
+      "layersMs": 6.719124999999622,
+      "paintMs": 12.235000000000582,
+      "state": "loaded",
+      "index": 56
+     },
+     {
+      "timedOut": false,
+      "layersMs": 6.287541666668403,
+      "paintMs": 10.017125000002125,
+      "state": "loaded",
+      "index": 3
+     },
+     {
+      "timedOut": false,
+      "layersMs": 4.744958333336399,
+      "paintMs": 19.876458333332266,
+      "state": "loaded",
+      "index": 1
+     },
+     {
+      "timedOut": false,
+      "layersMs": 4.675125000001572,
+      "paintMs": 15.155625000003056,
+      "state": "loaded",
+      "index": 22
+     },
+     {
+      "timedOut": false,
+      "layersMs": 6.430041666670149,
+      "paintMs": 15.606750000002648,
+      "state": "loaded",
+      "index": 75
+     },
+     {
+      "timedOut": false,
+      "layersMs": 7.802333333333081,
+      "paintMs": 10.602291666666133,
+      "state": "loaded",
+      "index": 37
+     },
+     {
+      "timedOut": false,
+      "layersMs": 6.459416666664765,
+      "paintMs": 10.626416666666046,
+      "state": "loaded",
+      "index": 98
+     },
+     {
+      "timedOut": false,
+      "layersMs": 6.2572500000060245,
+      "paintMs": 8.749041666669655,
+      "state": "loaded",
+      "index": 79
+     },
+     {
+      "timedOut": false,
+      "layersMs": 5.445625000000291,
+      "paintMs": 12.208958333329065,
+      "state": "loaded",
+      "index": 20
+     },
+     {
+      "timedOut": false,
+      "layersMs": 4.769083333325398,
+      "paintMs": 12.456166666655918,
+      "state": "loaded",
+      "index": 62
+     },
+     {
+      "timedOut": false,
+      "layersMs": 6.626374999992549,
+      "paintMs": 11.967416666666395,
+      "state": "loaded",
+      "index": 22
+     },
+     {
+      "timedOut": false,
+      "layersMs": 8.276666666664823,
+      "paintMs": 12.66079166666168,
+      "state": "loaded",
+      "index": 57
+     },
+     {
+      "timedOut": false,
+      "layersMs": 4.088333333340415,
+      "paintMs": 16.63575000000128,
+      "state": "loaded",
+      "index": 25
+     },
+     {
+      "timedOut": false,
+      "layersMs": 7.6307083333376795,
+      "paintMs": 14.237333333338029,
+      "state": "loaded",
+      "index": 24
+     },
+     {
+      "timedOut": false,
+      "layersMs": 6.259541666666337,
+      "paintMs": 11.050041666661855,
+      "state": "loaded",
+      "index": 55
+     },
+     {
+      "timedOut": false,
+      "layersMs": 4.242916666662495,
+      "paintMs": 14.295458333333954,
+      "state": "loaded",
+      "index": 61
+     },
+     {
+      "timedOut": false,
+      "layersMs": 6.337249999996857,
+      "paintMs": 9.822458333328541,
+      "state": "loaded",
+      "index": 118
+     },
+     {
+      "timedOut": false,
+      "layersMs": 5.834916666666686,
+      "paintMs": 8.553583333334245,
+      "state": "loaded",
+      "index": 80
+     },
+     {
+      "timedOut": false,
+      "layersMs": 6.508499999996275,
+      "paintMs": 13.861999999993714,
+      "state": "loaded",
+      "index": 32
+     },
+     {
+      "timedOut": false,
+      "layersMs": 7.420375000001513,
+      "paintMs": 11.59483333332173,
+      "state": "loaded",
+      "index": 97
+     },
+     {
+      "timedOut": false,
+      "layersMs": 6.37358333334123,
+      "paintMs": 10.782708333339542,
+      "state": "loaded",
+      "index": 110
+     },
+     {
+      "timedOut": false,
+      "layersMs": 7.337958333337156,
+      "paintMs": 13.371625000007043,
+      "state": "loaded",
+      "index": 0
+     },
+     {
+      "timedOut": false,
+      "layersMs": 8.120333333339659,
+      "paintMs": 14.505916666676058,
+      "state": "loaded",
+      "index": 39
+     },
+     {
+      "timedOut": false,
+      "layersMs": 7.781041666668898,
+      "paintMs": 8.825125000003027,
+      "state": "loaded",
+      "index": 69
+     },
+     {
+      "timedOut": false,
+      "layersMs": 5.142291666670644,
+      "paintMs": 12.159958333329996,
+      "state": "loaded",
+      "index": 61
+     },
+     {
+      "timedOut": false,
+      "layersMs": 5.057791666666162,
+      "paintMs": 17.638874999996915,
+      "state": "loaded",
+      "index": 76
+     },
+     {
+      "timedOut": false,
+      "layersMs": 6.202624999998079,
+      "paintMs": 11.460916666670528,
+      "state": "loaded",
+      "index": 104
+     }
+    ]
+   },
+   "scroll": {
+    "scrollRangePx": 4250,
+    "clientHeightPx": 728,
+    "totalMs": 2679.2359166666647,
+    "frames": {
+     "n": 428,
+     "min": 5.4572916666656965,
+     "median": 6.247874999993655,
+     "p95": 6.884416666667676,
+     "max": 7.049166666671226,
+     "mean": 6.249724104361368
+    },
+    "framesOver33": 0,
+    "framesOver50": 0,
+    "framesOver200": 0,
+    "parentLag": {
+     "n": 139,
+     "min": 0.20129166667175014,
+     "median": 3.6698749999995925,
+     "p95": 4.627958333338029,
+     "max": 5.613166666662437,
+     "mean": 3.2331178057554077,
+     "over50": 0,
+     "over200": 0
+    }
+   },
+   "idle": {
+    "at": 106960.19233333333,
+    "tabs": {
+     "total": 121,
+     "loaded": 121,
+     "busy": 0,
+     "pending": 0,
+     "unloaded": 0,
+     "groups": 0
+    },
+    "procs": [
+     {
+      "pid": 83739,
+      "type": "browser",
+      "origin": "",
+      "memory": 338732224,
+      "cpuTimeMs": 13764.666333,
+      "threads": 51,
+      "windows": 0,
+      "rss": 458342400
+     },
+     {
+      "pid": 84120,
+      "type": "webIsolated",
+      "origin": "http://site39.test",
+      "memory": 27854168,
+      "cpuTimeMs": 109.405291,
+      "threads": 25,
+      "windows": 1,
+      "rss": 71581696
+     },
+     {
+      "pid": 83976,
+      "type": "webIsolated",
+      "origin": "http://site19.test",
+      "memory": 28083616,
+      "cpuTimeMs": 113.7035,
+      "threads": 25,
+      "windows": 1,
+      "rss": 72482816
+     },
+     {
+      "pid": 84060,
+      "type": "webIsolated",
+      "origin": "http://site30.test",
+      "memory": 75631520,
+      "cpuTimeMs": 383.650333,
+      "threads": 25,
+      "windows": 1,
+      "rss": 88276992
+     },
+     {
+      "pid": 83955,
+      "type": "webIsolated",
+      "origin": "http://site15.test",
+      "memory": 75090728,
+      "cpuTimeMs": 580.195,
+      "threads": 25,
+      "windows": 1,
+      "rss": 135299072
+     },
+     {
+      "pid": 83756,
+      "type": "utility",
+      "origin": "",
+      "memory": 16384696,
+      "cpuTimeMs": 69.894458,
+      "threads": 5,
+      "windows": 0,
+      "rss": 32915456
+     },
+     {
+      "pid": 83968,
+      "type": "webIsolated",
+      "origin": "http://site17.test",
+      "memory": 76696576,
+      "cpuTimeMs": 502.599708,
+      "threads": 25,
+      "windows": 1,
+      "rss": 103890944
+     },
+     {
+      "pid": 83947,
+      "type": "webIsolated",
+      "origin": "http://site14.test",
+      "memory": 42616152,
+      "cpuTimeMs": 125.856541,
+      "threads": 25,
+      "windows": 1,
+      "rss": 90963968
+     },
+     {
+      "pid": 83892,
+      "type": "webIsolated",
+      "origin": "http://site06.test",
+      "memory": 28280176,
+      "cpuTimeMs": 133.045708,
+      "threads": 25,
+      "windows": 1,
+      "rss": 83148800
+     },
+     {
+      "pid": 84114,
+      "type": "webIsolated",
+      "origin": "http://site38.test",
+      "memory": 33539416,
+      "cpuTimeMs": 124.904708,
+      "threads": 25,
+      "windows": 1,
+      "rss": 72712192
+     },
+     {
+      "pid": 84125,
+      "type": "webIsolated",
+      "origin": "http://site39.test",
+      "memory": 76499920,
+      "cpuTimeMs": 496.187416,
+      "threads": 25,
+      "windows": 1,
+      "rss": 89358336
+     },
+     {
+      "pid": 84104,
+      "type": "webIsolated",
+      "origin": "http://site37.test",
+      "memory": 27952496,
+      "cpuTimeMs": 109.159458,
+      "threads": 25,
+      "windows": 1,
+      "rss": 71467008
+     },
+     {
+      "pid": 84193,
+      "type": "preallocated",
+      "origin": "",
+      "memory": 21546016,
+      "cpuTimeMs": 74.965541,
+      "threads": 24,
+      "windows": 0,
+      "rss": 55754752
+     },
+     {
+      "pid": 83905,
+      "type": "webIsolated",
+      "origin": "http://site08.test",
+      "memory": 28050776,
+      "cpuTimeMs": 132.276875,
+      "threads": 25,
+      "windows": 1,
+      "rss": 82624512
+     },
+     {
+      "pid": 83939,
+      "type": "webIsolated",
+      "origin": "http://site13.test",
+      "memory": 28018032,
+      "cpuTimeMs": 111.473083,
+      "threads": 25,
+      "windows": 1,
+      "rss": 72417280
+     },
+     {
+      "pid": 84062,
+      "type": "webIsolated",
+      "origin": "http://site31.test",
+      "memory": 27903344,
+      "cpuTimeMs": 114.848375,
+      "threads": 25,
+      "windows": 1,
+      "rss": 72531968
+     },
+     {
+      "pid": 84007,
+      "type": "webIsolated",
+      "origin": "http://site23.test",
+      "memory": 73747264,
+      "cpuTimeMs": 384.366375,
+      "threads": 25,
+      "windows": 1,
+      "rss": 121044992
+     },
+     {
+      "pid": 83863,
+      "type": "webIsolated",
+      "origin": "http://site02.test",
+      "memory": 75647952,
+      "cpuTimeMs": 476.558125,
+      "threads": 25,
+      "windows": 1,
+      "rss": 88178688
+     },
+     {
+      "pid": 83897,
+      "type": "webIsolated",
+      "origin": "http://site06.test",
+      "memory": 75647952,
+      "cpuTimeMs": 487.234,
+      "threads": 25,
+      "windows": 1,
+      "rss": 88178688
+     },
+     {
+      "pid": 83753,
+      "type": "web",
+      "origin": "",
+      "memory": 23413936,
+      "cpuTimeMs": 96.831166,
+      "threads": 25,
+      "windows": 1,
+      "rss": 69173248
+     },
+     {
+      "pid": 83931,
+      "type": "webIsolated",
+      "origin": "http://site11.test",
+      "memory": 74058536,
+      "cpuTimeMs": 535.5945,
+      "threads": 25,
+      "windows": 1,
+      "rss": 121110528
+     },
+     {
+      "pid": 84109,
+      "type": "webIsolated",
+      "origin": "http://site37.test",
+      "memory": 76647448,
+      "cpuTimeMs": 377.567666,
+      "threads": 25,
+      "windows": 1,
+      "rss": 88686592
+     },
+     {
+      "pid": 84054,
+      "type": "webIsolated",
+      "origin": "http://site29.test",
+      "memory": 75795408,
+      "cpuTimeMs": 361.931416,
+      "threads": 25,
+      "windows": 1,
+      "rss": 88276992
+     },
+     {
+      "pid": 83855,
+      "type": "webIsolated",
+      "origin": "http://site01.test",
+      "memory": 43353480,
+      "cpuTimeMs": 135.10475,
+      "threads": 25,
+      "windows": 1,
+      "rss": 89030656
+     },
+     {
+      "pid": 83944,
+      "type": "webIsolated",
+      "origin": "http://site13.test",
+      "memory": 74582776,
+      "cpuTimeMs": 439.090916,
+      "threads": 25,
+      "windows": 1,
+      "rss": 121618432
+     },
+     {
+      "pid": 83889,
+      "type": "webIsolated",
+      "origin": "http://site05.test",
+      "memory": 75746280,
+      "cpuTimeMs": 487.803208,
+      "threads": 25,
+      "windows": 1,
+      "rss": 88178688
+     },
+     {
+      "pid": 83745,
+      "type": "gpu",
+      "origin": "",
+      "memory": 579241304,
+      "cpuTimeMs": 6131.958416,
+      "threads": 29,
+      "windows": 0,
+      "rss": 155353088
+     },
+     {
+      "pid": 83978,
+      "type": "webIsolated",
+      "origin": "http://site19.test",
+      "memory": 32703808,
+      "cpuTimeMs": 137.243958,
+      "threads": 25,
+      "windows": 1,
+      "rss": 79118336
+     },
+     {
+      "pid": 84067,
+      "type": "webIsolated",
+      "origin": "http://site31.test",
+      "memory": 73730808,
+      "cpuTimeMs": 418.496291,
+      "threads": 25,
+      "windows": 1,
+      "rss": 120946688
+     },
+     {
+      "pid": 83923,
+      "type": "webIsolated",
+      "origin": "http://site10.test",
+      "memory": 33326472,
+      "cpuTimeMs": 119.609375,
+      "threads": 25,
+      "windows": 1,
+      "rss": 73728000
+     },
+     {
+      "pid": 83868,
+      "type": "webIsolated",
+      "origin": "http://site03.test",
+      "memory": 28001648,
+      "cpuTimeMs": 133.492958,
+      "threads": 25,
+      "windows": 1,
+      "rss": 72597504
+     },
+     {
+      "pid": 83957,
+      "type": "webIsolated",
+      "origin": "http://site16.test",
+      "memory": 27870576,
+      "cpuTimeMs": 126.066541,
+      "threads": 25,
+      "windows": 1,
+      "rss": 72499200
+     },
+     {
+      "pid": 84025,
+      "type": "webIsolated",
+      "origin": "http://site25.test",
+      "memory": 75860992,
+      "cpuTimeMs": 361.055958,
+      "threads": 25,
+      "windows": 1,
+      "rss": 88244224
+     },
+     {
+      "pid": 83881,
+      "type": "webIsolated",
+      "origin": "http://site04.test",
+      "memory": 75811816,
+      "cpuTimeMs": 466.804,
+      "threads": 25,
+      "windows": 1,
+      "rss": 88145920
+     },
+     {
+      "pid": 83970,
+      "type": "webIsolated",
+      "origin": "http://site18.test",
+      "memory": 27854168,
+      "cpuTimeMs": 113.776833,
+      "threads": 25,
+      "windows": 1,
+      "rss": 72417280
+     },
+     {
+      "pid": 84059,
+      "type": "webIsolated",
+      "origin": "http://site30.test",
+      "memory": 33342856,
+      "cpuTimeMs": 122.676458,
+      "threads": 25,
+      "windows": 1,
+      "rss": 73744384
+     },
+     {
+      "pid": 83915,
+      "type": "webIsolated",
+      "origin": "http://site09.test",
+      "memory": 33342832,
+      "cpuTimeMs": 112.957416,
+      "threads": 25,
+      "windows": 1,
+      "rss": 73777152
+     },
+     {
+      "pid": 84123,
+      "type": "webIsolated",
+      "origin": "http://site39.test",
+      "memory": 33277320,
+      "cpuTimeMs": 114.352,
+      "threads": 25,
+      "windows": 1,
+      "rss": 73023488
+     },
+     {
+      "pid": 83949,
+      "type": "webIsolated",
+      "origin": "http://site14.test",
+      "memory": 75844560,
+      "cpuTimeMs": 406.388708,
+      "threads": 25,
+      "windows": 1,
+      "rss": 88113152
+     },
+     {
+      "pid": 83750,
+      "type": "privilegedabout",
+      "origin": "",
+      "memory": 22611120,
+      "cpuTimeMs": 97.823666,
+      "threads": 25,
+      "windows": 0,
+      "rss": 67584000
+     },
+     {
+      "pid": 84195,
+      "type": "preallocated",
+      "origin": "",
+      "memory": 21660704,
+      "cpuTimeMs": 73.707,
+      "threads": 24,
+      "windows": 0,
+      "rss": 55443456
+     },
+     {
+      "pid": 83907,
+      "type": "webIsolated",
+      "origin": "http://site08.test",
+      "memory": 43353480,
+      "cpuTimeMs": 131.807875,
+      "threads": 25,
+      "windows": 1,
+      "rss": 89997312
+     },
+     {
+      "pid": 83996,
+      "type": "webIsolated",
+      "origin": "http://site22.test",
+      "memory": 28329328,
+      "cpuTimeMs": 128.555333,
+      "threads": 25,
+      "windows": 1,
+      "rss": 82919424
+     },
+     {
+      "pid": 84085,
+      "type": "webIsolated",
+      "origin": "http://site34.test",
+      "memory": 28312944,
+      "cpuTimeMs": 131.797333,
+      "threads": 25,
+      "windows": 1,
+      "rss": 82690048
+     },
+     {
+      "pid": 83941,
+      "type": "webIsolated",
+      "origin": "http://site13.test",
+      "memory": 32441688,
+      "cpuTimeMs": 121.664208,
+      "threads": 25,
+      "windows": 1,
+      "rss": 79052800
+     },
+     {
+      "pid": 84030,
+      "type": "webIsolated",
+      "origin": "http://site26.test",
+      "memory": 33293704,
+      "cpuTimeMs": 117.729333,
+      "threads": 25,
+      "windows": 1,
+      "rss": 73793536
+     },
+     {
+      "pid": 83886,
+      "type": "webIsolated",
+      "origin": "http://site05.test",
+      "memory": 33195400,
+      "cpuTimeMs": 122.866375,
+      "threads": 25,
+      "windows": 1,
+      "rss": 73416704
+     },
+     {
+      "pid": 84064,
+      "type": "webIsolated",
+      "origin": "http://site31.test",
+      "memory": 33391984,
+      "cpuTimeMs": 114.548625,
+      "threads": 25,
+      "windows": 1,
+      "rss": 73515008
+     },
+     {
+      "pid": 84116,
+      "type": "webIsolated",
+      "origin": "http://site38.test",
+      "memory": 76467152,
+      "cpuTimeMs": 397.573625,
+      "threads": 25,
+      "windows": 1,
+      "rss": 88670208
+     },
+     {
+      "pid": 84009,
+      "type": "webIsolated",
+      "origin": "http://site24.test",
+      "memory": 28001648,
+      "cpuTimeMs": 121.238625,
+      "threads": 25,
+      "windows": 1,
+      "rss": 72531968
+     },
+     {
+      "pid": 84098,
+      "type": "webIsolated",
+      "origin": "http://site36.test",
+      "memory": 28083568,
+      "cpuTimeMs": 122.571708,
+      "threads": 25,
+      "windows": 1,
+      "rss": 71581696
+     },
+     {
+      "pid": 84043,
+      "type": "webIsolated",
+      "origin": "http://site28.test",
+      "memory": 27854168,
+      "cpuTimeMs": 113.068333,
+      "threads": 25,
+      "windows": 1,
+      "rss": 72433664
+     },
+     {
+      "pid": 83899,
+      "type": "webIsolated",
+      "origin": "http://site07.test",
+      "memory": 28018032,
+      "cpuTimeMs": 120.381583,
+      "threads": 25,
+      "windows": 1,
+      "rss": 72482816
+     },
+     {
+      "pid": 83988,
+      "type": "webIsolated",
+      "origin": "http://site21.test",
+      "memory": 27886960,
+      "cpuTimeMs": 115.482791,
+      "threads": 25,
+      "windows": 1,
+      "rss": 72466432
+     },
+     {
+      "pid": 84077,
+      "type": "webIsolated",
+      "origin": "http://site33.test",
+      "memory": 27362600,
+      "cpuTimeMs": 123.950708,
+      "threads": 25,
+      "windows": 1,
+      "rss": 77889536
+     },
+     {
+      "pid": 83933,
+      "type": "webIsolated",
+      "origin": "http://site12.test",
+      "memory": 28034416,
+      "cpuTimeMs": 127.278125,
+      "threads": 25,
+      "windows": 1,
+      "rss": 72466432
+     },
+     {
+      "pid": 84111,
+      "type": "webIsolated",
+      "origin": "http://site38.test",
+      "memory": 27968880,
+      "cpuTimeMs": 112.950875,
+      "threads": 25,
+      "windows": 1,
+      "rss": 71483392
+     },
+     {
+      "pid": 83967,
+      "type": "webIsolated",
+      "origin": "http://site17.test",
+      "memory": 33277320,
+      "cpuTimeMs": 115.967333,
+      "threads": 25,
+      "windows": 1,
+      "rss": 73662464
+     },
+     {
+      "pid": 84056,
+      "type": "webIsolated",
+      "origin": "http://site30.test",
+      "memory": 28378480,
+      "cpuTimeMs": 116.992958,
+      "threads": 25,
+      "windows": 1,
+      "rss": 83083264
+     },
+     {
+      "pid": 84001,
+      "type": "webIsolated",
+      "origin": "http://site22.test",
+      "memory": 75779000,
+      "cpuTimeMs": 393.675875,
+      "threads": 25,
+      "windows": 1,
+      "rss": 88162304
+     },
+     {
+      "pid": 84035,
+      "type": "webIsolated",
+      "origin": "http://site27.test",
+      "memory": 27379008,
+      "cpuTimeMs": 133.60725,
+      "threads": 25,
+      "windows": 1,
+      "rss": 77938688
+     },
+     {
+      "pid": 83986,
+      "type": "webIsolated",
+      "origin": "http://site20.test",
+      "memory": 73632552,
+      "cpuTimeMs": 435.075291,
+      "threads": 25,
+      "windows": 1,
+      "rss": 120815616
+     },
+     {
+      "pid": 83747,
+      "type": "rdd",
+      "origin": "",
+      "memory": 15893152,
+      "cpuTimeMs": 84.378083,
+      "threads": 5,
+      "windows": 0,
+      "rss": 54460416
+     },
+     {
+      "pid": 84069,
+      "type": "webIsolated",
+      "origin": "http://site32.test",
+      "memory": 27280704,
+      "cpuTimeMs": 126.581708,
+      "threads": 25,
+      "windows": 1,
+      "rss": 78020608
+     },
+     {
+      "pid": 83925,
+      "type": "webIsolated",
+      "origin": "http://site10.test",
+      "memory": 76565480,
+      "cpuTimeMs": 602.43625,
+      "threads": 25,
+      "windows": 1,
+      "rss": 103710720
+     },
+     {
+      "pid": 84014,
+      "type": "webIsolated",
+      "origin": "http://site24.test",
+      "memory": 73763648,
+      "cpuTimeMs": 398.172041,
+      "threads": 25,
+      "windows": 1,
+      "rss": 121044992
+     },
+     {
+      "pid": 83870,
+      "type": "webIsolated",
+      "origin": "http://site03.test",
+      "memory": 32785728,
+      "cpuTimeMs": 138.792875,
+      "threads": 25,
+      "windows": 1,
+      "rss": 79020032
+     },
+     {
+      "pid": 83959,
+      "type": "webIsolated",
+      "origin": "http://site16.test",
+      "memory": 33211784,
+      "cpuTimeMs": 125.46675,
+      "threads": 25,
+      "windows": 1,
+      "rss": 73695232
+     },
+     {
+      "pid": 84048,
+      "type": "webIsolated",
+      "origin": "http://site28.test",
+      "memory": 76024808,
+      "cpuTimeMs": 367.912125,
+      "threads": 25,
+      "windows": 1,
+      "rss": 88489984
+     },
+     {
+      "pid": 84082,
+      "type": "webIsolated",
+      "origin": "http://site33.test",
+      "memory": 76286952,
+      "cpuTimeMs": 396.3195,
+      "threads": 25,
+      "windows": 1,
+      "rss": 88817664
+     },
+     {
+      "pid": 83883,
+      "type": "webIsolated",
+      "origin": "http://site05.test",
+      "memory": 27280680,
+      "cpuTimeMs": 140.51175,
+      "threads": 25,
+      "windows": 1,
+      "rss": 77758464
+     },
+     {
+      "pid": 83862,
+      "type": "webIsolated",
+      "origin": "http://site02.test",
+      "memory": 33178992,
+      "cpuTimeMs": 129.607458,
+      "threads": 25,
+      "windows": 1,
+      "rss": 73678848
+     },
+     {
+      "pid": 83951,
+      "type": "webIsolated",
+      "origin": "http://site15.test",
+      "memory": 27886960,
+      "cpuTimeMs": 114.027833,
+      "threads": 25,
+      "windows": 1,
+      "rss": 72368128
+     },
+     {
+      "pid": 84040,
+      "type": "webIsolated",
+      "origin": "http://site27.test",
+      "memory": 76598224,
+      "cpuTimeMs": 482.718958,
+      "threads": 25,
+      "windows": 1,
+      "rss": 103874560
+     },
+     {
+      "pid": 83896,
+      "type": "webIsolated",
+      "origin": "http://site06.test",
+      "memory": 33342832,
+      "cpuTimeMs": 125.24775,
+      "threads": 25,
+      "windows": 1,
+      "rss": 73711616
+     },
+     {
+      "pid": 84074,
+      "type": "webIsolated",
+      "origin": "http://site32.test",
+      "memory": 76532736,
+      "cpuTimeMs": 500.378666,
+      "threads": 25,
+      "windows": 1,
+      "rss": 103235584
+     },
+     {
+      "pid": 83875,
+      "type": "webIsolated",
+      "origin": "http://site04.test",
+      "memory": 28312944,
+      "cpuTimeMs": 141.968458,
+      "threads": 25,
+      "windows": 1,
+      "rss": 82903040
+     },
+     {
+      "pid": 84108,
+      "type": "webIsolated",
+      "origin": "http://site37.test",
+      "memory": 33359240,
+      "cpuTimeMs": 116.470583,
+      "threads": 25,
+      "windows": 1,
+      "rss": 72777728
+     },
+     {
+      "pid": 83909,
+      "type": "webIsolated",
+      "origin": "http://site08.test",
+      "memory": 75795480,
+      "cpuTimeMs": 462.283666,
+      "threads": 25,
+      "windows": 1,
+      "rss": 88244224
+     },
+     {
+      "pid": 83998,
+      "type": "webIsolated",
+      "origin": "http://site22.test",
+      "memory": 43435376,
+      "cpuTimeMs": 142.23725,
+      "threads": 25,
+      "windows": 1,
+      "rss": 88850432
+     },
+     {
+      "pid": 84087,
+      "type": "webIsolated",
+      "origin": "http://site34.test",
+      "memory": 33146224,
+      "cpuTimeMs": 134.468291,
+      "threads": 25,
+      "windows": 1,
+      "rss": 73596928
+     },
+     {
+      "pid": 84032,
+      "type": "webIsolated",
+      "origin": "http://site26.test",
+      "memory": 73779984,
+      "cpuTimeMs": 419.81625,
+      "threads": 25,
+      "windows": 1,
+      "rss": 120832000
+     },
+     {
+      "pid": 83744,
+      "type": "socket",
+      "origin": "",
+      "memory": 15893152,
+      "cpuTimeMs": 118.675208,
+      "threads": 7,
+      "windows": 0,
+      "rss": 31883264
+     },
+     {
+      "pid": 83922,
+      "type": "webIsolated",
+      "origin": "http://site10.test",
+      "memory": 27919728,
+      "cpuTimeMs": 123.686583,
+      "threads": 25,
+      "windows": 1,
+      "rss": 72482816
+     },
+     {
+      "pid": 84011,
+      "type": "webIsolated",
+      "origin": "http://site24.test",
+      "memory": 33228120,
+      "cpuTimeMs": 129.500416,
+      "threads": 25,
+      "windows": 1,
+      "rss": 73777152
+     },
+     {
+      "pid": 84100,
+      "type": "webIsolated",
+      "origin": "http://site36.test",
+      "memory": 33260912,
+      "cpuTimeMs": 125.389833,
+      "threads": 25,
+      "windows": 1,
+      "rss": 72810496
+     },
+     {
+      "pid": 83901,
+      "type": "webIsolated",
+      "origin": "http://site07.test",
+      "memory": 33342856,
+      "cpuTimeMs": 122.045625,
+      "threads": 25,
+      "windows": 1,
+      "rss": 73482240
+     },
+     {
+      "pid": 83990,
+      "type": "webIsolated",
+      "origin": "http://site21.test",
+      "memory": 33359216,
+      "cpuTimeMs": 127.261375,
+      "threads": 25,
+      "windows": 1,
+      "rss": 73760768
+     },
+     {
+      "pid": 83935,
+      "type": "webIsolated",
+      "origin": "http://site12.test",
+      "memory": 32687424,
+      "cpuTimeMs": 127.237125,
+      "threads": 25,
+      "windows": 1,
+      "rss": 79101952
+     },
+     {
+      "pid": 84089,
+      "type": "webIsolated",
+      "origin": "http://site34.test",
+      "memory": 74206016,
+      "cpuTimeMs": 441.818625,
+      "threads": 25,
+      "windows": 1,
+      "rss": 121192448
+     },
+     {
+      "pid": 84003,
+      "type": "webIsolated",
+      "origin": "http://site23.test",
+      "memory": 27985264,
+      "cpuTimeMs": 119.331708,
+      "threads": 25,
+      "windows": 1,
+      "rss": 72204288
+     },
+     {
+      "pid": 83859,
+      "type": "webIsolated",
+      "origin": "http://site01.test",
+      "memory": 75664312,
+      "cpuTimeMs": 477.049208,
+      "threads": 25,
+      "windows": 1,
+      "rss": 88244224
+     },
+     {
+      "pid": 84037,
+      "type": "webIsolated",
+      "origin": "http://site27.test",
+      "memory": 33228144,
+      "cpuTimeMs": 131.103333,
+      "threads": 25,
+      "windows": 1,
+      "rss": 73695232
+     },
+     {
+      "pid": 83972,
+      "type": "webIsolated",
+      "origin": "http://site18.test",
+      "memory": 33277272,
+      "cpuTimeMs": 121.8045,
+      "threads": 25,
+      "windows": 1,
+      "rss": 73826304
+     },
+     {
+      "pid": 83982,
+      "type": "webIsolated",
+      "origin": "http://site20.test",
+      "memory": 28280152,
+      "cpuTimeMs": 121.707625,
+      "threads": 25,
+      "windows": 1,
+      "rss": 82886656
+     },
+     {
+      "pid": 84071,
+      "type": "webIsolated",
+      "origin": "http://site32.test",
+      "memory": 43484552,
+      "cpuTimeMs": 134.486416,
+      "threads": 25,
+      "windows": 1,
+      "rss": 90259456
+     },
+     {
+      "pid": 83927,
+      "type": "webIsolated",
+      "origin": "http://site11.test",
+      "memory": 27329856,
+      "cpuTimeMs": 132.72275,
+      "threads": 25,
+      "windows": 1,
+      "rss": 77824000
+     },
+     {
+      "pid": 83961,
+      "type": "webIsolated",
+      "origin": "http://site16.test",
+      "memory": 75647928,
+      "cpuTimeMs": 400.503541,
+      "threads": 25,
+      "windows": 1,
+      "rss": 88129536
+     },
+     {
+      "pid": 84050,
+      "type": "webIsolated",
+      "origin": "http://site29.test",
+      "memory": 27886960,
+      "cpuTimeMs": 118.395625,
+      "threads": 25,
+      "windows": 1,
+      "rss": 72564736
+     },
+     {
+      "pid": 83974,
+      "type": "webIsolated",
+      "origin": "http://site18.test",
+      "memory": 75746256,
+      "cpuTimeMs": 405.428625,
+      "threads": 25,
+      "windows": 1,
+      "rss": 88145920
+     },
+     {
+      "pid": 83919,
+      "type": "webIsolated",
+      "origin": "http://site09.test",
+      "memory": 75664360,
+      "cpuTimeMs": 473.686666,
+      "threads": 25,
+      "windows": 1,
+      "rss": 88162304
+     },
+     {
+      "pid": 84096,
+      "type": "webIsolated",
+      "origin": "http://site35.test",
+      "memory": 76614656,
+      "cpuTimeMs": 470.764833,
+      "threads": 25,
+      "windows": 1,
+      "rss": 89702400
+     },
+     {
+      "pid": 83953,
+      "type": "webIsolated",
+      "origin": "http://site15.test",
+      "memory": 43140488,
+      "cpuTimeMs": 118.381458,
+      "threads": 25,
+      "windows": 1,
+      "rss": 89866240
+     },
+     {
+      "pid": 84131,
+      "type": "webIsolated",
+      "origin": "http://site40.test",
+      "memory": 43320664,
+      "cpuTimeMs": 132.600041,
+      "threads": 25,
+      "windows": 1,
+      "rss": 85999616
+     },
+     {
+      "pid": 84047,
+      "type": "webIsolated",
+      "origin": "http://site28.test",
+      "memory": 43238792,
+      "cpuTimeMs": 130.199375,
+      "threads": 25,
+      "windows": 1,
+      "rss": 90406912
+     },
+     {
+      "pid": 84021,
+      "type": "webIsolated",
+      "origin": "http://site25.test",
+      "memory": 33326472,
+      "cpuTimeMs": 121.623208,
+      "threads": 25,
+      "windows": 1,
+      "rss": 73728000
+     },
+     {
+      "pid": 83877,
+      "type": "webIsolated",
+      "origin": "http://site04.test",
+      "memory": 32212288,
+      "cpuTimeMs": 136.442791,
+      "threads": 25,
+      "windows": 1,
+      "rss": 78708736
+     },
+     {
+      "pid": 83911,
+      "type": "webIsolated",
+      "origin": "http://site09.test",
+      "memory": 27919728,
+      "cpuTimeMs": 130.574791,
+      "threads": 25,
+      "windows": 1,
+      "rss": 72548352
+     },
+     {
+      "pid": 83856,
+      "type": "webIsolated",
+      "origin": "http://site01.test",
+      "memory": 28034416,
+      "cpuTimeMs": 135.549208,
+      "threads": 25,
+      "windows": 1,
+      "rss": 72597504
+     },
+     {
+      "pid": 83945,
+      "type": "webIsolated",
+      "origin": "http://site14.test",
+      "memory": 27673920,
+      "cpuTimeMs": 140.089958,
+      "threads": 25,
+      "windows": 1,
+      "rss": 85000192
+     },
+     {
+      "pid": 83746,
+      "type": "extension",
+      "origin": "",
+      "memory": 41798320,
+      "cpuTimeMs": 364.648458,
+      "threads": 26,
+      "windows": 6,
+      "rss": 92307456
+     },
+     {
+      "pid": 84194,
+      "type": "preallocated",
+      "origin": "",
+      "memory": 21578784,
+      "cpuTimeMs": 74.887875,
+      "threads": 24,
+      "windows": 0,
+      "rss": 55771136
+     },
+     {
+      "pid": 84092,
+      "type": "webIsolated",
+      "origin": "http://site35.test",
+      "memory": 27870576,
+      "cpuTimeMs": 113.843291,
+      "threads": 25,
+      "windows": 1,
+      "rss": 71630848
+     },
+     {
+      "pid": 84102,
+      "type": "webIsolated",
+      "origin": "http://site36.test",
+      "memory": 76270592,
+      "cpuTimeMs": 387.792708,
+      "threads": 25,
+      "windows": 1,
+      "rss": 88457216
+     },
+     {
+      "pid": 83903,
+      "type": "webIsolated",
+      "origin": "http://site07.test",
+      "memory": 75647952,
+      "cpuTimeMs": 484.072291,
+      "threads": 25,
+      "windows": 1,
+      "rss": 88375296
+     },
+     {
+      "pid": 83992,
+      "type": "webIsolated",
+      "origin": "http://site21.test",
+      "memory": 76712912,
+      "cpuTimeMs": 493.5045,
+      "threads": 25,
+      "windows": 1,
+      "rss": 103301120
+     },
+     {
+      "pid": 84081,
+      "type": "webIsolated",
+      "origin": "http://site33.test",
+      "memory": 43271560,
+      "cpuTimeMs": 132.231291,
+      "threads": 25,
+      "windows": 1,
+      "rss": 95682560
+     },
+     {
+      "pid": 83937,
+      "type": "webIsolated",
+      "origin": "http://site12.test",
+      "memory": 73943848,
+      "cpuTimeMs": 527.94725,
+      "threads": 25,
+      "windows": 1,
+      "rss": 120946688
+     },
+     {
+      "pid": 84026,
+      "type": "webIsolated",
+      "origin": "http://site26.test",
+      "memory": 27329856,
+      "cpuTimeMs": 122.10825,
+      "threads": 25,
+      "windows": 1,
+      "rss": 77922304
+     },
+     {
+      "pid": 83980,
+      "type": "webIsolated",
+      "origin": "http://site19.test",
+      "memory": 75795456,
+      "cpuTimeMs": 404.4835,
+      "threads": 25,
+      "windows": 1,
+      "rss": 88227840
+     },
+     {
+      "pid": 84132,
+      "type": "webIsolated",
+      "origin": "http://site40.test",
+      "memory": 76565480,
+      "cpuTimeMs": 540.80025,
+      "threads": 25,
+      "windows": 1,
+      "rss": 95453184
+     },
+     {
+      "pid": 84005,
+      "type": "webIsolated",
+      "origin": "http://site23.test",
+      "memory": 33260912,
+      "cpuTimeMs": 122.961,
+      "threads": 25,
+      "windows": 1,
+      "rss": 73678848
+     },
+     {
+      "pid": 83861,
+      "type": "webIsolated",
+      "origin": "http://site02.test",
+      "memory": 27985264,
+      "cpuTimeMs": 139.11275,
+      "threads": 25,
+      "windows": 1,
+      "rss": 72548352
+     },
+     {
+      "pid": 84094,
+      "type": "webIsolated",
+      "origin": "http://site35.test",
+      "memory": 33326472,
+      "cpuTimeMs": 124.470041,
+      "threads": 25,
+      "windows": 1,
+      "rss": 72646656
+     },
+     {
+      "pid": 84128,
+      "type": "webIsolated",
+      "origin": "http://site40.test",
+      "memory": 27968880,
+      "cpuTimeMs": 116.32725,
+      "threads": 25,
+      "windows": 1,
+      "rss": 71548928
+     },
+     {
+      "pid": 83984,
+      "type": "webIsolated",
+      "origin": "http://site20.test",
+      "memory": 42878272,
+      "cpuTimeMs": 141.590208,
+      "threads": 25,
+      "windows": 1,
+      "rss": 101089280
+     },
+     {
+      "pid": 83929,
+      "type": "webIsolated",
+      "origin": "http://site11.test",
+      "memory": 33162632,
+      "cpuTimeMs": 112.284916,
+      "threads": 25,
+      "windows": 1,
+      "rss": 73809920
+     },
+     {
+      "pid": 84018,
+      "type": "webIsolated",
+      "origin": "http://site25.test",
+      "memory": 27870576,
+      "cpuTimeMs": 121.845875,
+      "threads": 25,
+      "windows": 1,
+      "rss": 72433664
+     },
+     {
+      "pid": 83874,
+      "type": "webIsolated",
+      "origin": "http://site03.test",
+      "memory": 75762640,
+      "cpuTimeMs": 469.692166,
+      "threads": 25,
+      "windows": 1,
+      "rss": 88293376
+     },
+     {
+      "pid": 83963,
+      "type": "webIsolated",
+      "origin": "http://site17.test",
+      "memory": 27313472,
+      "cpuTimeMs": 122.526625,
+      "threads": 25,
+      "windows": 1,
+      "rss": 77824000
+     },
+     {
+      "pid": 84052,
+      "type": "webIsolated",
+      "origin": "http://site29.test",
+      "memory": 33326472,
+      "cpuTimeMs": 125.215625,
+      "threads": 25,
+      "windows": 1,
+      "rss": 73744384
+     }
+    ],
+    "label": "idle",
+    "loadavg": [
+     4.27,
+     5.47,
+     5.67
+    ],
+    "parentPid": 83739,
+    "rssTotalMB": 10729.609375,
+    "footprintTotalMB": 6374.474472045898,
+    "processCount": 131,
+    "contentProcessCount": 123,
+    "byType": {
+     "browser": {
+      "count": 1,
+      "rssMB": 437.109375,
+      "footprintMB": 323.04022216796875
+     },
+     "webIsolated": {
+      "count": 120,
+      "rssMB": 9652.921875,
+      "footprintMB": 5307.548080444336
+     },
+     "utility": {
+      "count": 1,
+      "rssMB": 31.390625,
+      "footprintMB": 15.625663757324219
+     },
+     "preallocated": {
+      "count": 3,
+      "rssMB": 159.234375,
+      "footprintMB": 61.784271240234375
+     },
+     "web": {
+      "count": 1,
+      "rssMB": 65.96875,
+      "footprintMB": 22.329269409179688
+     },
+     "gpu": {
+      "count": 1,
+      "rssMB": 148.15625,
+      "footprintMB": 552.4075546264648
+     },
+     "privilegedabout": {
+      "count": 1,
+      "rssMB": 64.453125,
+      "footprintMB": 21.563644409179688
+     },
+     "rdd": {
+      "count": 1,
+      "rssMB": 51.9375,
+      "footprintMB": 15.156890869140625
+     },
+     "socket": {
+      "count": 1,
+      "rssMB": 30.40625,
+      "footprintMB": 15.156890869140625
+     },
+     "extension": {
+      "count": 1,
+      "rssMB": 88.03125,
+      "footprintMB": 39.86198425292969
+     }
+    }
+   },
+   "loadAfter": [
+    4.27,
+    5.47,
+    5.67
+   ],
+   "finished": "2026-10-17T14:50:43"
+  }
+ ]
+}

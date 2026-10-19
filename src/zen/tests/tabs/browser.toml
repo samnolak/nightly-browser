@@ -5,6 +5,8 @@
 [DEFAULT]
 support-files = [
   "head.js",
+  "file_tab_lifecycle_form.html",
+  "file_tab_lifecycle_slow.sjs",
 ]
 
 ["browser_drag_drop_vertical.js"]
@@ -22,3 +24,9 @@ tags = [
 ["browser_tabs_empty_checks.js"]
 
 ["browser_tabs_fetch_checks.js"]
+
+["browser_tabs_auto_groups.js"]
+
+["browser_tabs_load_queue.js"]
+
+["browser_tabs_unloader.js"]

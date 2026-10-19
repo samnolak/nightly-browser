@@ -286,6 +286,22 @@ zen-library[zen-library-downloading] .zen-library-tab[data-section="downloads"]:
   background-image: url("chrome://browser/skin/zen-icons/library/library-media-sprite.svg");
 }
 
+/* The gallery entry opens a tab instead of a section: one static frame drawn
+   in the sections' stroke colour, never "active" and never animated. */
+.zen-library-tab[data-action="gallery"] {
+  &:focus-visible {
+    outline: var(--focus-outline);
+    outline-offset: var(--focus-outline-inset);
+    border-radius: 10px;
+  }
+
+  & .zen-library-tab-icon-image {
+    width: var(--zen-library-sprite-size);
+    background-image: url("chrome://browser/skin/zen-icons/screenshot.svg");
+    fill: var(--stroke);
+  }
+}
+
 .zen-library-media-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));

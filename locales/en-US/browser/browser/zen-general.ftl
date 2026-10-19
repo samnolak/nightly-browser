@@ -70,6 +70,14 @@ zen-background-tab-opened-toast = New background tab opened!
 zen-workspace-renamed-toast = Workspace has been successfully renamed!
 zen-split-view-limit-toast = Can't add more panels to the split view!
 zen-sidebar-drag-collapsed-toast = Sidebar hidden! Use <span>{ $shortcut }</span> to bring the sidebar back.
+zen-open-in-app-toast = Opened in { $app }
+
+# Tab tooltip line for a tab that was opened in bulk and waits to load.
+# $position (Number) - place of the tab in the load queue, starting at 1.
+# $count (Number) - number of tabs waiting in the load queue.
+zen-tab-load-queued-tooltip = Waiting to load ({ $position } of { $count })
+# Tab tooltip line for a background tab that is not loaded (unloaded to save memory).
+zen-tab-unloaded-tooltip = Not loaded — select to load
 
 zen-toggle-compact-mode-button =
     .label = Compact Mode

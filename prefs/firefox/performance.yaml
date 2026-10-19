@@ -10,3 +10,10 @@
   condition: "defined(XP_WIN) || defined(XP_DARWIN) || defined(MOZ_WIDGET_GTK)"
   value: "@cond"
   mirror: once
+
+# Release-channel builds ship 0 on macOS, which turns the memory-pressure
+# response off entirely. Unload tabs and issue an internal memory-pressure
+# notification at the "critical" level, as Mozilla Nightly does (B4).
+- name: browser.lowMemoryResponseMask
+  condition: "defined(XP_MACOSX)"
+  value: 3

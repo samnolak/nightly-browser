@@ -47,8 +47,10 @@ class ZenEmbedHost final {
   static bool IsEmbedDocumentWindow(nsIWidget* aWidget);
 
   // Marks the windows created while it lives as embedded when aUrl is the
-  // embed document (nsWindowWatcher::OpenWindowInternal and
-  // AppWindow::CreateNewContentWindow, around the window's creation).
+  // embed document, a pane's browser window, or any other browser window while
+  // a pane shows one (a stray, kept off screen; nsWindowWatcher::
+  // OpenWindowInternal and AppWindow::CreateNewContentWindow, around the
+  // window's creation).
   class AutoEmbedScope final {
    public:
     explicit AutoEmbedScope(nsIURI* aUrl);

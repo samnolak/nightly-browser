@@ -356,3 +356,17 @@ body,
   --zen-main-browser-background-toolbar: light-dark(#ffffff, #181818) !important;
   --zen-main-browser-background-toolbar-old: light-dark(#ffffff, #181818) !important;
 }
+
+/* The embedder's pane shows this one window: a new window is a tab of it
+ * (OpenBrowserWindow, openLinkIn), a tab does not move to a window of its own
+ * (replaceTabWithWindow), and there is no private window beside it. Their menu
+ * items go. */
+:root[zen-embedded] :is(#context-openlink, #context-openlinkprivate,
+                        #context_openTabInWindow,
+                        #placesContext_open\:newwindow,
+                        #placesContext_open\:newprivatewindow,
+                        #appMenu-new-window-button2,
+                        #appMenu-new-private-window-button2,
+                        #menu_newPrivateWindow) {
+  display: none !important;
+}

@@ -1,8 +1,8 @@
 diff --git a/browser/base/content/browser-places.js b/browser/base/content/browser-places.js
-index b04e9afe4041b9bcd62527a22f468b84bf0de5d9..9e20e5a9d58fb6752037708f3d1404e00c98b132 100644
+index 956207d99538b19464388b60e311a309e6e3aa14..eaa36a2a8c337b641eb5720de48f3681011d952e 100644
 --- a/browser/base/content/browser-places.js
 +++ b/browser/base/content/browser-places.js
-@@ -262,6 +262,8 @@ var StarUI = {
+@@ -263,6 +263,8 @@ var StarUI = {
        });
      }
  
@@ -11,7 +11,7 @@ index b04e9afe4041b9bcd62527a22f468b84bf0de5d9..9e20e5a9d58fb6752037708f3d1404e0
      let onPanelReady = fn => {
        let target = this.panel;
        if (target.parentNode) {
-@@ -313,6 +315,21 @@ var StarUI = {
+@@ -314,6 +316,21 @@ var StarUI = {
      }
    },
  
@@ -33,7 +33,31 @@ index b04e9afe4041b9bcd62527a22f468b84bf0de5d9..9e20e5a9d58fb6752037708f3d1404e0
    removeBookmarkButtonCommand: function SU_removeBookmarkButtonCommand() {
      this._removeBookmarksOnPopupHidden = true;
      this.panel.hidePopup();
-@@ -1841,6 +1858,7 @@ var BookmarkingUI = {
+@@ -557,6 +574,23 @@ var PlacesCommandHook = {
+    *                      AllBookmarks, History, Downloads.
+    */
+   showPlacesOrganizer(item) {
++    // zen/embed: the embedder's pane shows this one window, so the Library is
++    // not a window of its own: history and downloads open Zen's library in
++    // it, bookmarks the organizer as a tab.
++    if (document.documentElement.hasAttribute("zen-embedded")) {
++      const section = { History: "history", Downloads: "downloads" }[item];
++      if (section && Services.prefs.getBoolPref("zen.library.enabled")) {
++        ChromeUtils.importESModule("moz-src:///zen/library/ZenLibrary.mjs", {
++          global: "current",
++        }).ZenLibrary.toggle(section);
++      } else {
++        // In front, and the tab it already has when there is one.
++        switchToTabHavingURI("chrome://browser/content/places/places.xhtml", true, {
++          inBackground: false,
++        });
++      }
++      return;
++    }
+     var organizer = Services.wm.getMostRecentWindow("Places:Organizer");
+     // Due to bug 528706, getMostRecentWindow can return closed windows.
+     if (!organizer || organizer.closed) {
+@@ -1915,6 +1949,7 @@ var BookmarkingUI = {
        document.getElementById("context-bookmarkpage"),
        PanelMultiView.getViewNode(document, "panelMenuBookmarkThisPage"),
        document.getElementById("pageAction-panel-bookmark"),

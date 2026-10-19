@@ -13,6 +13,11 @@
 // fits it into the embedder's sheet. Only in an embedder's runtime
 // (NIGHTLY_EMBED_SERVICE).
 
+const lazy = {};
+ChromeUtils.defineESModuleGetters(lazy, {
+  ZenEmbedDialogs: "resource:///actors/ZenEmbedDialogs.sys.mjs",
+});
+
 const COMMAND_NAVIGATE = 1;
 const COMMAND_RELOAD = 2;
 const COMMAND_BACK = 3;
@@ -40,6 +45,7 @@ export const ZenEmbedBrowser = {
     }
     if (topic == "zen-embed-browser-window") {
       win.document.documentElement.setAttribute("zen-embedded", "true");
+      lazy.ZenEmbedDialogs.browserWindow(win);
       return;
     }
     if (topic != "zen-embed-command") {

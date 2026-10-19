@@ -70,7 +70,17 @@ zen-background-tab-opened-toast = New background tab opened!
 zen-workspace-renamed-toast = Workspace has been successfully renamed!
 zen-split-view-limit-toast = Can't add more panels to the split view!
 zen-sidebar-drag-collapsed-toast = Sidebar hidden! Use <span>{ $shortcut }</span> to bring the sidebar back.
+# Open in app: a link went to its desktop app. $app (String) - the app's name.
 zen-open-in-app-toast = Opened in { $app }
+zen-open-in-app-toast-description = Hold ⌥ Option when opening a link to keep it in the browser
+zen-open-in-app-ask-title = Open in { $app }?
+zen-open-in-app-ask-text = This link can open in the { $app } app.
+zen-open-in-app-ask-open-app = Open { $app }
+zen-open-in-app-ask-open-here = Open in Browser
+zen-open-in-app-ask-remember = Remember for { $app } links
+zen-open-in-app-context-open-in-browser =
+    .label = Open Link in Browser
+    .accesskey = B
 
 # Tab tooltip line for a tab that was opened in bulk and waits to load.
 # $position (Number) - place of the tab in the load queue, starting at 1.

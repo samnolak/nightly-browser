@@ -333,3 +333,16 @@ zen-tab-unloader-enabled =
 zen-tab-unloader-timeout = Выгружать после стольких минут без использования
 zen-tab-unloader-unload-pinned =
     .label = Выгружать также закреплённые вкладки и Essentials
+
+zen-open-in-app-header = Открывать ссылки в приложениях
+zen-open-in-app-description = Ссылки на встречи Zoom, файлы Figma, комнаты Толка, Telegram, Slack, Teams и другие приложения открываются в приложении, если оно установлено на этом Mac, а вкладка, открытая только для ссылки, закрывается. Чтобы один раз оставить ссылку в браузере, удерживайте ⌥ Option при её открытии или выберите «Открыть ссылку в браузере» в контекстном меню.
+zen-open-in-app-enabled =
+    .label = Открывать поддерживаемые ссылки в приложениях
+# $app (String) - the app's name.
+zen-open-in-app-not-installed = { $app } (не установлено)
+zen-open-in-app-mode-always =
+    .label = Открывать в приложении
+zen-open-in-app-mode-ask =
+    .label = Спрашивать каждый раз
+zen-open-in-app-mode-never =
+    .label = Открывать в браузере

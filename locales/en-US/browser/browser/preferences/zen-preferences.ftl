@@ -388,6 +388,19 @@ zen-auto-groups-invalid = Use domains without URLs, and path rules such as githu
 zen-auto-groups-apply =
     .label = Apply domain and path rules
 
+zen-open-in-app-header = Open links in apps
+zen-open-in-app-description = Links to Zoom meetings, Figma files, Толк rooms, Telegram, Slack, Teams and other apps open in the app when it is installed on this Mac, and a tab opened just for the link closes. Hold ⌥ Option while opening a link, or use “Open Link in Browser” in its context menu, to keep it in the browser once.
+zen-open-in-app-enabled =
+    .label = Open supported links in their desktop apps
+# $app (String) - the app's name.
+zen-open-in-app-not-installed = { $app } (not installed)
+zen-open-in-app-mode-always =
+    .label = Open in the app
+zen-open-in-app-mode-ask =
+    .label = Ask every time
+zen-open-in-app-mode-never =
+    .label = Open in the browser
+
 zen-tab-unloader-header = Unload inactive tabs
 zen-tab-unloader-description = Free memory by unloading tabs you have not used for a while, in every space. The current tab, tabs playing audio or video, tabs sharing your camera, microphone or screen, and pages with unsaved form input are never unloaded. Unloaded tabs stay in the list and load again when selected.
 zen-tab-unloader-enabled =

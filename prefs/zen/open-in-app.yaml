@@ -2,6 +2,19 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-# Open links to sites with an installed desktop app (Figma) in that app.
+# Open in app (src/zen/open-in-app/): a tab's top-level navigation to a page
+# an installed desktop app opens (Zoom /j/ meetings, Figma files, Толк rooms,
+# Telegram t.me links, Slack, Teams /l/ links, Notion pages, Linear issues,
+# Spotify, Discord, Яндекс Телемост, Яндекс Музыка, Time) is stopped before it
+# loads and handed to the app through LaunchServices; a tab opened only for
+# the link closes. An app counts as installed when macOS has a handler for its
+# URL scheme (CFBundleURLTypes). Not for frames, subresources, pinned tabs,
+# Glance, back/forward/reload/session restore, or pages navigating by
+# themselves. ⌥ Option while opening, "Open Link in Browser" in the link's
+# context menu, or the toast's button keep a link in the browser.
+#
+# Per app: zen.open-in-app.app.<id> = "always" (default) | "ask" | "never",
+# ids: figma zoom teams slack telegram notion linear spotify discord ktalk
+# telemost yandex-music time. Settings > Tab Management > Open links in apps.
 - name: zen.open-in-app.enabled
   value: true

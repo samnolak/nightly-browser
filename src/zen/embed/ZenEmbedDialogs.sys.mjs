@@ -20,9 +20,14 @@
 // or the tab's process crashed) is zen-embed-dialog-closed ("id"). Downloads
 // report zen-embed-download ("id\n" + JSON, id the question that chose their
 // path); zen-embed-download-cancel ("id") stops one.
-// Pages of any other window (a browser window the embedder shows whole, an
-// ordinary Nightly window) keep Nightly's own: the system file picker, and
-// downloads saved straight into the downloads folder.
+// Pages of a browser window the embedder shows whole (the Browser page,
+// browserWindow below) keep Nightly's own prompts, doorhangers and download
+// flow, as in Nightly, except what Nightly would put on screen outside that
+// window: the system's open and save panels (a sheet on a window that is
+// never on screen) are the embedder's, a sheet on its own window ("panel"
+// below), and its panels (doorhangers, menus, the downloads and site panels)
+// draw their own background, as no NSPopover hosts them. Any other window
+// (an ordinary Nightly window) keeps the system file picker.
 //
 // Questions (JSON): { kind, origin, ... }
 //   alert | confirm | prompt | beforeunload: { message, default (prompt) }
@@ -32,23 +37,30 @@
 //                 "other", message }
 //   file: { multiple, directory, accept: [".png", "image/*", ...] }
 //   download: { name, size (-1 unknown), url }
+//   panel: { mode: "open" | "multiple" | "folder" | "save", title, name,
+//            extension, directory, okLabel, filterIndex,
+//            filters: [{ title, patterns: ["*.html", "*"] }] }
 // Answers (JSON):
 //   alert: {}; confirm, beforeunload: { ok }; prompt: { ok, value };
 //   auth: { ok, user, password }; permission: { answer: "deny" | "once" |
-//   "always" }; file: { paths: [...] | null }; download: { path | null }.
+//   "always" }; file: { paths: [...] | null }; download: { path | null };
+//   panel: { paths: [...] | null, filterIndex }.
 // Download states (JSON): { state: "saving" | "finished" | "failed" |
 //   "canceled", received, total, path, error }.
 
 const lazy = {};
 ChromeUtils.defineESModuleGetters(lazy, {
-  DownloadPaths: "resource://gre/modules/DownloadPaths.sys.mjs",
   Downloads: "resource://gre/modules/Downloads.sys.mjs",
+  nsUnknownContentTypeDialog: "resource://gre/modules/HelperAppDlg.sys.mjs",
 });
 
 const FILE_PICKER_CONTRACT = "@mozilla.org/filepicker;1";
 const HELPER_APP_DIALOG_CONTRACT = "@mozilla.org/helperapplauncherdialog;1";
 const FILE_PICKER_CID = Components.ID("{4c7a5f5e-5d2f-4b3e-9a62-1f0b7f9c2e11}");
 const HELPER_APP_DIALOG_CID = Components.ID("{a3e2b0d4-8c51-4f7a-b6c9-2d4e7f1a9b03}");
+// The system file picker these replace, for windows other than the
+// embedder's (the parent process's own picker, as nsFilePickerSelector makes).
+const NATIVE_FILE_PICKER_CONTRACT = "@mozilla.org/parent/filepicker;1";
 
 let gNextId = 1;
 // id -> { window, resolve(answer | null) }
@@ -58,9 +70,6 @@ const gExpectedDownloads = new Map();
 // Download -> { id, window }
 const gDownloads = new Map();
 let gStarted = false;
-// The file picker this one replaced: what windows other than the embed windows
-// (a browser window the embedder shows whole, an ordinary window) still use.
-let gNativeFilePickerCID = null;
 
 function originOf(principalOrUri) {
   try {
@@ -75,6 +84,23 @@ function originOf(principalOrUri) {
 function embedWindowOf(browsingContext) {
   const win = browsingContext?.top?.topChromeWindow;
   return win?.document?.documentElement?.getAttribute("windowtype") == "zen:embed" ? win : null;
+}
+
+// The browser window the embedder shows whole that a browsing context (a
+// page's, or the chrome's own) belongs to; null for any other window.
+function browserWindowOf(browsingContext) {
+  const win = browsingContext?.top?.topChromeWindow;
+  return win?.document?.documentElement?.hasAttribute("zen-embedded") ? win : null;
+}
+
+// nsIFilePickerShownCallback as XPCOM passes it (an object) or as a script
+// calling this picker directly does (a function).
+function pickerDone(callback, result) {
+  if (typeof callback == "function") {
+    callback(result);
+  } else {
+    callback?.done(result);
+  }
 }
 
 function windowAlive(win) {
@@ -94,15 +120,14 @@ function enumerate(items) {
 const PROMPT_RESULTS = ["ok", "value", "user", "pass", "checked", "buttonNumClicked"];
 
 export const ZenEmbedDialogs = {
-  // Once per process (the first embed window): the pickers and the download
-  // list become the embedder's.
+  // Once per process (the first embed or browser window): the pickers and
+  // the download list become the embedder's.
   start() {
     if (gStarted) {
       return;
     }
     gStarted = true;
     const registrar = Components.manager.QueryInterface(Ci.nsIComponentRegistrar);
-    gNativeFilePickerCID = registrar.contractIDToCID(FILE_PICKER_CONTRACT);
     registrar.registerFactory(FILE_PICKER_CID, "Zen embed file picker", FILE_PICKER_CONTRACT, {
       createInstance: iid => new EmbedFilePicker().QueryInterface(iid),
     });
@@ -115,6 +140,25 @@ export const ZenEmbedDialogs = {
     Services.obs.addObserver(this, "zen-embed-dialog-reply");
     Services.obs.addObserver(this, "zen-embed-download-cancel");
     lazy.Downloads.getList(lazy.Downloads.ALL).then(list => list.addView(DownloadView));
+  },
+
+  // A browser window the embedder shows whole (ZenEmbedBrowser marks it
+  // zen-embedded). Its popups are windows of their own on screen, never
+  // NSPopovers (the window they would hang from is never on screen), so its
+  // panels draw Nightly's own background, border and shadow (`nonnative`):
+  // the native-popover style leaves that to the popover and they showed
+  // transparent.
+  browserWindow(win) {
+    this.start();
+    win.addEventListener(
+      "popupshowing",
+      event => {
+        if (event.target.localName == "panel") {
+          event.target.setAttribute("nonnative", "true");
+        }
+      },
+      true
+    );
   },
 
   // Asks the embedder from `win`'s pane; resolves with its answer, or null
@@ -415,13 +459,61 @@ const FILTER_ACCEPT = [
   [Ci.nsIFilePicker.filterPDF, ".pdf"],
 ];
 
+// The filter masks' titles and patterns, as nsBaseFilePicker::AppendFilters
+// reads them.
+const FILTER_MASKS = [
+  [Ci.nsIFilePicker.filterAll, "all"],
+  [Ci.nsIFilePicker.filterHTML, "html"],
+  [Ci.nsIFilePicker.filterText, "text"],
+  [Ci.nsIFilePicker.filterImages, "image"],
+  [Ci.nsIFilePicker.filterXML, "xml"],
+  [Ci.nsIFilePicker.filterXUL, "xul"],
+  [Ci.nsIFilePicker.filterApps, "apps"],
+  [Ci.nsIFilePicker.filterAudio, "audio"],
+  [Ci.nsIFilePicker.filterVideo, "video"],
+  [Ci.nsIFilePicker.filterPDF, "pdf"],
+];
+
+function maskFilters(mask) {
+  const titles = Services.strings.createBundle("chrome://global/locale/filepicker.properties");
+  const patterns = Services.strings.createBundle("chrome://global/content/filepicker.properties");
+  const filters = [];
+  for (const [flag, name] of FILTER_MASKS) {
+    if (mask & flag) {
+      // Applications are bundles: any file, as the system picker treats them.
+      const filter = name == "apps" ? "*" : patterns.GetStringFromName(`${name}Filter`);
+      filters.push({ title: titles.GetStringFromName(`${name}Title`), patterns: splitPatterns(filter) });
+    }
+  }
+  return filters;
+}
+
+function splitPatterns(filter) {
+  return filter
+    .split(";")
+    .map(p => p.trim())
+    .filter(Boolean);
+}
+
+const PICKER_MODES = {
+  [Ci.nsIFilePicker.modeOpen]: "open",
+  [Ci.nsIFilePicker.modeOpenMultiple]: "multiple",
+  [Ci.nsIFilePicker.modeGetFolder]: "folder",
+  [Ci.nsIFilePicker.modeSave]: "save",
+};
+
 class EmbedFilePicker {
   #window = null;
+  // A browser window the embedder shows whole: the system panel, shown by
+  // the embedder on its own window ("panel").
+  #browserWindow = null;
   #origin = "";
+  #title = "";
   #mode = Ci.nsIFilePicker.modeOpen;
   #accept = [];
+  #filters = [];
   #files = [];
-  // The system picker, for a window that is not an embed window.
+  // The system picker, for any other window.
   #native = null;
 
   defaultString = "";
@@ -435,11 +527,13 @@ class EmbedFilePicker {
 
   init(browsingContext, title, mode) {
     this.#window = embedWindowOf(browsingContext);
+    this.#browserWindow = this.#window ? null : browserWindowOf(browsingContext);
     this.#origin = originOf(browsingContext?.top?.currentWindowGlobal?.documentPrincipal);
+    this.#title = title ?? "";
     this.#mode = mode;
-    if (!this.#window && gNativeFilePickerCID) {
-      // Not an embed window's question: the system picker, as in Nightly.
-      this.#native = Components.classesByID[gNativeFilePickerCID].createInstance(Ci.nsIFilePicker);
+    if (!this.#window && !this.#browserWindow) {
+      // Not an embedder's window: the system picker, as in Nightly.
+      this.#native = Cc[NATIVE_FILE_PICKER_CONTRACT].createInstance(Ci.nsIFilePicker);
       this.#native.init(browsingContext, title, mode);
     }
   }
@@ -450,6 +544,9 @@ class EmbedFilePicker {
 
   appendFilters(mask) {
     this.#native?.appendFilters(mask);
+    if (this.#browserWindow) {
+      this.#filters.push(...maskFilters(mask));
+    }
     for (const [flag, accept] of FILTER_ACCEPT) {
       if (mask & flag) {
         this.#accept.push(accept);
@@ -459,6 +556,7 @@ class EmbedFilePicker {
 
   appendFilter(title, filter) {
     this.#native?.appendFilter(title, filter);
+    this.#filters.push({ title, patterns: splitPatterns(filter) });
     for (const part of filter.split(";")) {
       const pattern = part.trim();
       if (pattern.startsWith("*.")) {
@@ -472,6 +570,10 @@ class EmbedFilePicker {
     const value = filter.trim();
     if (value) {
       this.#accept.push(value);
+      // ".ext" or a MIME type ("image/*"), as a page's accept lists them.
+      this.#filters.push(
+        value.startsWith(".") ? { title: "", patterns: [`*${value}`] } : { title: "", mimeTypes: [value] }
+      );
     }
   }
 
@@ -523,7 +625,7 @@ class EmbedFilePicker {
     native.open({
       done: result => {
         this.filterIndex = native.filterIndex;
-        callback?.done(result);
+        pickerDone(callback, result);
       },
     });
   }
@@ -531,6 +633,10 @@ class EmbedFilePicker {
   open(callback) {
     if (this.#native) {
       this.#openNative(callback);
+      return;
+    }
+    if (this.#browserWindow) {
+      this.#openPanel(callback);
       return;
     }
     const save = this.#mode == Ci.nsIFilePicker.modeSave;
@@ -566,7 +672,54 @@ class EmbedFilePicker {
           ? Ci.nsIFilePicker.returnReplace
           : Ci.nsIFilePicker.returnOK
         : Ci.nsIFilePicker.returnCancel;
-      callback?.done(result);
+      pickerDone(callback, result);
+    });
+  }
+
+  // The embedder's own open or save panel, a sheet on its window, for a
+  // browser window it shows whole; the page, Save Page As, a download Nightly
+  // asks where to save, Save to PDF and imports get it as from the system
+  // picker.
+  #openPanel(callback) {
+    const save = this.#mode == Ci.nsIFilePicker.modeSave;
+    let directory = this.displayDirectory?.path ?? "";
+    if (!directory && this.displaySpecialDirectory) {
+      try {
+        directory = Services.dirsvc.get(this.displaySpecialDirectory, Ci.nsIFile).path;
+      } catch {}
+    }
+    const { answer } = ZenEmbedDialogs.ask(this.#browserWindow, {
+      kind: "panel",
+      origin: this.#origin,
+      mode: PICKER_MODES[this.#mode] ?? "open",
+      title: this.#title,
+      name: this.defaultString,
+      extension: this.defaultExtension,
+      directory,
+      okLabel: this.okButtonLabel,
+      filterIndex: this.filterIndex,
+      filters: this.#filters,
+    });
+    answer.then(reply => {
+      this.#files = [];
+      for (const path of reply?.paths ?? []) {
+        try {
+          const file = Cc["@mozilla.org/file/local;1"].createInstance(Ci.nsIFile);
+          file.initWithPath(String(path));
+          this.#files.push(file);
+        } catch (e) {
+          console.error(e);
+        }
+      }
+      if (Number.isInteger(reply?.filterIndex) && reply.filterIndex >= 0) {
+        this.filterIndex = reply.filterIndex;
+      }
+      let result = Ci.nsIFilePicker.returnCancel;
+      if (this.#files.length) {
+        // The panel asked before replacing a file, as the system picker does.
+        result = save && this.#files[0].exists() ? Ci.nsIFilePicker.returnReplace : Ci.nsIFilePicker.returnOK;
+      }
+      pickerDone(callback, result);
     });
   }
 
@@ -579,26 +732,39 @@ class EmbedFilePicker {
 
 // ── downloads ──
 
+// Nightly's own download dialog (HelperAppDlg) answers for a download of any
+// window but an embed window's: a browser window the embedder shows whole
+// asks where to save, or not, as Nightly does, through the file picker (there
+// the embedder's panel).
+function downloadEmbedWindow(launcher) {
+  try {
+    return embedWindowOf(BrowsingContext.get(launcher.browsingContextId));
+  } catch {
+    return null;
+  }
+}
+
 const EmbedHelperAppDialog = {
   // Asked what to do with content Nightly does not show: saved, where the
   // embedder says.
-  show(launcher) {
+  show(launcher, windowContext, reason) {
+    if (!downloadEmbedWindow(launcher)) {
+      new lazy.nsUnknownContentTypeDialog().show(launcher, windowContext, reason);
+      return;
+    }
     launcher.promptForSaveDestination();
   },
 
-  promptForSaveToFileAsync(launcher, windowContext, defaultFileName) {
-    let win = null;
-    try {
-      win = embedWindowOf(BrowsingContext.get(launcher.browsingContextId));
-    } catch {}
+  promptForSaveToFileAsync(launcher, windowContext, defaultFileName, suggestedFileExtension, forcePrompt) {
+    const win = downloadEmbedWindow(launcher);
     if (!win) {
-      // Not an embed window's download (a browser window the embedder shows
-      // whole): straight into the downloads folder, as Nightly does; the
-      // browser's own downloads list and library show it.
-      saveToDownloadsFolder(launcher, defaultFileName).catch(e => {
-        console.error(e);
-        launcher.saveDestinationAvailable(null);
-      });
+      new lazy.nsUnknownContentTypeDialog().promptForSaveToFileAsync(
+        launcher,
+        windowContext,
+        defaultFileName,
+        suggestedFileExtension,
+        forcePrompt
+      );
       return;
     }
     const { id, answer } = ZenEmbedDialogs.ask(win, {
@@ -627,14 +793,6 @@ const EmbedHelperAppDialog = {
 
   QueryInterface: ChromeUtils.generateQI(["nsIHelperAppLauncherDialog"]),
 };
-
-async function saveToDownloadsFolder(launcher, defaultFileName) {
-  const folder = await lazy.Downloads.getPreferredDownloadsDirectory();
-  const file = Cc["@mozilla.org/file/local;1"].createInstance(Ci.nsIFile);
-  file.initWithPath(folder);
-  file.append(lazy.DownloadPaths.sanitize(launcher.suggestedFileName || defaultFileName || "download"));
-  launcher.saveDestinationAvailable(lazy.DownloadPaths.createNiceUniqueFile(file), true);
-}
 
 const DownloadView = {
   onDownloadAdded(download) {

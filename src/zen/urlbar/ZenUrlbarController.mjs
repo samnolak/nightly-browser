@@ -113,22 +113,17 @@ export class nsZenUrlbarController {
       return false;
     }
 
-    // Close the new tab popup on cmd/ctrl + t
-    if (!overridePreferance && gURLBar.hasAttribute("zen-newtab")) {
-      // On the empty tab the bar is the new tab itself: it stays, with the
-      // keyboard (closing it would leave the page without an input).
-      if (gZenUIManager.emptyTabPageShown && gURLBar._zenHandleUrlbarClose) {
-        document.getElementById("Browser:OpenLocation").doCommand();
-        this.#float();
-        return true;
-      }
-      // The _zenHandleUrlbarClose holds a token in it's closure.
-      // Call that instead.
-      if (gURLBar._zenHandleUrlbarClose) {
-        gURLBar._zenHandleUrlbarClose();
-      } else {
-        this.handleUrlbarClose(closeSeq);
-      }
+    // A new tab's bar already open (⌘T, "+ New Tab" or a middle click again,
+    // back from another app, on the empty tab): it stays, with the keyboard.
+    // Only Esc, a click elsewhere or a picked result close it; closing it here
+    // would answer "new tab" with no input at all.
+    if (
+      !overridePreferance &&
+      gURLBar.hasAttribute("zen-newtab") &&
+      gURLBar._zenHandleUrlbarClose
+    ) {
+      document.getElementById("Browser:OpenLocation").doCommand();
+      this.#float();
       return true;
     }
 

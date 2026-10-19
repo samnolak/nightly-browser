@@ -452,11 +452,6 @@ class nsZenUIManager {
     this.#emptyTabPage.update();
   }
 
-  /** Whether the empty tab's page shows (its URL bar is the new tab's). */
-  get emptyTabPageShown() {
-    return this.#emptyTabPage.shown;
-  }
-
   generateUuidv4() {
     return Services.uuid.generateUUID().toString();
   }

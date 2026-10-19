@@ -21,10 +21,11 @@ const DEFAULT_ICON = "chrome://global/skin/icons/defaultFavicon.svg";
  *
  * The page is the new tab, and the floating URL bar is its input: whenever the
  * page shows in the active window without the bar, the bar opens over it again
- * (a new-tab session, as ⌘T opens). Firefox's own paths leave the empty tab
- * without one: Esc or a click on the page closes the bar, so does the window
- * losing the focus (the bar closes on blur and nothing reopens it when the
- * focus comes back), and closing the last tab only focuses the bar in place.
+ * (a new-tab session, as ⌘T opens), and a bar left open while the window was
+ * inactive gets the keyboard back. Firefox's own paths leave the empty tab
+ * without one: Esc or a click on the page closes the bar, the window losing
+ * the focus can (Chats ↔ Browser in the embedder) and nothing reopens it when
+ * the focus comes back, and closing the last tab only focuses the bar in place.
  */
 export class nsZenEmptyTabPage {
   #page = null;
@@ -95,6 +96,7 @@ export class nsZenEmptyTabPage {
    * Opens the bar over the page after the current task: a bar that is closing
    * has finished by then (its session ends in timeouts of its own), and the
    * tab switch or window activation that showed the page has placed the focus.
+   * A bar still open (the window active again) gets the keyboard back.
    *
    * @param {number} [retries] - Further tries while a closing session still
    *   holds the bar.
@@ -115,10 +117,15 @@ export class nsZenEmptyTabPage {
     }
     if (gURLBar.hasAttribute("zen-newtab")) {
       // A session whose close handler is gone is still tearing down.
-      if (!gURLBar._zenHandleUrlbarClose && retries > 0) {
-        this.#scheduleUrlbar(retries - 1);
+      if (!gURLBar._zenHandleUrlbarClose) {
+        if (retries > 0) {
+          this.#scheduleUrlbar(retries - 1);
+        }
+        return;
       }
-      return;
+      if (gURLBar.focused) {
+        return;
+      }
     }
     // The user went somewhere else on purpose: the sidebar, a panel, a menu.
     const focused = document.activeElement;
@@ -137,6 +144,7 @@ export class nsZenEmptyTabPage {
     ) {
       return;
     }
+    // A new-tab session as ⌘T opens, or the open one's bar with the keyboard.
     gZenUIManager.handleNewTab(false, false, "tab");
   }
 

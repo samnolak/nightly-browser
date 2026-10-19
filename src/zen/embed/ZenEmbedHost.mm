@@ -1665,10 +1665,17 @@ void Channel::OnWheel(const WheelMsg& aMsg) {
     }
     bool noDeltas = type == PanGestureInput::PANGESTURE_MAYSTART ||
                     type == PanGestureInput::PANGESTURE_CANCELLED;
-    // Not eligible for swipe navigation: back/forward belongs to the embedder.
+    // An embed window's back/forward swipe belongs to the embedder. A browser
+    // window's is its own, as in a Nightly window (ShouldConsiderStartingSwipe
+    // FromEvent, nsCocoaUtils.mm): Zen's spaces switch (and a space is added)
+    // with a horizontal two-finger swipe.
+    bool swipe = entry->mBrowser && phase == NSEventPhaseBegan &&
+                 ([NSEvent isSwipeTrackingFromScrollEventsEnabled] ||
+                  Preferences::GetBool(
+                      "zen.widget.macos.override-system-swipe-gestures"));
     PanGestureInput pan(type, now, position,
                         noDeltas ? ScreenPoint() : preciseDelta, modifiers,
-                        PanGestureInput::IsEligibleForSwipe::No);
+                        PanGestureInput::IsEligibleForSwipe(swipe));
     if (!noDeltas) {
       pan.SetLineOrPageDeltas(lineOrPageDelta.x, lineOrPageDelta.y);
     }

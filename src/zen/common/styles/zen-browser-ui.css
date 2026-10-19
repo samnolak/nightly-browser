@@ -333,24 +333,26 @@ body,
 }
 
 /* A browser window an embedder shows in its own window (zen/embed,
- * ZenEmbedBrowser.sys.mjs): it sits on the embedder's sheet, which clips it to
- * its rounded corners, and the embedder's traffic lights are the window's. The
- * card's inset and radius are the embedder's (Ombra: GuiFrameInset 8,
- * GuiRadiusCard 12); the window controls' place stays, empty, so the sidebar's
- * top row clears the embedder's traffic lights as it clears its own. */
+ * ZenEmbedBrowser.sys.mjs): it is the embedder's page sheet (under the
+ * embedder's title band, which holds its traffic lights), clipped to the
+ * sheet's rounded corners. The card's inset and radius are the embedder's
+ * (Ombra: GuiFrameInset 8, GuiRadiusCard 12); the window has no controls of
+ * its own, so the sidebar's top row starts at the sheet's edge. With the
+ * space's default theme the window is on the sheet's colour (Ombra:
+ * GuiWindow), not on macOS's translucent window background; a space's own
+ * colours stay (ZenGradientGenerator sets these inline, without !important). */
 :root[zen-embedded] {
   --zen-element-separation: 8px;
   --zen-native-inner-radius: 12px;
 
   & .titlebar-buttonbox-container {
-    visibility: hidden;
-    /* The embedded window is borderless, so its own buttons measure 0x0:
-     * reserve the embedder's traffic lights (Ombra's strip starts 40px past
-     * the rail). Gone while the embedder hides them (fullscreen). */
-    min-width: calc(40px - var(--zen-toolbox-padding));
-
-    @media -moz-pref("zen.embed.window-controls-hidden") {
-      display: none;
-    }
+    display: none;
   }
+}
+
+:root[zen-embedded][zen-default-theme] :is(#zen-browser-background, #zen-toolbar-background) {
+  --zen-main-browser-background: light-dark(#ffffff, #181818) !important;
+  --zen-main-browser-background-old: light-dark(#ffffff, #181818) !important;
+  --zen-main-browser-background-toolbar: light-dark(#ffffff, #181818) !important;
+  --zen-main-browser-background-toolbar-old: light-dark(#ffffff, #181818) !important;
 }

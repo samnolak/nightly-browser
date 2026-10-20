@@ -799,6 +799,7 @@ class Channel final {
   // Whether aWidget is an embed window of the chrome-less document (not a
   // browser window, not an ordinary one).
   bool IsEmbedDocumentWindow(nsIWidget* aWidget);
+  bool IsEmbeddedWindow(nsIWidget* aWidget) const;
   // Whether one of the embedder's panes shows a browser window.
   bool HasBrowserWindow() const;
   // A drag starts in aView (ZenEmbedHost::BeginDrag): false when aView is not
@@ -2346,6 +2347,15 @@ void Channel::OnOpenBrowserWindow(uint32_t aPane) {
             NS_SUCCEEDED(rv) ? "ok" : "failed");
 }
 
+bool Channel::IsEmbeddedWindow(nsIWidget* aWidget) const {
+  for (const auto& entry : mWindows) {
+    if (static_cast<nsIWidget*>(entry.mWindow) == aWidget) {
+      return true;
+    }
+  }
+  return false;
+}
+
 bool Channel::IsEmbedDocumentWindow(nsIWidget* aWidget) {
   for (const auto& entry : mWindows) {
     if (static_cast<nsIWidget*>(entry.mWindow) == aWidget) {
@@ -3041,6 +3051,10 @@ bool ZenEmbedHost::ShouldEmbedNewWindow() {
 }
 
 const char* ZenEmbedHost::EmbedDocument() { return kEmbedDocument; }
+
+bool ZenEmbedHost::IsEmbeddedWindow(nsIWidget* aWidget) {
+  return aWidget && sChannel && sChannel->IsEmbeddedWindow(aWidget);
+}
 
 bool ZenEmbedHost::IsEmbedDocumentWindow(nsIWidget* aWidget) {
   return aWidget && sChannel && sChannel->IsEmbedDocumentWindow(aWidget);

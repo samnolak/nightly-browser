@@ -41,6 +41,10 @@ class ZenEmbedHost final {
   // AutoEmbedScope). Main thread.
   static bool ShouldEmbedNewWindow();
 
+  // Any embedded top-level widget, including browser panes and strays.
+  // Its size mode belongs to the embedder, never to DOM fullscreen.
+  static bool IsEmbeddedWindow(nsIWidget* aWidget);
+
   // chrome://browser/content/zen-embed.xhtml: the document of every embed
   // window. A page's new window is opened with it in an embedder's runtime
   // (AppWindow::CreateNewContentWindow), so the embedder can show it.

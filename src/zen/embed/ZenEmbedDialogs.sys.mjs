@@ -40,11 +40,14 @@
 //   panel: { mode: "open" | "multiple" | "folder" | "save", title, name,
 //            extension, directory, okLabel, filterIndex,
 //            filters: [{ title, patterns: ["*.html", "*"] }] }
+//   print: { printInfo: base64 secure NSPrintInfo archive, pageSetup, windowId }
+//          (nsPrintDialogX asks from its parent; routed through the chrome window).
 // Answers (JSON):
 //   alert: {}; confirm, beforeunload: { ok }; prompt: { ok, value };
 //   auth: { ok, user, password }; permission: { answer: "deny" | "once" |
 //   "always" }; file: { paths: [...] | null }; download: { path | null };
 //   panel: { paths: [...] | null, filterIndex }.
+//   print: { printInfo: updated secure archive } or {} on cancellation.
 // Download states (JSON): { state: "saving" | "finished" | "failed" |
 //   "canceled", received, total, path, error }.
 
@@ -139,6 +142,7 @@ export const ZenEmbedDialogs = {
     );
     Services.obs.addObserver(this, "zen-embed-dialog-reply");
     Services.obs.addObserver(this, "zen-embed-download-cancel");
+    Services.obs.addObserver(this, "zen-embed-print-panel");
     lazy.Downloads.getList(lazy.Downloads.ALL).then(list => list.addView(DownloadView));
   },
 
@@ -197,6 +201,17 @@ export const ZenEmbedDialogs = {
   },
 
   observe(subject, topic, data) {
+    if (topic == "zen-embed-print-panel") {
+      const question = JSON.parse(data);
+      // Print preview's parent is its print.html subdialog, not the pane's
+      // chrome window. The transport is registered only on the latter.
+      const win = Services.wm.getOuterWindowWithId(question.windowId)?.browsingContext?.topChromeWindow;
+      const callback = subject.QueryInterface(Ci.nsIObserver);
+      this.ask(win, question).answer.then(answer => {
+        callback.observe(null, "zen-embed-print-result", answer?.printInfo ?? "");
+      });
+      return;
+    }
     const newline = data.indexOf("\n");
     const id = Number(newline < 0 ? data : data.slice(0, newline));
     if (topic == "zen-embed-download-cancel") {

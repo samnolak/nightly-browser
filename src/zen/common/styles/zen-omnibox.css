@@ -496,17 +496,21 @@
   translate: -50% 0%;
   left: var(--zen-urlbar-left, 50%) !important;
 
+  /* The floating urlbar leaves its toolbar slot empty; collapse the slot
+   * instead of painting a vacant pill. Never hide it: the floating input is
+   * its descendant. The original slot comes back when the popup closes. */
   /* stylelint-disable-next-line stylelint-plugin-mozilla/no-has-selector */
   #urlbar-container:has(&) {
-    border-radius: var(--border-radius-medium);
-    background: var(--toolbarbutton-background-color-hover);
-    height: var(--urlbar-height) !important;
-    margin-inline: 0.15rem !important;
-    :root:not([zen-single-toolbar="true"]) & {
-      max-height: var(--size-item-large) !important;
-      min-height: unset !important;
-      margin-block: -1px !important;
-    }
+    background: transparent !important;
+    border: 0 !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    max-height: 0 !important;
+    width: 0 !important;
+    min-width: 0 !important;
+    flex: 0 0 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 }
 

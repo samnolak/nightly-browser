@@ -1,0 +1,136 @@
+diff --git a/widget/cocoa/nsPrintDialogX.mm b/widget/cocoa/nsPrintDialogX.mm
+index d02751df28..ce868d0fd6 100644
+--- a/widget/cocoa/nsPrintDialogX.mm
++++ b/widget/cocoa/nsPrintDialogX.mm
+@@ -21,6 +21,10 @@
+ #include "nsServiceManagerUtils.h"
+ #include "nsThreadUtils.h"
+ #include "xpcpublic.h"
++#include "nsCocoaWindow.h"
++#include "nsIObserver.h"
++#include "nsIObserverService.h"
++#include "mozilla/Services.h"
+ 
+ #import <Cocoa/Cocoa.h>
+ #include "nsObjCExceptions.h"
+@@ -77,6 +81,72 @@ - (void)didEnd:(id)aPanel
+   return (NSWindow*)widget->GetNativeData(NS_NATIVE_WINDOW);
+ }
+ 
++// Native sheets cannot attach to another process's NSWindow. Send the print
++// info to the authenticated embedder, which presents its own NSPrintPanel on
++// the visible window and returns the updated info. Standalone windows retain
++// the ordinary panel (including their Gecko accessory controller).
++class EmbedPrintReply final : public nsIObserver {
++ public:
++  NS_DECL_ISUPPORTS
++  explicit EmbedPrintReply(void (^aDone)(NSPrintInfo*)) : mDone([aDone copy]) {}
++  NS_IMETHOD Observe(nsISupports*, const char*, const char16_t* aData) override {
++    NSPrintInfo* info = nil;
++    if (aData && *aData) {
++      NSString* text = [NSString stringWithUTF8String:
++          NS_ConvertUTF16toUTF8(aData).get()];
++      NSData* archive = [[[NSData alloc] initWithBase64EncodedString:text
++                                                            options:0] autorelease];
++      @try {
++        id result = [NSKeyedUnarchiver unarchivedObjectOfClass:[NSPrintInfo class]
++                                                   fromData:archive error:nil];
++        if ([result isKindOfClass:[NSPrintInfo class]]) info = result;
++      } @catch (NSException*) {
++        // A malformed peer response cancels, never falls back to a hidden sheet.
++      }
++    }
++    if (mDone) {
++      auto done = mDone;
++      mDone = nil;
++      done(info);
++      [done release];
++    }
++    return NS_OK;
++  }
++ private:
++  ~EmbedPrintReply() { [mDone release]; }
++  void (^mDone)(NSPrintInfo*);
++};
++NS_IMPL_ISUPPORTS(EmbedPrintReply, nsIObserver)
++
++static bool ShowEmbeddedPrintPanel(mozIDOMWindowProxy* aParent,
++                                  NSPrintInfo* aInfo, bool aPageSetup,
++                                  void (^aDone)(NSPrintInfo*)) {
++  auto* outer = nsPIDOMWindowOuter::From(aParent);
++  nsCOMPtr<nsIWidget> widget = WidgetUtils::DOMWindowToWidget(outer);
++  if (!widget || !static_cast<nsCocoaWindow*>(widget.get())->IsEmbedded()) {
++    return false;
++  }
++  NSData* archive = [NSKeyedArchiver archivedDataWithRootObject:aInfo
++                                      requiringSecureCoding:YES error:nil];
++  NSDictionary* question = @{
++    @"kind": @"print", @"pageSetup": @(aPageSetup),
++    @"windowId": @(outer->WindowID()),
++    @"printInfo": [archive base64EncodedStringWithOptions:0] ?: @""
++  };
++  NSData* json = [NSJSONSerialization dataWithJSONObject:question options:0 error:nil];
++  nsAutoCString data;
++  data.Assign(static_cast<const char*>([json bytes]), [json length]);
++  RefPtr<EmbedPrintReply> reply = new EmbedPrintReply(aDone);
++  nsCOMPtr<nsIObserverService> observers = services::GetObserverService();
++  if (observers && archive && json) {
++    observers->NotifyObservers(reply, "zen-embed-print-panel",
++                               NS_ConvertUTF8toUTF16(data).get());
++  } else {
++    reply->Observe(nullptr, nullptr, u"");
++  }
++  return true;
++}
++
+ NS_IMPL_ISUPPORTS(nsPrintDialogServiceX, nsIPrintDialogService)
+ 
+ // Splits our single pages-per-sheet count for native NSPrintInfo:
+@@ -187,6 +257,26 @@ static void setPagesPerSheet(NSPrintInfo* aPrintInfo, int32_t aPPS) {
+   aSettings->GetNumPagesPerSheet(&pagesPerSheet);
+   setPagesPerSheet(printInfo, pagesPerSheet);
+ 
++  RefPtr<nsPrintSettingsX> embeddedSettings = settingsX;
++  RefPtr<Promise> embeddedPromise = promise;
++  if (ShowEmbeddedPrintPanel(aParent, printInfo, false, ^(NSPrintInfo* result) {
++        if (!result) {
++          embeddedPromise->MaybeReject(NS_ERROR_ABORT);
++          return;
++        }
++        NSMutableDictionary* dict = [result dictionary];
++        auto across = [dict[@"NSPagesAcross"] intValue];
++        auto down = [dict[@"NSPagesDown"] intValue];
++        dict[@"NSPagesAcross"] = @1;
++        dict[@"NSPagesDown"] = @1;
++        embeddedSettings->SetNumPagesPerSheet(std::max(1, across * down));
++        embeddedSettings->SetFromPrintInfo(result, /* aAdoptPrintInfo = */ true);
++        embeddedPromise->MaybeResolveWithUndefined();
++      })) {
++    promise.forget(aPromise);
++    return NS_OK;
++  }
++
+   // Put the print info into the current print operation, since that's where
+   // the panel will look for it. We create the view because otherwise we'll
+   // get unrelated warnings printed to the console.
+@@ -299,6 +389,20 @@ static void setPagesPerSheet(NSPrintInfo* aPrintInfo, int32_t aPPS) {
+   }
+   [printInfo autorelease];
+ 
++  RefPtr<nsPrintSettingsX> embeddedSettings = settingsX;
++  RefPtr<Promise> embeddedPromise = promise;
++  if (ShowEmbeddedPrintPanel(aParent, printInfo, true, ^(NSPrintInfo* result) {
++        if (!result) {
++          embeddedPromise->MaybeReject(NS_ERROR_ABORT);
++          return;
++        }
++        embeddedSettings->SetFromPrintInfo(result, /* aAdoptPrintInfo = */ true);
++        embeddedPromise->MaybeResolveWithUndefined();
++      })) {
++    promise.forget(aPromise);
++    return NS_OK;
++  }
++
+   NSPageLayout* pageLayout = [NSPageLayout pageLayout];
+ 
+   nsCOMPtr<nsIPrintSettings> settings = aNSSettings;

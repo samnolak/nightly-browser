@@ -278,6 +278,8 @@ constexpr size_t kMaxFramesInFlight = 3;
 constexpr size_t kMaxSentSurfaces = 16;
 // URL and title bytes in Command and Location.
 constexpr uint32_t kMaxText = 8192;
+// Dialog replies include securely archived native printer settings (PPDs).
+constexpr uint32_t kMaxDialogReply = 1u << 20;
 // Script source plus arguments, and script results, in bytes.
 constexpr uint32_t kMaxScript = 64u << 20;
 // kVK_Escape: cancels a drag.
@@ -1398,7 +1400,7 @@ void Channel::HandleMessage(const ReceiveBuffer& aBuffer) {
       }
       const auto& msg = reinterpret_cast<const ScriptResultMsg&>(aBuffer);
       if (msg.body.msgh_descriptor_count != 1 ||
-          msg.data.type != MACH_MSG_OOL_DESCRIPTOR || msg.length > kMaxText ||
+          msg.data.type != MACH_MSG_OOL_DESCRIPTOR || msg.length > kMaxDialogReply ||
           msg.length > msg.data.size || (msg.length > 0 && !msg.data.address)) {
         break;
       }

@@ -2,14 +2,15 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
-"""Generate every Nightly Browser branding asset from one parametric design.
+"""Generate Nightly Browser branding from the owner's transparent artwork.
 
-The mark is a crescent moon with a four-point star on a night-sky tile.
-`release` uses a midnight-blue tile; `twilight` (Nightly Browser Beta) uses
-the same mark on a plum/dusk tile. Private browsing uses a closed eye on a
-violet tile. Wordmark outlines come from "Outfit" (SIL Open Font License 1.1,
-https://github.com/Outfitio/Outfit-Fonts); they are embedded below as path
-data, so no font is needed at runtime.
+nightly-artwork.png is the cleaned 2026-10-20 artwork: detected bounds in the
+1254px original were (81, 71)-(1170, 1140). The exterior black matte was
+removed, the contour smoothed and edge RGB un-matted before resampling.
+The original aspect ratio is preserved; macOS uses an 824px-wide tile on
+a 1024px transparent canvas. Both channels share the owner's app artwork.
+Private browsing retains its separate closed-eye symbol. Wordmark outlines
+come from Outfit (SIL Open Font License 1.1).
 
 Outputs (per brand dir in configs/branding/<brand>/, same names, pixel sizes
 and container formats as the Zen files they replaced):
@@ -29,6 +30,7 @@ Optional: --preview PATH writes a contact sheet of the generated assets.
 """
 
 import argparse
+import base64
 import io
 import math
 import os
@@ -51,6 +53,8 @@ BRANDING = os.path.join(ROOT, "configs", "branding")
 DOCS_ASSETS = os.path.join(ROOT, "docs", "assets")
 FLATPAK_ICON = os.path.join(ROOT, "build", "flatpak", "metadata", "icons",
                             "io.github.samnolak.nightly.svg")
+with open(os.path.join(BRANDING, "nightly-artwork.png"), "rb") as artwork:
+  ARTWORK_URI = "data:image/png;base64," + base64.b64encode(artwork.read()).decode("ascii")
 
 
 @dataclass(frozen=True)
@@ -173,40 +177,6 @@ def _scale(v):
   return _fmt(v, 6)
 
 
-def _circle_intersections(c1, r1, c2, r2):
-  dx, dy = c2[0] - c1[0], c2[1] - c1[1]
-  d = math.hypot(dx, dy)
-  a = (r1 * r1 - r2 * r2 + d * d) / (2 * d)
-  h = math.sqrt(r1 * r1 - a * a)
-  mx, my = c1[0] + a * dx / d, c1[1] + a * dy / d
-  return ((mx + h * dy / d, my - h * dx / d), (mx - h * dy / d, my + h * dx / d))
-
-
-def _arc_flags(center, start, end, via):
-  """large-arc/sweep flags for the arc start->end that passes through via."""
-  ang = lambda p: math.atan2(p[1] - center[1], p[0] - center[0])
-  a0, a1, av = ang(start), ang(end), ang(via)
-  span_pos = (a1 - a0) % (2 * math.pi)
-  via_pos = (av - a0) % (2 * math.pi)
-  sweep = 1 if via_pos < span_pos else 0
-  span = span_pos if sweep else 2 * math.pi - span_pos
-  return (1 if span > math.pi else 0), sweep
-
-
-def crescent_path(c1, r1, c2, r2):
-  """Area of circle (c1, r1) minus circle (c2, r2) as an SVG path."""
-  p1, p2 = _circle_intersections(c1, r1, c2, r2)
-  dist = math.hypot(c2[0] - c1[0], c2[1] - c1[1])
-  ux, uy = (c2[0] - c1[0]) / dist, (c2[1] - c1[1]) / dist
-  far = (c1[0] - r1 * ux, c1[1] - r1 * uy)    # outer edge, away from the bite
-  near = (c2[0] - r2 * ux, c2[1] - r2 * uy)   # inner edge of the bite
-  la1, sw1 = _arc_flags(c1, p1, p2, far)
-  la2, sw2 = _arc_flags(c2, p2, p1, near)
-  f = _fmt
-  return (f"M{f(p1[0])} {f(p1[1])}A{f(r1)} {f(r1)} 0 {la1} {sw1} {f(p2[0])} {f(p2[1])}"
-          f"A{f(r2)} {f(r2)} 0 {la2} {sw2} {f(p1[0])} {f(p1[1])}Z")
-
-
 def sparkle_path(cx, cy, r, waist):
   """Four-point star with concave sides (quadratic curves through the waist)."""
   f = _fmt
@@ -216,13 +186,6 @@ def sparkle_path(cx, cy, r, waist):
     nx, ny = pts[(i + 1) % 4]
     d += f"Q{f(cx + (waist if i in (0, 1) else -waist))} {f(cy + (waist if i in (1, 2) else -waist))} {f(nx)} {f(ny)}"
   return d + "Z"
-
-
-# Full-size design lives on a 1024 x 1024 canvas.
-MOON = dict(c1=(474, 556), r1=304, c2=(616, 424), r2=250)
-MOON_SMALL = dict(c1=(486, 548), r1=356, c2=(660, 388), r2=286)
-STAR = (712, 312, 96, 18)
-SKY_DOTS = [(232, 246, 13), (318, 168, 8), (846, 590, 11), (780, 836, 8)]
 
 
 def _defs(pal, uid):
@@ -238,26 +201,11 @@ def _defs(pal, uid):
       f'<stop offset="1" stop-color="{pal.moon_dark}"/></linearGradient>')
 
 
-def mark_elements(uid, small=False, sky=True):
-  """Crescent (+ star and sky dots) in 1024 space, filled from the moon gradient."""
-  geo = MOON_SMALL if small else MOON
-  out = f'<path fill="url(#{uid}m)" d="{crescent_path(**geo)}"/>'
-  if not small:
-    out += f'<path fill="url(#{uid}m)" d="{sparkle_path(*STAR)}"/>'
-    if sky:
-      out += "".join(f'<circle cx="{x}" cy="{y}" r="{r}" fill="#FFFFFF" '
-                     f'fill-opacity="0.55"/>' for x, y, r in SKY_DOTS)
-  return out
-
-
 def tile_elements(pal, uid, small=False, x=0, y=0, size=1024, sky=True):
-  """Rounded-square app tile with the mark, placed at (x, y) with given size."""
-  s = size / 1024
-  rx = _fmt(1024 * (0.2 if small else 0.225))
-  return (f'<g transform="translate({_fmt(x)} {_fmt(y)}) scale({_scale(s)})">'
-          f'<rect width="1024" height="1024" rx="{rx}" fill="url(#{uid}t)"/>'
-          f'<rect width="1024" height="1024" rx="{rx}" fill="url(#{uid}g)"/>'
-          f'{mark_elements(uid, small, sky)}</g>')
+  """Place the complete owner artwork without stretching or cropping."""
+  return (f'<image x="{_fmt(x)}" y="{_fmt(y)}" width="{_fmt(size)}" '
+          f'height="{_fmt(size)}" preserveAspectRatio="xMidYMid meet" '
+          f'href="{ARTWORK_URI}"/>')
 
 
 def svg_doc(w, h, body, defs="", view=None):
@@ -271,12 +219,8 @@ def app_icon_svg(pal, small=False):
 
 
 def mac_icon_svg(pal, small=False):
-  # macOS icon grid: 824px tile centred in a 1024 canvas, soft drop shadow.
-  shadow = ('<filter id="ns" x="-0.1" y="-0.1" width="1.2" height="1.25">'
-            '<feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#000" '
-            'flood-opacity="0.35"/></filter>')
-  body = f'<g filter="url(#ns)">{tile_elements(pal, "n", small, 100, 100, 824)}</g>'
-  return svg_doc(1024, 1024, body, _defs(pal, "n") + shadow)
+  # macOS icon grid: 824px artwork centred in a transparent 1024px canvas.
+  return svg_doc(1024, 1024, tile_elements(pal, "n", small, 100, 100, 824))
 
 
 def private_svg(small=False):
@@ -370,7 +314,7 @@ def watermark_svg(pal):
           f'<rect width="164" height="314" fill="url(#{uid}g)"/>'
           + "".join(f'<circle cx="{x}" cy="{y}" r="{r}" fill="#FFFFFF" fill-opacity="0.6"/>'
                     for x, y, r in sky)
-          + f'<g transform="translate(14 46) scale(0.1328)">{mark_elements(uid, False, False)}</g>'
+          + tile_elements(pal, uid, False, 14, 46, 136)
           + text)
   defs = _defs(pal, uid).replace('cx="0.46" cy="0.54" r="0.5"', 'cx="0.5" cy="0.38" r="0.6"')
   return svg_doc(164, 314, body, defs)
@@ -487,6 +431,12 @@ def build_brand(brand, pal):
   sizes = BRAND_SIZES[brand]
   save_png(render(mac, sizes["logo-mac.png"]), os.path.join(out, "logo-mac.png"))
   write_icns(os.path.join(out, "firefox.icns"), mac, mac_small)
+  write_icns(os.path.join(out, "document.icns"), document_svg(pal), document_svg(pal))
+  disk = svg_doc(1024, 1024,
+      '<rect x="120" y="160" width="784" height="744" rx="80" fill="#B9BDCB"/>'
+      '<rect x="176" y="826" width="672" height="16" rx="8" fill="#454854"/>'
+      + tile_elements(pal, "disk", x=160, y=120, size=704))
+  write_icns(os.path.join(out, "disk.icns"), disk, disk)
 
   app_ico = [icon_png(px) for px in APP_ICO_SIZES]
   write_ico(os.path.join(out, "firefox.ico"), app_ico)
@@ -501,14 +451,35 @@ def build_brand(brand, pal):
     w, h = sizes[name]
     inner = round(min(w, h) * 0.957)
     save_png(on_canvas(render(icon, inner), w, h), os.path.join(out, name))
+  msix = os.path.join(out, "msix", "Assets")
+  os.makedirs(msix, exist_ok=True)
+  for name, w, h in (
+      ("StoreLogo.scale-200", 100, 100), ("LargeTile.scale-200", 620, 620),
+      ("SmallTile.scale-200", 142, 142), ("Wide310x150Logo.scale-200", 620, 300),
+      ("Square150x150Logo.scale-200", 300, 300), ("MedTile.scale-200", 300, 300),
+      ("Square44x44Logo.scale-200", 88, 88), ("Square44x44Logo.targetsize-256", 256, 256),
+      ("Square44x44Logo.altform-unplated_targetsize-256", 256, 256),
+      ("Square44x44Logo.altform-lightunplated_targetsize-256", 256, 256)):
+    save_png(on_canvas(icon_png(round(min(w, h) * 0.8)), w, h),
+             os.path.join(msix, name + ".png"))
+  save_png(render(doc, 44), os.path.join(msix, "Document44x44.png"))
   for name, px, inner in (("PrivateBrowsing_150.png", 270, 258), ("PrivateBrowsing_70.png", 126, 120)):
     save_png(on_canvas(render(priv, inner), px, px), os.path.join(out, name))
 
   wm = render(watermark_svg(pal), 164, 314)
   wm.convert("RGB").convert("RGBA").save(os.path.join(out, "wizWatermark.bmp"), "BMP")
   write_text(os.path.join(out, "MacOSInstaller.svg"), installer_svg(pal))
+  for name, x in (("wizHeader.bmp", 93), ("wizHeaderRTL.bmp", 0)):
+    header = Image.new("RGBA", (150, 57), "white")
+    header.alpha_composite(icon_png(49), (x + 4, 4))
+    header.convert("RGB").save(os.path.join(out, name), "BMP")
+  about = svg_doc(300, 236, '<rect width="300" height="236" fill="#14152B"/>'
+                  + tile_elements(pal, "about", x=74, y=12, size=152)
+                  + _word_group(["Nightly"], 76, 209, 30, "#FFFFFF")[0])
+  save_png(render(about, 300, 236), os.path.join(content, "about.png"))
 
   write_text(os.path.join(content, "about-logo.svg"), icon)
+  write_text(os.path.join(content, "document_pdf.svg"), pdf)
   save_png(on_canvas(render(icon, 480), 512, 512), os.path.join(content, "about-logo.png"))
   save_png(on_canvas(render(icon, 960), 1024, 1024), os.path.join(content, "about-logo@2x.png"))
   write_text(os.path.join(content, "about-logo-private.svg"), priv)

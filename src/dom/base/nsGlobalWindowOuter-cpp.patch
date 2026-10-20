@@ -1,0 +1,33 @@
+diff --git a/dom/base/nsGlobalWindowOuter.cpp b/dom/base/nsGlobalWindowOuter.cpp
+index a287649849cedcffec66191b8c393e613c0519ed..87b55c98e83d8f75a40c3ebd88123ec56d05004b 100644
+--- a/dom/base/nsGlobalWindowOuter.cpp
++++ b/dom/base/nsGlobalWindowOuter.cpp
+@@ -216,6 +216,9 @@
+ #include "nsIWebBrowserPrint.h"
+ #include "nsIWebNavigation.h"
+ #include "nsIWidget.h"
++#ifdef XP_MACOSX
++#  include "mozilla/ZenEmbedHost.h"
++#endif
+ #include "nsIWidgetListener.h"
+ #include "nsIWindowWatcher.h"
+ #include "nsIWritablePropertyBag2.h"
+@@ -4263,6 +4266,18 @@ nsresult nsGlobalWindowOuter::SetFullscreenInternal(FullscreenReason aReason,
+   if (mDocShell->ItemType() != nsIDocShellTreeItem::typeChrome)
+     return NS_ERROR_FAILURE;
+ 
++#ifdef XP_MACOSX
++  // Embedded chrome is drawn inside another application's window. Fullscreen
++  // belongs to that host; do not change DOM state or freeze its pres shell
++  // waiting for a native transition that the embedded widget cannot perform.
++  if (aFullscreen) {
++    nsCOMPtr<nsIWidget> widget = GetMainWidget();
++    if (zen::ZenEmbedHost::IsEmbeddedWindow(widget)) {
++      return NS_OK;
++    }
++  }
++#endif
++
+   // FullscreenReason::ForForceExitFullscreen can only be used with exiting
+   // fullscreen
+   MOZ_ASSERT_IF(

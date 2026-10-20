@@ -1,5 +1,5 @@
 diff --git a/widget/cocoa/nsCocoaWindow.mm b/widget/cocoa/nsCocoaWindow.mm
-index fe4c27544a29b8bbf0b99331c9e1bce3038b8e81..1389d798e907dd00b47c6da294f71206d9505489 100644
+index fe4c27544a29b8bbf0b99331c9e1bce3038b8e81..19556376c07015f50cb73b5cb1c48a65d2497bec 100644
 --- a/widget/cocoa/nsCocoaWindow.mm
 +++ b/widget/cocoa/nsCocoaWindow.mm
 @@ -72,6 +72,7 @@
@@ -508,7 +508,32 @@ index fe4c27544a29b8bbf0b99331c9e1bce3038b8e81..1389d798e907dd00b47c6da294f71206
      return;
    }
  
-@@ -6811,7 +7022,8 @@ static bool AlwaysUsesNativeFullScreen() {
+@@ -6482,6 +6693,12 @@ static bool AlwaysUsesNativeFullScreen() {
+ 
+ nsresult nsCocoaWindow::DoMakeFullScreen(bool aFullScreen,
+                                          bool aUseSystemTransition) {
++  // DOM fullscreen is refused before changing DOM state (nsGlobalWindowOuter).
++  // Native callers must not create a Space or hide OS chrome for a host-owned
++  // window either.
++  if (mIsEmbedded) {
++    return NS_ERROR_NOT_AVAILABLE;
++  }
+   if (!mWindow) {
+     return NS_OK;
+   }
+@@ -6518,6 +6735,11 @@ static bool AlwaysUsesNativeFullScreen() {
+ }
+ 
+ void nsCocoaWindow::QueueTransition(const TransitionType& aTransition) {
++  // An embedded window's frame and visibility belong to its host. Session
++  // restore must not zoom or miniaturize its hidden NSWindow.
++  if (mIsEmbedded) {
++    return;
++  }
+   mTransitionsPending.push(aTransition);
+   ProcessTransitions();
+ }
+@@ -6811,7 +7033,8 @@ static bool AlwaysUsesNativeFullScreen() {
                               double aHeight, bool aRepaint) {
    NS_OBJC_BEGIN_TRY_IGNORE_BLOCK;
  
@@ -518,7 +543,7 @@ index fe4c27544a29b8bbf0b99331c9e1bce3038b8e81..1389d798e907dd00b47c6da294f71206
      return;
    }
  
-@@ -7095,6 +7307,27 @@ static nsSizeMode GetWindowSizeMode(NSWindow* aWindow, bool aFullScreen) {
+@@ -7095,6 +7318,27 @@ static nsSizeMode GetWindowSizeMode(NSWindow* aWindow, bool aFullScreen) {
    return nsSizeMode_Normal;
  }
  
@@ -546,7 +571,7 @@ index fe4c27544a29b8bbf0b99331c9e1bce3038b8e81..1389d798e907dd00b47c6da294f71206
  void nsCocoaWindow::ReportMoveEvent() {
    NS_OBJC_BEGIN_TRY_IGNORE_BLOCK;
  
-@@ -7108,6 +7341,7 @@ static nsSizeMode GetWindowSizeMode(NSWindow* aWindow, bool aFullScreen) {
+@@ -7108,6 +7352,7 @@ static nsSizeMode GetWindowSizeMode(NSWindow* aWindow, bool aFullScreen) {
    mInReportMoveEvent = true;
  
    UpdateBounds();
@@ -554,7 +579,7 @@ index fe4c27544a29b8bbf0b99331c9e1bce3038b8e81..1389d798e907dd00b47c6da294f71206
  
    // The zoomed state can change when we're moving, in which case we need to
    // update our internal mSizeMode. This can happen either if we're maximized
-@@ -7151,6 +7385,18 @@ static nsSizeMode GetWindowSizeMode(NSWindow* aWindow, bool aFullScreen) {
+@@ -7151,6 +7396,18 @@ static nsSizeMode GetWindowSizeMode(NSWindow* aWindow, bool aFullScreen) {
      return;
    }
  
@@ -573,7 +598,7 @@ index fe4c27544a29b8bbf0b99331c9e1bce3038b8e81..1389d798e907dd00b47c6da294f71206
    // macOS occasionally reports a window as not visible (its occlusionState is
    // missing NSWindowOcclusionStateVisible) even while the window is on screen
    // and frontmost. This has been observed on systems running menu-bar managers
-@@ -7202,6 +7448,7 @@ static nsSizeMode GetWindowSizeMode(NSWindow* aWindow, bool aFullScreen) {
+@@ -7202,6 +7459,7 @@ static nsSizeMode GetWindowSizeMode(NSWindow* aWindow, bool aFullScreen) {
    NS_OBJC_BEGIN_TRY_IGNORE_BLOCK;
  
    UpdateBounds();
@@ -581,7 +606,7 @@ index fe4c27544a29b8bbf0b99331c9e1bce3038b8e81..1389d798e907dd00b47c6da294f71206
    LayoutDeviceIntRect innerBounds = GetClientBounds();
    if (mWidgetListener) {
      mWidgetListener->WindowResized(this, innerBounds.Size());
-@@ -9164,6 +9411,15 @@ - (void)showPopoverRelativeToRect:(NSRect)positioningRect
+@@ -9164,6 +9422,15 @@ - (void)showPopoverRelativeToRect:(NSRect)positioningRect
      return;
    }
  

@@ -47,6 +47,14 @@ export const ZenEmbedBrowser = {
       return;
     }
     gStarted = true;
+    // This profile belongs to the embedder. A previous native fullscreen/zoom
+    // state must not change the chrome layout before its host supplies a frame.
+    Services.xulStore.setValue(
+      "chrome://browser/content/browser.xhtml",
+      "main-window",
+      "sizemode",
+      "normal"
+    );
     Services.obs.addObserver(this, "zen-embed-command");
     Services.obs.addObserver(this, "zen-embed-browser-window");
     Services.obs.addObserver(this, "zen-embed-stray-window");
@@ -64,6 +72,7 @@ export const ZenEmbedBrowser = {
     }
     if (topic == "zen-embed-browser-window") {
       win.document.documentElement.setAttribute("zen-embedded", "true");
+      win.document.documentElement.setAttribute("sizemode", "normal");
       lazy.ZenEmbedDialogs.browserWindow(win);
       gPanes.push(win);
       win.addEventListener(

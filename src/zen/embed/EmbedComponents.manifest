@@ -4,4 +4,5 @@
 
 #ifdef XP_MACOSX
 category browser-before-ui-startup resource:///actors/ZenEmbedBrowser.sys.mjs ZenEmbedBrowser.init
+category browser-before-ui-startup resource:///actors/ZenEmbedAugur.sys.mjs ZenEmbedAugur.init
 #endif

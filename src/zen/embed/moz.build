@@ -28,6 +28,7 @@ if CONFIG["MOZ_WIDGET_TOOLKIT"] == "cocoa":
 
     FINAL_TARGET_FILES.actors += [
         "ZenEmbedAgentChild.sys.mjs",
+        "ZenEmbedAugur.sys.mjs",
         "ZenEmbedBrowser.sys.mjs",
         "ZenEmbedDialogs.sys.mjs",
     ]

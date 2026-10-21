@@ -1,5 +1,5 @@
 diff --git a/widget/cocoa/nsCocoaWindow.mm b/widget/cocoa/nsCocoaWindow.mm
-index fe4c27544a29b8bbf0b99331c9e1bce3038b8e81..19556376c07015f50cb73b5cb1c48a65d2497bec 100644
+index fe4c27544a29b8bbf0b99331c9e1bce3038b8e81..5f962757d39ab54b0e4e61a4a78253e5cbb1e155 100644
 --- a/widget/cocoa/nsCocoaWindow.mm
 +++ b/widget/cocoa/nsCocoaWindow.mm
 @@ -72,6 +72,7 @@
@@ -579,17 +579,31 @@ index fe4c27544a29b8bbf0b99331c9e1bce3038b8e81..19556376c07015f50cb73b5cb1c48a65
  
    // The zoomed state can change when we're moving, in which case we need to
    // update our internal mSizeMode. This can happen either if we're maximized
-@@ -7151,6 +7396,18 @@ static nsSizeMode GetWindowSizeMode(NSWindow* aWindow, bool aFullScreen) {
+@@ -7146,11 +7391,32 @@ static nsSizeMode GetWindowSizeMode(NSWindow* aWindow, bool aFullScreen) {
+   }
+ }
+ 
++void nsCocoaWindow::SetEmbedderHidden(bool aHidden) {
++  MOZ_ASSERT(mIsEmbedded);
++  mEmbedderHidden = aHidden;
++  DispatchOcclusionEvent();
++}
++
+ void nsCocoaWindow::DispatchOcclusionEvent() {
+   if (!mWindow) {
      return;
    }
  
 +  if (mIsEmbedded) {
-+    // AppKit reports an ordered-out window as occluded, which would pause its
-+    // compositor; the embedder owns visibility.
-+    if (mIsFullyOccluded) {
-+      mIsFullyOccluded = false;
++    // AppKit reports an ordered-out window as occluded; the embedder owns
++    // visibility. Occluded only while it hides the pane: the docshells go
++    // inactive and the compositor pauses
++    // (CanonicalBrowsingContext::RecomputeAppWindowVisibility), and both
++    // resume when it shows the pane again.
++    if (mIsFullyOccluded != mEmbedderHidden) {
++      mIsFullyOccluded = mEmbedderHidden;
 +      if (mWidgetListener) {
-+        mWidgetListener->OcclusionStateChanged(false);
++        mWidgetListener->OcclusionStateChanged(mIsFullyOccluded);
 +      }
 +    }
 +    return;
@@ -598,7 +612,7 @@ index fe4c27544a29b8bbf0b99331c9e1bce3038b8e81..19556376c07015f50cb73b5cb1c48a65
    // macOS occasionally reports a window as not visible (its occlusionState is
    // missing NSWindowOcclusionStateVisible) even while the window is on screen
    // and frontmost. This has been observed on systems running menu-bar managers
-@@ -7202,6 +7459,7 @@ static nsSizeMode GetWindowSizeMode(NSWindow* aWindow, bool aFullScreen) {
+@@ -7202,6 +7468,7 @@ static nsSizeMode GetWindowSizeMode(NSWindow* aWindow, bool aFullScreen) {
    NS_OBJC_BEGIN_TRY_IGNORE_BLOCK;
  
    UpdateBounds();
@@ -606,7 +620,7 @@ index fe4c27544a29b8bbf0b99331c9e1bce3038b8e81..19556376c07015f50cb73b5cb1c48a65
    LayoutDeviceIntRect innerBounds = GetClientBounds();
    if (mWidgetListener) {
      mWidgetListener->WindowResized(this, innerBounds.Size());
-@@ -9164,6 +9422,15 @@ - (void)showPopoverRelativeToRect:(NSRect)positioningRect
+@@ -9164,6 +9431,15 @@ - (void)showPopoverRelativeToRect:(NSRect)positioningRect
      return;
    }
  

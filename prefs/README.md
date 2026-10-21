@@ -65,3 +65,19 @@ context menu, or the toast's button to keep a link in the browser once.
 Tests: `./mach test zen/open-in-app/tests/` (matching for every known app, the
 decision table, and real navigations with a fake app on example.org). The
 embedded path is Ombra's `NightlyAcceptance.OpenInApp.cs` (driver `openinapp`).
+
+## Augur preconnection (Ombra's runtime)
+
+`nightly/augur.yaml`: `ombra.augur.enabled` (default `true`) lets Ombra's embedded
+runtime preconnect to the origin of a navigation Ombra is about to cause: an
+agent's open, click or goto, or an address the user committed (protocol 5's
+`Command{speculate}`, `src/zen/embed/ZenEmbedAugur.sys.mjs`). A hint opens up to
+three connections (DNS, TCP, TLS; never an HTTP request, so no cookie is sent)
+with the target window's OriginAttributes, within budgets of 6 sockets in all and
+3 per origin, and only while online, not on a mobile link and not under critical
+memory pressure. The global speculative connections in `nightly/privacy.yaml`
+stay off; the standalone browser never preconnects. How many connections a hint
+gets depends on its source's calibrated probability, learnt from outcomes and
+kept in `<profile>/augur-calibration.json` (per source only `a`, `b`, `n` and
+`sumSquaredError`; no URL, origin or history). `ombra.augur.log-level` sets its
+console messages (`Info`: one per hint and per outcome).

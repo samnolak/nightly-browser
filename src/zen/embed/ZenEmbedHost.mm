@@ -21,15 +21,19 @@
 #include "nsIAppStartup.h"
 #include "nsIAppWindow.h"
 #include "nsIDocShell.h"
+#include "nsIInterfaceRequestor.h"
 #include "nsIObserver.h"
 #include "nsIObserverService.h"
+#include "nsIPrincipal.h"
 #include "nsIRollupListener.h"
+#include "nsISpeculativeConnect.h"
 #include "nsITimer.h"
 #include "nsIURI.h"
 #include "nsIWidgetListener.h"
 #include "nsIWindowWatcher.h"
 #include "nsLayoutUtils.h"
 #include "nsPIDOMWindow.h"
+#include "nsServiceManagerUtils.h"
 #include "nsString.h"
 #include "nsTArray.h"
 #include "nsThreadUtils.h"
@@ -49,8 +53,8 @@
 #include <servers/bootstrap.h>
 #include <unistd.h>
 
-// Wire protocol, version 4 (4 added the device command, quitting, dialogs and
-// downloads). Plain Mach messages:
+// Wire protocol, version 5 (5 added visibility and speculation; 4 added the
+// device command, quitting, dialogs and downloads). Plain Mach messages:
 //  - Nightly -> embedder go to the embedder's bootstrap service port.
 //  - Embedder -> Nightly go to a receive right that Nightly hands over in Hello.
 // Handshake: Nightly sends Hello; the embedder answers HelloAck. Nightly checks
@@ -135,6 +139,20 @@
 // its data is on the system's drag pasteboard. Each step is answered with
 // DragStatus{operation}, what a drop there would do (NSDragOperation);
 // DragStatus{ended} once the window's own drag is over.
+// Visibility (protocol 5, id 46): Visibility{windowId, visible, generation}
+// says whether the embedder shows the window's pane (attached, on screen, its
+// window neither minimized nor occluded). It sends changes only; a generation
+// not above the window's last one is stale and ignored. A hidden window is
+// fully occluded to Gecko (nsCocoaWindow::SetEmbedderHidden): its documents
+// are inactive (document.hidden, timers and requestAnimationFrame throttled
+// as in a background tab) and its compositor is paused. Nothing is exported
+// while it is hidden, and the frames the embedder still held are released at
+// once (its later Release of them is ignored). Shown again, the window
+// resumes and its next frame goes out, whatever surface it is in.
+// Speculation (protocol 5): Command{speculate} carries one JSON intent of the
+// embedder (an agent's open, click or goto, or a committed address) to
+// ZenEmbedAugur.sys.mjs, which may preconnect to its origin: DNS, TCP and TLS,
+// never an HTTP request. Window 0 is a pane that is about to open.
 
 using namespace mozilla;
 using mozilla::layers::NativeLayerRootCA;
@@ -273,7 +291,11 @@ extern NSEvent* gLastDragMouseDownEvent;
 namespace zen {
 namespace {
 
-constexpr uint32_t kProtocolVersion = 4;
+constexpr uint32_t kProtocolVersion = 5;
+// ZenEmbedAugur's preconnections: at most this many sockets per hint, and at
+// most kPreconnectSocketLimit half-open sockets in all (Gecko's own count).
+constexpr uint32_t kMaxPreconnectSockets = 3;
+constexpr uint32_t kPreconnectSocketLimit = 6;
 constexpr size_t kMaxFramesInFlight = 3;
 constexpr size_t kMaxSentSurfaces = 16;
 // URL and title bytes in Command and Location.
@@ -314,6 +336,9 @@ enum : mach_msg_id_t {
   // back.
   kMsgDragTarget = 44,
   kMsgDragSource = 45,
+  // Protocol 5: the embedder shows the pane or not (see the comment at the
+  // top).
+  kMsgVisibility = 46,
   kMsgHello = 100,
   kMsgHelloAck = 101,
   kMsgWindow = 102,
@@ -348,6 +373,9 @@ enum : uint32_t {
   // ui.systemUsesDarkTheme, which Zen's automatic scheme, the chrome and the
   // pages' prefers-color-scheme follow live.
   kCommandTheme = 8,
+  // Protocol 5: an intent of the embedder's, JSON for ZenEmbedAugur.sys.mjs
+  // (window 0: a pane about to open).
+  kCommandSpeculate = 9,
 };
 
 // Script kinds and result statuses, as zen-embed.js and the embedder read them.
@@ -521,6 +549,18 @@ struct FocusMsg {
   uint32_t focused;
 };
 static_assert(sizeof(FocusMsg) == 32);
+
+// visible: 0 or 1. generation: the embedder's, per pane; only a larger one
+// than the window's last applies.
+struct VisibilityMsg {
+  mach_msg_header_t header;
+  uint32_t windowId;
+  uint32_t visible;
+  uint32_t generation;
+  uint32_t reserved;
+};
+static_assert(offsetof(VisibilityMsg, windowId) == 24);
+static_assert(sizeof(VisibilityMsg) == 40);
 
 // Content size in points. With kResizeHasOrigin, (screenX, screenY) is where
 // the pane's bottom-left corner is on screen (Cocoa coordinates): the window
@@ -714,7 +754,12 @@ class WindowExporter final : public NativeLayerRootCAObserver {
   void OnCommitToScreen(IOSurfaceRef aSurface, const gfx::IntSize& aSize,
                         bool aIsFlipped) override;
 
+  // Gecko shows the window or not (nsCocoaWindow::Show).
   void SetVisible(bool aVisible);
+  // The embedder shows the pane or not (Visibility). Hidden: nothing is sent
+  // or kept for later, and the frames in flight are released now; the
+  // embedder has let go of them.
+  void SetEmbedderVisible(bool aVisible);
   // Sends the latest frame that could not be sent yet, if it can be now.
   void Flush();
   void ReleaseFrame(uint64_t aSeq);
@@ -736,10 +781,12 @@ class WindowExporter final : public NativeLayerRootCAObserver {
 
   bool CanSendLocked() const;
   void SendLocked(const Frame& aFrame);
+  void ReleaseInFlightLocked();
 
   const uint32_t mWindowId;
   Mutex mMutex MOZ_UNANNOTATED;
   bool mVisible = false;
+  bool mEmbedderVisible = true;
   uint32_t mLastSurfaceId = 0;
   uint64_t mNextSeq = 1;
   gfx::IntSize mLastSize;
@@ -750,7 +797,9 @@ class WindowExporter final : public NativeLayerRootCAObserver {
 
 // The embed documents' notifications (zen-embed.js): zen-embed-ready (data:
 // the pane token), zen-embed-location (data: "flags\nurl\ntitle") and
-// zen-embed-script-result (data: "requestId\nstatus\ntext").
+// zen-embed-script-result (data: "requestId\nstatus\ntext"); and
+// ZenEmbedAugur's zen-embed-preconnect (subject: the principal to connect
+// for, data: the number of sockets).
 class ChromeObserver final : public nsIObserver {
  public:
   NS_DECL_ISUPPORTS
@@ -823,6 +872,10 @@ class Channel final {
     RefPtr<NativeLayerRootCA> mLayerRoot;
     RefPtr<WindowExporter> mExporter;
     bool mVisible = false;
+    // The embedder's Visibility: whether it shows the pane, as of its
+    // generation mVisibilityGeneration (0: none came yet, shown).
+    bool mEmbedderVisible = true;
+    uint32_t mVisibilityGeneration = 0;
     uint32_t mCursor = 0;  // nsCursor last sent.
   };
 
@@ -841,11 +894,15 @@ class Channel final {
   void OnMouse(const MouseMsg& aMsg);
   void OnKey(const KeyMsg& aMsg);
   void OnFocus(const FocusMsg& aMsg);
+  void OnVisibility(const VisibilityMsg& aMsg);
   void OnResize(const ResizeMsg& aMsg);
   void OnWheel(const WheelMsg& aMsg);
   void OnText(const TextMsg& aMsg);
   void OnMarkedText(const MarkedTextMsg& aMsg);
   void OnCommand(uint32_t aWindowId, uint32_t aOp, const nsACString& aText);
+  // Command{speculate}: to ZenEmbedAugur.sys.mjs (zen-embed-speculate, its
+  // subject the window's chrome window, none for window 0).
+  void OnSpeculate(uint32_t aWindowId, const nsACString& aJson);
   void OnOpenWindow(uint32_t aPane);
   void OnOpenBrowserWindow(uint32_t aPane);
   void OnScript(uint32_t aWindowId, uint32_t aRequestId, uint32_t aKind,
@@ -1003,6 +1060,9 @@ void WindowExporter::OnCommitToScreen(IOSurfaceRef aSurface,
   }
   Frame frame{CFTypeRefPtr<IOSurfaceRef>::WrapUnderGetRule(aSurface), aSize,
               aIsFlipped};
+  if (!mEmbedderVisible) {
+    return;  // Nothing waits for a pane the embedder does not show.
+  }
   if (!CanSendLocked()) {
     mPending = Some(std::move(frame));
     return;
@@ -1011,8 +1071,8 @@ void WindowExporter::OnCommitToScreen(IOSurfaceRef aSurface,
 }
 
 bool WindowExporter::CanSendLocked() const {
-  return mVisible && sChannel && sChannel->Authenticated() &&
-         mInFlight.Length() < kMaxFramesInFlight;
+  return mVisible && mEmbedderVisible && sChannel &&
+         sChannel->Authenticated() && mInFlight.Length() < kMaxFramesInFlight;
 }
 
 void WindowExporter::SendLocked(const Frame& aFrame) {
@@ -1074,6 +1134,20 @@ void WindowExporter::SetVisible(bool aVisible) {
   Flush();
 }
 
+void WindowExporter::SetEmbedderVisible(bool aVisible) {
+  {
+    MutexAutoLock lock(mMutex);
+    mEmbedderVisible = aVisible;
+    if (!aVisible) {
+      mPending.reset();
+      ReleaseInFlightLocked();
+      // The next frame goes out once shown, even in the surface last sent.
+      mLastSurfaceId = 0;
+    }
+  }
+  Flush();
+}
+
 void WindowExporter::Flush() {
   MutexAutoLock lock(mMutex);
   if (mPending && CanSendLocked()) {
@@ -1098,15 +1172,89 @@ void WindowExporter::ReleaseFrame(uint64_t aSeq) {
   Flush();
 }
 
-void WindowExporter::Reset() {
-  MutexAutoLock lock(mMutex);
+void WindowExporter::ReleaseInFlightLocked() {
   for (auto& frame : mInFlight) {
     IOSurfaceDecrementUseCount(frame.mSurface.get());
   }
   mInFlight.Clear();
+}
+
+void WindowExporter::Reset() {
+  MutexAutoLock lock(mMutex);
+  ReleaseInFlightLocked();
   mSentSurfaces.Clear();
   mLastSurfaceId = 0;
   mLastSize = gfx::IntSize();
+}
+
+// --- Preconnect -------------------------------------------------------------
+
+// The limits of ZenEmbedAugur's preconnections, whatever
+// network.http.speculative-parallel-limit says (0 in Nightly: Gecko makes no
+// speculative connections of its own). A connection opens only while fewer
+// than kPreconnectSocketLimit are half open and the origin has no idle one.
+// The interface is not scriptable, hence this side of zen-embed-preconnect.
+class PreconnectOverrider final : public nsIInterfaceRequestor,
+                                  public nsISpeculativeConnectionOverrider {
+ public:
+  NS_DECL_ISUPPORTS
+  NS_DECL_NSIINTERFACEREQUESTOR
+  NS_DECL_NSISPECULATIVECONNECTIONOVERRIDER
+
+ private:
+  ~PreconnectOverrider() = default;
+};
+
+NS_IMPL_ISUPPORTS(PreconnectOverrider, nsIInterfaceRequestor,
+                  nsISpeculativeConnectionOverrider)
+
+NS_IMETHODIMP
+PreconnectOverrider::GetInterface(const nsIID& aIID, void** aResult) {
+  return QueryInterface(aIID, aResult);
+}
+
+NS_IMETHODIMP
+PreconnectOverrider::GetParallelSpeculativeConnectLimit(uint32_t* aLimit) {
+  *aLimit = kPreconnectSocketLimit;
+  return NS_OK;
+}
+
+NS_IMETHODIMP
+PreconnectOverrider::GetIgnoreIdle(bool* aIgnoreIdle) {
+  *aIgnoreIdle = false;
+  return NS_OK;
+}
+
+NS_IMETHODIMP
+PreconnectOverrider::GetAllow1918(bool* aAllow1918) {
+  *aAllow1918 = false;
+  return NS_OK;
+}
+
+// aSockets speculative connections (DNS, TCP, TLS; no HTTP request) to the
+// origin of aPrincipal: a content principal with the OriginAttributes of the
+// window that will load it, so that its navigation finds them.
+static void Preconnect(nsIPrincipal* aPrincipal, uint32_t aSockets) {
+  if (!aPrincipal->GetIsContentPrincipal() || aSockets < 1 ||
+      aSockets > kMaxPreconnectSockets) {
+    return;
+  }
+  nsCOMPtr<nsIURI> uri;
+  aPrincipal->GetURI(getter_AddRefs(uri));
+  if (!uri || !(uri->SchemeIs("https") || uri->SchemeIs("http"))) {
+    return;
+  }
+  nsCOMPtr<nsISpeculativeConnect> speculator =
+      do_GetService("@mozilla.org/network/io-service;1");
+  if (!speculator) {
+    return;
+  }
+  RefPtr<PreconnectOverrider> overrider = new PreconnectOverrider();
+  for (uint32_t i = 0; i < aSockets; i++) {
+    // Not anonymous: the navigation sends credentials, and connections are
+    // keyed by that.
+    speculator->SpeculativeConnect(uri, aPrincipal, overrider, false);
+  }
 }
 
 // --- ChromeObserver ---------------------------------------------------------
@@ -1117,6 +1265,16 @@ NS_IMETHODIMP
 ChromeObserver::Observe(nsISupports* aSubject, const char* aTopic,
                         const char16_t* aData) {
   if (!sChannel || !aData) {
+    return NS_OK;
+  }
+  if (!strcmp(aTopic, "zen-embed-preconnect")) {
+    nsCOMPtr<nsIPrincipal> principal = do_QueryInterface(aSubject);
+    nsresult rv;
+    uint32_t sockets =
+        NS_ConvertUTF16toUTF8(aData).ToUnsignedInteger(&rv);
+    if (principal && NS_SUCCEEDED(rv)) {
+      Preconnect(principal, sockets);
+    }
     return NS_OK;
   }
   nsCOMPtr<nsPIDOMWindowOuter> window = OuterWindowOf(aSubject);
@@ -1188,6 +1346,7 @@ Channel* Channel::GetOrCreate() {
     obs->AddObserver(channel->mObserver, "zen-embed-dialog", false);
     obs->AddObserver(channel->mObserver, "zen-embed-dialog-closed", false);
     obs->AddObserver(channel->mObserver, "zen-embed-download", false);
+    obs->AddObserver(channel->mObserver, "zen-embed-preconnect", false);
   }
   return sChannel;
 }
@@ -1326,6 +1485,16 @@ void Channel::HandleMessage(const ReceiveBuffer& aBuffer) {
       if (size >= sizeof(KeyMsg)) {
         KeyMsg msg = reinterpret_cast<const KeyMsg&>(aBuffer);
         OnMain("ZenEmbed::Key", [this, msg] { OnKey(msg); });
+      }
+      break;
+    case kMsgVisibility:
+      if (size >= sizeof(VisibilityMsg)) {
+        VisibilityMsg msg = reinterpret_cast<const VisibilityMsg&>(aBuffer);
+        if (msg.visible > 1 || msg.generation == 0) {
+          EMBED_LOG("malformed visibility for window %u", msg.windowId);
+          break;
+        }
+        OnMain("ZenEmbed::Visibility", [this, msg] { OnVisibility(msg); });
       }
       break;
     case kMsgFocus:
@@ -1673,6 +1842,7 @@ void Channel::RemoveWindow(nsCocoaWindow* aWindow) {
     if (entry.mWindow != aWindow) {
       continue;
     }
+    EMBED_LOG("window %u destroyed", entry.mId);
     entry.mLayerRoot->SetObserver(nullptr);
     entry.mExporter->Reset();
     entry.mVisible = false;
@@ -2248,6 +2418,36 @@ void Channel::OnFocus(const FocusMsg& aMsg) {
   }
 }
 
+void Channel::OnVisibility(const VisibilityMsg& aMsg) {
+  Entry* entry = FindEntry(aMsg.windowId);
+  if (!entry) {
+    return;
+  }
+  if (aMsg.generation <= entry->mVisibilityGeneration) {
+    EMBED_LOG("window %u: stale visibility generation %u (at %u)", entry->mId,
+              aMsg.generation, entry->mVisibilityGeneration);
+    return;
+  }
+  entry->mVisibilityGeneration = aMsg.generation;
+  bool visible = aMsg.visible != 0;
+  if (visible == entry->mEmbedderVisible) {
+    return;
+  }
+  entry->mEmbedderVisible = visible;
+  EMBED_LOG("window %u %s (generation %u)", entry->mId,
+            visible ? "shown" : "hidden", aMsg.generation);
+  if (!visible && entry->mBrowser) {
+    // A browser window's menus and panels are on screen where the pane was.
+    RollUpPopups();
+  }
+  // Hidden: the exporter lets go first, so that no frame of the paused
+  // compositor waits in it. Shown: the exporter is ready before the
+  // compositor resumes with a fresh frame.
+  entry->mExporter->SetEmbedderVisible(visible);
+  RefPtr<nsCocoaWindow> widget(entry->mWindow);
+  widget->SetEmbedderHidden(!visible);
+}
+
 void Channel::OnResize(const ResizeMsg& aMsg) {
   Entry* entry = FindEntry(aMsg.windowId);
   if (!entry || aMsg.width < 1 || aMsg.height < 1) {
@@ -2279,6 +2479,10 @@ void Channel::OnResize(const ResizeMsg& aMsg) {
 
 void Channel::OnCommand(uint32_t aWindowId, uint32_t aOp,
                         const nsACString& aText) {
+  if (aOp == kCommandSpeculate) {
+    OnSpeculate(aWindowId, aText);
+    return;
+  }
   if (aOp == kCommandTheme) {
     constexpr char kDarkPref[] = "ui.systemUsesDarkTheme";
     if (aText.EqualsLiteral("dark") || aText.EqualsLiteral("light")) {
@@ -2305,6 +2509,25 @@ void Channel::OnCommand(uint32_t aWindowId, uint32_t aOp,
   obs->NotifyObservers(static_cast<mozIDOMWindowProxy*>(window.get()),
                        "zen-embed-command",
                        NS_ConvertUTF8toUTF16(data).get());
+}
+
+void Channel::OnSpeculate(uint32_t aWindowId, const nsACString& aJson) {
+  nsCOMPtr<nsPIDOMWindowOuter> window;
+  if (aWindowId) {
+    Entry* entry = FindEntry(aWindowId);
+    if (!entry || entry->mStray) {
+      return;
+    }
+    window = OuterWindowOf(entry->mWindow);
+    if (!window) {
+      return;
+    }
+  }
+  if (nsCOMPtr<nsIObserverService> obs = services::GetObserverService()) {
+    obs->NotifyObservers(static_cast<mozIDOMWindowProxy*>(window.get()),
+                         "zen-embed-speculate",
+                         NS_ConvertUTF8toUTF16(aJson).get());
+  }
 }
 
 void Channel::OnOpenWindow(uint32_t aPane) {

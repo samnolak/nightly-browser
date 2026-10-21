@@ -1,0 +1,15 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+# Augur v1 (src/zen/embed/ZenEmbedAugur.sys.mjs), only in Ombra's embedded
+# runtime: preconnects (DNS, TCP, TLS; never an HTTP request) to the origin of
+# a navigation the embedder is about to cause, an agent's open, click or goto
+# or a committed address. The global speculative connections stay off
+# (network.http.speculative-parallel-limit, privacy.yaml). false turns it off.
+- name: ombra.augur.enabled
+  value: true
+
+# Its console messages: one line per hint and per outcome at "Info".
+- name: ombra.augur.log-level
+  value: Info

@@ -58,5 +58,18 @@
     "type": "phabricator",
     "id": "D323514",
     "name": "Fix HEVC video stutters and dropped frames"
+  },
+  {
+    // Part 1 answers GMP support queries in child processes from the cached
+    // capabilities, so a background decodingInfo() and a main-thread EME
+    // request can no longer deadlock on GMP service creation (avito.ru).
+    // Part 2 is its browser test.
+    "type": "phabricator",
+    "ids": ["D333074", "D333075"],
+    "name": "Bug 2080876 GMP service creation deadlock",
+    "replaces": {
+      // Our browser.toml carries skip-if lines for the next test.
+      " tags = \"bleedover\"\n \n": " skip-if = [\n   \"os == 'mac' && os_version == '14.70' && arch == 'x86_64'\", # Bug 1909908\n"
+    }
   }
 ]

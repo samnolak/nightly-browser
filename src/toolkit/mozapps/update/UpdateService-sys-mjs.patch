@@ -1,0 +1,27 @@
+diff --git a/toolkit/mozapps/update/UpdateService.sys.mjs b/toolkit/mozapps/update/UpdateService.sys.mjs
+index 164381ebc1073b644ab0a95910e2aab6c397e879..9353741f28b6c807816b4ef9ffccaf80ef0eac6f 100644
+--- a/toolkit/mozapps/update/UpdateService.sys.mjs
++++ b/toolkit/mozapps/update/UpdateService.sys.mjs
+@@ -1951,6 +1951,11 @@ function pingStateAndStatusCodes(aUpdate, aStartup, aStatus) {
+ /**
+  * This returns true if the passed update is the same version or older than the
+  * version and build ID values passed. Otherwise it returns false.
++ *
++ * Nightly ships new builds under the same version, so within a version the
++ * build ID decides: a build ID (YYYYMMDDhhmmss) no later than the given one
++ * is not newer, which keeps a feed lagging behind this build from offering it
++ * an older one.
+  */
+ function updateIsAtLeastAsOldAs(update, version, buildID) {
+   if (!update || !update.appVersion || !update.buildID) {
+@@ -1959,7 +1964,9 @@ function updateIsAtLeastAsOldAs(update, version, buildID) {
+   let versionComparison = Services.vc.compare(update.appVersion, version);
+   return (
+     versionComparison < 0 ||
+-    (versionComparison == 0 && update.buildID == buildID)
++    (versionComparison == 0 &&
++      (update.buildID == buildID ||
++        (update.buildID.length == buildID.length && update.buildID < buildID)))
+   );
+ }
+ 

@@ -1,0 +1,12 @@
+diff --git a/browser/base/content/macWindow.inc.xhtml b/browser/base/content/macWindow.inc.xhtml
+index bf9c45905a8cf21d53326e996b181412e6801aa2..ed3d03368af741e55297baf15fedd13343a8463e 100644
+--- a/browser/base/content/macWindow.inc.xhtml
++++ b/browser/base/content/macWindow.inc.xhtml
+@@ -13,6 +13,7 @@
+   <html:link rel="localization" href="browser/browserSets.ftl"/>
+   <html:link rel="localization" href="browser/firefoxView.ftl"/>
+   <html:link rel="localization" href="browser/menubar.ftl"/>
++  <html:link rel="localization" href="browser/zen-menubar.ftl"/>
+   <html:link rel="localization" href="browser/reportBrokenSite.ftl"/>
+   <html:link rel="localization" href="browser/screenshots.ftl"/>
+   <html:link rel="localization" href="browser/aiWindow.ftl"/>

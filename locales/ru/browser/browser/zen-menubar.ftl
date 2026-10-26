@@ -20,3 +20,5 @@ zen-menubar-appearance-dark =
     .label = Тёмная
 zen-menubar-new-blank-window = 
     .label = Новое пустое окно
+zen-menubar-check-for-updates = 
+    .label = Проверить обновления…

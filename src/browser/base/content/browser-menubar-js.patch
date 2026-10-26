@@ -1,0 +1,14 @@
+diff --git a/browser/base/content/browser-menubar.js b/browser/base/content/browser-menubar.js
+index a31ffe4eeb7265b1ec8fe73e6f7bb69228caf0e6..e3810344191b5c498cb253253678c511b9af1b11 100644
+--- a/browser/base/content/browser-menubar.js
++++ b/browser/base/content/browser-menubar.js
+@@ -106,6 +106,9 @@ document.addEventListener(
+           openSwitchingDevicesPage();
+           break;
+         case "aboutName":
++        // The About window checks for updates as it opens and shows the
++        // progress (download, restart to update).
++        case "menu_checkForUpdates":
+           openAboutDialog();
+           break;
+         case "menu_referralsPage":

@@ -1,0 +1,16 @@
+diff --git a/toolkit/mozapps/update/UpdateServiceStub.sys.mjs b/toolkit/mozapps/update/UpdateServiceStub.sys.mjs
+index cd71c0ffc7f7f0ccfd9d96b15cffc7575bfabb43..660dff5c9ad08fcce8191266dcd57817ccb32908 100644
+--- a/toolkit/mozapps/update/UpdateServiceStub.sys.mjs
++++ b/toolkit/mozapps/update/UpdateServiceStub.sys.mjs
+@@ -211,7 +211,10 @@ export class UpdateServiceStub {
+     return (
+       (Services.policies && !Services.policies.isAllowed("appUpdate")) ||
+       this.updateDisabledForTesting ||
+-      Services.sysinfo.getProperty("isPackagedApp")
++      Services.sysinfo.getProperty("isPackagedApp") ||
++      // Nightly: the runtime an embedder (Ombra) starts is the version that
++      // embedder pins and installs; it never updates itself.
++      Services.env.exists("NIGHTLY_EMBED_SERVICE")
+     );
+   }
+ 

@@ -1,0 +1,15 @@
+diff --git a/browser/base/content/browser-menubar.inc.xhtml b/browser/base/content/browser-menubar.inc.xhtml
+index ea461ff47202e536021909a6ba5f6374617556c5..c7bfa824eff1611ee6527e11f467d62fee053f8e 100644
+--- a/browser/base/content/browser-menubar.inc.xhtml
++++ b/browser/base/content/browser-menubar.inc.xhtml
+@@ -476,6 +476,10 @@
+ <!-- nsMenuBarX hides these and uses them to build the Application menu. -->
+ <!-- macOS 13 changed "Preferences" to "Settings" so one of these gets picked. -->
+   <box id="mac-application-menu-items" hidden="true">
++#ifdef MOZ_UPDATER
++    <menuitem id="menu_checkForUpdates"
++              data-l10n-id="zen-menubar-check-for-updates"/>
++#endif
+     <menuitem id="menu_preferences"
+               data-l10n-id="menu-application-preferences"
+               key="key_preferencesCmdMac"/>

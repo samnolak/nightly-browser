@@ -24,3 +24,6 @@ zen-menubar-appearance-dark =
 
 zen-menubar-new-blank-window =
     .label = New Blank Window
+
+zen-menubar-check-for-updates =
+    .label = Check for Updates…

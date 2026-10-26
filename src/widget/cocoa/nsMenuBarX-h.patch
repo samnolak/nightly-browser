@@ -1,0 +1,12 @@
+diff --git a/widget/cocoa/nsMenuBarX.h b/widget/cocoa/nsMenuBarX.h
+index 24dd60367a629f4a97cfeeac1aa628f86ecdcb15..9d68492879ac130bc2949296ae229d9c832f9a2a 100644
+--- a/widget/cocoa/nsMenuBarX.h
++++ b/widget/cocoa/nsMenuBarX.h
+@@ -94,6 +94,7 @@ class nsMenuBarX : public nsMenuParentX,
+   // The following content nodes have been removed from the menu system.
+   // We save them here for use in command handling.
+   RefPtr<nsIContent> mAboutItemContent;
++  RefPtr<nsIContent> mCheckForUpdatesItemContent;
+   RefPtr<nsIContent> mPrefItemContent;
+   RefPtr<nsIContent> mSetAsDefaultItemContent;
+   RefPtr<nsIContent> mReferralsPageItemContent;

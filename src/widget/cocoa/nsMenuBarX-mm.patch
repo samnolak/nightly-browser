@@ -1,0 +1,79 @@
+diff --git a/widget/cocoa/nsMenuBarX.mm b/widget/cocoa/nsMenuBarX.mm
+index ce8910771dbd03cf16334a937dd41c85a63dd5e8..c28fa6bf8d12f3f6f32fbd3a64826ce65de17c0e 100644
+--- a/widget/cocoa/nsMenuBarX.mm
++++ b/widget/cocoa/nsMenuBarX.mm
+@@ -74,6 +74,7 @@
+ // here because these items are always strong ref'd by their owning menu bar
+ // (instance variable).
+ static nsIContent* sAboutItemContent = nullptr;
++static nsIContent* sCheckForUpdatesItemContent = nullptr;
+ static nsIContent* sPrefItemContent = nullptr;
+ static nsIContent* sSetAsDefaultItemContent = nullptr;
+ static nsIContent* sReferralsPageItemContent = nullptr;
+@@ -151,6 +152,9 @@ - (void)menuDidClose:(NSMenu*)menu {
+   if (sAboutItemContent == mAboutItemContent) {
+     sAboutItemContent = nullptr;
+   }
++  if (sCheckForUpdatesItemContent == mCheckForUpdatesItemContent) {
++    sCheckForUpdatesItemContent = nullptr;
++  }
+   if (sQuitItemContent == mQuitItemContent) {
+     sQuitItemContent = nullptr;
+   }
+@@ -703,6 +707,13 @@ static bool RemoveProblematicMenuItems(NSMenu* aMenu) {
+       sAboutItemContent = mAboutItemContent;
+     }
+ 
++    // remove the "Check for Updates…" item (Nightly)
++    mCheckForUpdatesItemContent =
++        HideItem(domDoc, u"menu_checkForUpdates"_ns);
++    if (!sCheckForUpdatesItemContent) {
++      sCheckForUpdatesItemContent = mCheckForUpdatesItemContent;
++    }
++
+     // remove quit item and its separator
+     HideItem(domDoc, u"menu_FileQuitSeparator"_ns);
+     mQuitItemContent = HideItem(domDoc, u"menu_FileQuitItem"_ns);
+@@ -863,6 +874,7 @@ static bool RemoveProblematicMenuItems(NSMenu* aMenu) {
+ 
+     ========================
+     = About This App       = <- aboutName
++    = Check for Updates…   = <- menu_checkForUpdates Nightly, if built
+     = Share This App       = <- menu_referralsPage   Only if enabled
+     ========================
+     = Preferences...       = <- menu_preferences
+@@ -922,6 +934,16 @@ developers need only add each node with a label and a key equivalent (if
+       addAboutSeparator = TRUE;
+     }
+ 
++    // Add the Check for Updates menu item (Nightly)
++    itemBeingAdded = CreateNativeAppMenuItem(
++        aMenu, u"menu_checkForUpdates"_ns, @selector(menuItemHit:),
++        eCommand_ID_Update, nsMenuBarX::sNativeEventTarget);
++    if (itemBeingAdded) {
++      [sApplicationMenu addItem:itemBeingAdded];
++      [itemBeingAdded release];
++      itemBeingAdded = nil;
++    }
++
+ #ifdef MOZ_BUILD_APP_IS_BROWSER
+     // Add the Referrals menu item
+     itemBeingAdded = CreateNativeAppMenuItem(
+@@ -1291,6 +1313,17 @@ - (IBAction)menuItemHit:(id)aSender {
+     }
+     return;
+   }
++  if (tag == eCommand_ID_Update) {
++    nsIContent* mostSpecificContent = sCheckForUpdatesItemContent;
++    if (menuBar && menuBar->mCheckForUpdatesItemContent) {
++      mostSpecificContent = menuBar->mCheckForUpdatesItemContent;
++    }
++    if (mostSpecificContent) {
++      nsMenuUtilsX::DispatchCommandTo(mostSpecificContent, modifierFlags,
++                                      button);
++    }
++    return;
++  }
+   if (tag == eCommand_ID_ReferralsPage) {
+     nsIContent* mostSpecificContent = sReferralsPageItemContent;
+     if (menuBar && menuBar->mReferralsPageItemContent) {

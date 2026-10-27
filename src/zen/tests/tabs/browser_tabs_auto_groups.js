@@ -501,6 +501,30 @@ add_task(async function test_manual_addition_preserves_the_added_tab() {
   });
 });
 
+add_task(async function test_same_site_addition_keeps_the_group_automatic() {
+  await autoGroupWindow(async win => {
+    const tabs = await autoGroupTabs(win, 4);
+    const group = tabs[0].group;
+    // A link opened from a tab in the group lands in the group (Firefox) before
+    // the auto groups ever saw the new tab.
+    const opened = BrowserTestUtils.addTab(
+      win.gBrowser,
+      "https://example.com/?auto-group=opened"
+    );
+    group.addTabs([opened]);
+    await BrowserTestUtils.browserLoaded(opened.linkedBrowser);
+    win.gZenAutoGroups.reconcile();
+    ok(
+      group.hasAttribute("zen-auto-group"),
+      "A same-site tab keeps the group automatic"
+    );
+    is(group.label, "example.com (5)", "The count follows the added tab");
+    await BrowserTestUtils.removeTab(opened);
+    win.gZenAutoGroups.reconcile();
+    is(group.label, "example.com (4)", "The count follows a closed tab");
+  });
+});
+
 add_task(async function test_whole_group_workspace_move_preserves_identity() {
   await autoGroupWindow(async win => {
     const tabs = await autoGroupTabs(win, 4);

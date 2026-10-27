@@ -148,7 +148,10 @@ class ZenAutoGroups extends nsZenPreloadedFeature {
       } catch {
         membership = null;
       }
-      if (membership?.id !== record.id) {
+      if (
+        membership?.id !== record.id &&
+        (membership || !this._joinsSite(event.detail, record))
+      ) {
         this.makeManual(group);
       }
     } else if (record && event.type === "TabUngrouped") {
@@ -203,6 +206,28 @@ class ZenAutoGroups extends nsZenPreloadedFeature {
       return state.entries?.[(state.index || 1) - 1]?.url || "";
     }
     return tab.linkedBrowser.currentURI.spec;
+  }
+
+  /**
+   * Whether a tab joining an automatic group without its membership (a link
+   * opened from a tab of the group lands in it) belongs there: the group's
+   * site, or not loaded yet (reconcile moves it out if it turns out another
+   * site). Another site is the user's manual addition.
+   */
+  _joinsSite(tab, record) {
+    const url = this._url(tab);
+    if (!url || url === "about:blank") {
+      return true;
+    }
+    try {
+      const rules = parseAutoGroupRules(
+        Services.prefs.getStringPref(`${PREF}excluded-domains`, ""),
+        Services.prefs.getStringPref(`${PREF}path-rules`, "")
+      );
+      return autoGroupKey(url, rules, Services.eTLD)?.key === record.key;
+    } catch {
+      return false;
+    }
   }
 
   _restoreGroups(tabs) {

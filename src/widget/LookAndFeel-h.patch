@@ -1,0 +1,13 @@
+diff --git a/widget/LookAndFeel.h b/widget/LookAndFeel.h
+index ae911763ed21ba7293e50fcfa471e900230d0260..cb3e9a9343e45fb5223b875cefbd8e9cde4146e4 100644
+--- a/widget/LookAndFeel.h
++++ b/widget/LookAndFeel.h
+@@ -296,7 +296,7 @@ class LookAndFeel {
+     /** A boolean value to determine whether a touch device is present */
+     TouchDeviceSupportPresent,
+ 
+-    /** GTK titlebar radius */
++    /** GTK titlebar radius; on macOS the browser window's corner radius */
+     TitlebarRadius,
+ 
+     /** GTK tooltip radius */

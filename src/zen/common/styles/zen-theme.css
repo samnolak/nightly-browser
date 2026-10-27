@@ -285,6 +285,16 @@
       max(5px, calc((var(--zen-border-radius) - var(--zen-element-separation) / 2) * var(--zen-squircle-value)))
   );
 
+  /* macOS: concentric with the window's corner, whatever radius macOS gives it
+     (env: nsLookAndFeel's TitlebarRadius, read from AppKit): the window's radius
+     less the gap between the window's edge and the content. */
+  @media (-moz-platform: macos) {
+    --zen-native-inner-radius: var(
+      --zen-webview-border-radius,
+      calc(max(0px, env(-moz-gtk-csd-titlebar-radius, 10px) - var(--zen-element-separation)) * var(--zen-squircle-value))
+    );
+  }
+
   /** Other theme-related styles */
   @media (-moz-platform: macos) {
     font-family:

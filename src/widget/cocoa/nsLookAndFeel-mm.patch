@@ -1,0 +1,58 @@
+diff --git a/widget/cocoa/nsLookAndFeel.mm b/widget/cocoa/nsLookAndFeel.mm
+index 30d68468c1ca72397c5e4c83f0df0c19aa2cdc4d..5968a288c3aa1720c33ef47237d1cb4275c08dac 100644
+--- a/widget/cocoa/nsLookAndFeel.mm
++++ b/widget/cocoa/nsLookAndFeel.mm
+@@ -20,6 +20,8 @@
+ #include "nsNativeThemeColors.h"
+ #include "nsStyleConsts.h"
+ 
++#include <objc/message.h>
++
+ #import <Accessibility/Accessibility.h>
+ #import <AppKit/NSColor.h>
+ #import <Carbon/Carbon.h>
+@@ -385,6 +387,34 @@ static bool PrefersNonBlinkingTextInsertionIndicator() {
+   return false;
+ }
+ 
++// The corner radius macOS gives a browser window (titled, full-size content,
++// no toolbar): 16 on macOS 26, or what the user's NSConvolutionOverride1 sets.
++// A window that is never shown is enough to read it.
++static int32_t BrowserWindowCornerRadius() {
++  SEL selector = NSSelectorFromString(@"_cornerRadius");
++  if (NSApp) {
++    NSWindow* window = [[NSWindow alloc]
++        initWithContentRect:NSMakeRect(0, 0, 100, 100)
++                  styleMask:NSWindowStyleMaskTitled |
++                            NSWindowStyleMaskClosable |
++                            NSWindowStyleMaskMiniaturizable |
++                            NSWindowStyleMaskResizable |
++                            NSWindowStyleMaskFullSizeContentView
++                    backing:NSBackingStoreBuffered
++                      defer:YES];
++    window.releasedWhenClosed = NO;
++    CGFloat radius = -1;
++    if ([window respondsToSelector:selector]) {
++      radius = ((CGFloat(*)(id, SEL))objc_msgSend)(window, selector);
++    }
++    [window release];
++    if (radius >= 0) {
++      return NSToIntRound(radius);
++    }
++  }
++  return nsCocoaFeatures::OnTahoeOrLater() ? 16 : 10;
++}
++
+ nsresult nsLookAndFeel::NativeGetInt(IntID aID, int32_t& aResult) {
+   NS_OBJC_BEGIN_TRY_BLOCK_RETURN;
+ 
+@@ -460,6 +490,9 @@ static bool PrefersNonBlinkingTextInsertionIndicator() {
+     case IntID::MacTahoeTheme:
+       aResult = nsCocoaFeatures::OnTahoeOrLater();
+       break;
++    case IntID::TitlebarRadius:
++      aResult = BrowserWindowCornerRadius();
++      break;
+     case IntID::AlertNotificationOrigin:
+       aResult = NS_ALERT_TOP;
+       break;

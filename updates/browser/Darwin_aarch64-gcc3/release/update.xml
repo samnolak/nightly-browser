@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <updates>
-  <update type="minor" displayVersion="0.1.0b1" appVersion="0.1.0b1" platformVersion="158.0" buildID="20261027152326" detailsURL="https://github.com/samnolak/nightly-browser/releases/tag/v0.1.0-beta.1">
-    <patch type="complete" URL="https://github.com/samnolak/nightly-browser/releases/download/v0.1.0-beta.1/Nightly-0.1.0-beta.1-macos-arm64.mar" hashFunction="sha512" hashValue="32422b78261815696c93aca549e2ae2945981664f87355003ab20a8b6ecbe829eb89badac5e9c8a7f3ab7794c2b708ae491d1afdb873d3d385763ad498cded79" size="98512672" />
+  <update type="minor" displayVersion="0.1.0b2" appVersion="0.1.0b2" platformVersion="158.0" buildID="20261027221032" detailsURL="https://github.com/samnolak/nightly-browser/releases/tag/v0.1.0-beta.2">
+    <patch type="complete" URL="https://github.com/samnolak/nightly-browser/releases/download/v0.1.0-beta.2/Nightly-0.1.0-beta.2-macos-arm64.mar" hashFunction="sha512" hashValue="89ac770442a7f56f9271c37ccb9ad97687c516cd37491c389043175d4f82a63eee9b13206bcc12bf13012da0e1cb5f2510ae807bb281ddfad1d8ee0d98780a1f" size="98508924" />
   </update>
 </updates>

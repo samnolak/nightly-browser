@@ -1,16 +1,8 @@
 diff --git a/widget/cocoa/nsCocoaWindow.h b/widget/cocoa/nsCocoaWindow.h
-index 6c1875577d25c60d7de9208f0b20e16210684d11..53c50ef26d070a077df7404044627ddc1f828245 100644
+index b044cdf52e908884687563b667f015ed778f40a9..53c50ef26d070a077df7404044627ddc1f828245 100644
 --- a/widget/cocoa/nsCocoaWindow.h
 +++ b/widget/cocoa/nsCocoaWindow.h
-@@ -145,6 +145,7 @@ class TextInputHandler;
-   NSPopover* mPopover;
-   NSViewController* mPopoverViewController;
-   BOOL mUsePopover;
-+  NSRect mLastPopoverRect;
- }
- 
- - (id)initWithContentRect:(NSRect)contentRect
-@@ -468,6 +469,10 @@ class nsCocoaWindow final : public nsIWidget {
+@@ -469,6 +469,10 @@ class nsCocoaWindow final : public nsIWidget {
    void SetHideTitlebarSeparator(bool) override;
    bool IsMacTitlebarDirectionRTL() override;
    void SetCustomTitlebar(bool) override;
@@ -21,7 +13,7 @@ index 6c1875577d25c60d7de9208f0b20e16210684d11..53c50ef26d070a077df7404044627ddc
    void UpdateThemeGeometries(
        const nsTArray<ThemeGeometry>& aThemeGeometries) override;
    void LockAspectRatio(bool aShouldLock) override;
-@@ -475,6 +480,21 @@ class nsCocoaWindow final : public nsIWidget {
+@@ -476,6 +480,21 @@ class nsCocoaWindow final : public nsIWidget {
    void DispatchSizeModeEvent();
    void DispatchOcclusionEvent();
  
@@ -43,7 +35,7 @@ index 6c1875577d25c60d7de9208f0b20e16210684d11..53c50ef26d070a077df7404044627ddc
    // be notified that a some form of drag event needs to go into Gecko
    bool DragEvent(unsigned int aMessage, mozilla::gfx::Point aMouseGlobal,
                   UInt16 aKeyModifiers);
-@@ -681,6 +701,13 @@ class nsCocoaWindow final : public nsIWidget {
+@@ -682,6 +701,13 @@ class nsCocoaWindow final : public nsIWidget {
    // show (e.g. a window created by detaching a tab from a fullscreen window).
    bool mIsInitialFullscreenSuppressed = false;
    bool mWasShown = false;

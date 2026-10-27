@@ -371,20 +371,6 @@ export const OPEN_IN_APP_APPS = [
       return `yandexmusic://${url.pathname.slice(1)}${url.search}`;
     },
   },
-  {
-    id: "time",
-    name: "Time",
-    scheme: "timeapp",
-    hosts: ["time.example.ru"],
-    toAppURL(url) {
-      // Time (Mattermost) opens timeapp://<server>/<team>/channels|messages|pl/...
-      const [team, section, item] = url.pathname.split("/").slice(1);
-      if (!team || !item || !["channels", "messages", "pl"].includes(section)) {
-        return null;
-      }
-      return `timeapp://${url.host}${url.pathname}${url.search}${url.hash}`;
-    },
-  },
 ];
 
 /**

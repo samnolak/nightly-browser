@@ -48,8 +48,8 @@ and the links they take: Figma (files, boards, prototypes, file browser), Zoom
 (`/j/`, `/w/` meetings → `zoommtg://`), Microsoft Teams (`/l/` → `msteams:`),
 Slack (`app.slack.com/client/…`), Telegram (`t.me` → `tg://`), Notion pages,
 Linear issues/projects, Spotify, Discord, Толк (`*.ktalk.ru`, `*.ktalk.kz`,
-`talk.skbkontur.ru` → `ktalk://`), Яндекс Телемост (`/j/` → `telemost://`),
-Яндекс Музыка and Time (`time.example.ru`). An app is installed when macOS has a
+`talk.skbkontur.ru` → `ktalk://`), Яндекс Телемост (`/j/` → `telemost://`) and
+Яндекс Музыка. An app is installed when macOS has a
 handler for its URL scheme (the app's `CFBundleURLTypes`); its name is the one
 LaunchServices reports. macOS offers no public lookup of an app's associated
 domains for https links, so the site → app mapping is the list in

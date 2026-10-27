@@ -158,13 +158,6 @@ const LINKS = [
     "yandexmusic://album/123/track/456",
   ],
   ["https://music.yandex.ru/pay", "yandex-music", null],
-  // Time (Mattermost).
-  [
-    "https://time.example.ru/team/pl/abc123",
-    "time",
-    "timeapp://time.example.ru/team/pl/abc123",
-  ],
-  ["https://time.example.ru/login", "time", null],
 ];
 
 add_task(async function test_known_links() {

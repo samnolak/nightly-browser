@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<updates>
+  <update type="minor" displayVersion="1.23.2b" appVersion="1.23.2b" platformVersion="158.0" buildID="20261027132002" detailsURL="https://github.com/samnolak/nightly-browser/releases/tag/v1.23.2b-20261027132002">
+    <patch type="complete" URL="https://github.com/samnolak/nightly-browser/releases/download/v1.23.2b-20261027132002/Nightly-1.23.2b-20261027132002-macos-arm64.mar" hashFunction="sha512" hashValue="9563c14b3533be7df7b7ca8d1dd8f880a0e7f27bdc6f3336a505d33e65ba187dc41434b4f38ac1f179c9049124a7a787c06051c81239229c895e54de48c25382" size="98507440" />
+  </update>
+</updates>

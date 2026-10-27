@@ -374,41 +374,71 @@ add_task(async function system_screenshot_import() {
   }
 });
 
-add_task(async function drag_shows_folder_chips() {
+add_task(async function drag_opens_radial_menu_at_the_cursor() {
   const folderId = await ZenGalleryStore.createFolder(
     "Moodboard with a long folder name"
   );
   await BrowserTestUtils.withNewTab(PAGE, async browser => {
     const actor =
       browser.browsingContext.currentWindowGlobal.getActor("ZenGalleryCapture");
+    const x = Math.round(window.innerWidth / 2) + 40;
+    const y = Math.round(window.innerHeight / 2) + 20;
     // Simulates the child's Gallery:Drag notification (sent on a trusted
-    // dragstart); the drop capability itself still lives in the child.
+    // dragstart, with its screen point); the drop capability stays in the child.
     ZenGalleryCapture.receive(actor, browser, {
       name: "Gallery:Drag",
-      data: { token: "drag-token" },
+      data: {
+        token: "drag-token",
+        screenX: window.mozInnerScreenX + x,
+        screenY: window.mozInnerScreenY + y,
+      },
     });
     const zone = await TestUtils.waitForCondition(
       () => document.getElementById("zen-gallery-drop-zone"),
       "Drop zone is shown during drag"
     );
-    const chips = [...zone.children];
-    Assert.equal(
-      chips[0].textContent,
-      "▣ Save to gallery",
-      "First chip saves to the gallery root"
+    const rect = zone.getBoundingClientRect();
+    Assert.ok(
+      rect.width >= window.innerWidth - 1 && rect.height >= window.innerHeight - 1,
+      "The zone covers the window"
     );
     Assert.ok(
-      chips.some(
-        chip =>
-          chip.dataset.folderId === folderId &&
-          chip.textContent === "Moodboard with a long folder name"
+      getComputedStyle(zone).backdropFilter.includes("blur"),
+      "The page blurs under the menu"
+    );
+    const items = [...zone.querySelectorAll("[data-action]")];
+    Assert.deepEqual(
+      items.map(item => item.dataset.action),
+      ["folder", "new", "cancel"],
+      "Folder, New folder and Cancel; no folders before Folder is reached"
+    );
+    const center = element => {
+      const r = element.getBoundingClientRect();
+      return [r.left + r.width / 2, r.top + r.height / 2];
+    };
+    for (const item of items) {
+      const [ix, iy] = center(item);
+      Assert.less(
+        Math.abs(Math.hypot(ix - x, iy - y) - 88),
+        2,
+        `${item.dataset.action} lies on the ring around the cursor`
+      );
+    }
+    items[0].dispatchEvent(new DragEvent("dragenter", { bubbles: true }));
+    const saves = [...zone.querySelectorAll("[data-action=save]")];
+    Assert.equal(saves[0].dataset.folderId, "", "The gallery itself comes first");
+    Assert.ok(
+      saves.some(
+        item =>
+          item.dataset.folderId === folderId &&
+          item.textContent === "Moodboard with a long folder name"
       ),
-      "Folders are shown as chips"
+      "Reaching Folder opens the folders"
     );
-    Assert.ok(
-      getComputedStyle(chips[1]).backdropFilter.includes("blur"),
-      "Chips use the glass backdrop blur"
-    );
+    for (const item of saves) {
+      const [, iy] = center(item);
+      Assert.less(iy, y, "The folders open above the cursor");
+    }
     ZenGalleryCapture.receive(actor, browser, { name: "Gallery:DragEnd" });
     Assert.ok(
       !document.getElementById("zen-gallery-drop-zone"),

@@ -210,7 +210,11 @@ export class ZenGalleryCaptureChild extends ScreenshotsComponentChild {
           token: Services.uuid.generateUUID().toString(),
           at: Date.now(),
         };
-        this.sendAsyncMessage("Gallery:Drag", { token: this.#drag.token });
+        this.sendAsyncMessage("Gallery:Drag", {
+          token: this.#drag.token,
+          screenX: event.screenX,
+          screenY: event.screenY,
+        });
       } catch {
         this.#drag = null;
       }

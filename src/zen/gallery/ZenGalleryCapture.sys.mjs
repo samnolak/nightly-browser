@@ -266,7 +266,42 @@ function hideDrop(state) {
   state.zone = null;
 }
 
-async function showDrop(actor, browser, token) {
+const HTML = "http://www.w3.org/1999/xhtml";
+
+async function blurredSnapshot(browser, zone) {
+  const window = browser.documentGlobal;
+  const box = browser.getBoundingClientRect();
+  const scale = window.devicePixelRatio;
+  const bitmap = await browser.browsingContext.currentWindowGlobal.drawSnapshot(
+    null,
+    scale,
+    "white"
+  );
+  if (!zone.isConnected) {
+    bitmap.close();
+    return;
+  }
+  const canvas = window.document.createElementNS(HTML, "canvas");
+  canvas.width = bitmap.width;
+  canvas.height = bitmap.height;
+  canvas.getContext("2d").drawImage(bitmap, 0, 0);
+  bitmap.close();
+  canvas.style.cssText = `position:absolute;left:${box.left}px;top:${box.top}px;width:${box.width}px;height:${box.height}px;filter:blur(12px);opacity:.9;pointer-events:none`;
+  zone.prepend(canvas);
+}
+// The radial menu: its three choices on a ring around the cursor, the folders
+// on an outer arc over it once "Folder" is reached.
+const RING = 88;
+const FOLDER_RING = 184;
+const MAX_RING_FOLDERS = 10;
+
+/**
+ * The page blurs under the drag and a radial menu opens around the cursor
+ * (<paramref name="point">, client coordinates of the chrome window): Folder
+ * (reaching it opens the folders, the gallery itself first), New folder (asks
+ * its name after the drop), Cancel. A drop anywhere else saves nothing.
+ */
+async function showDrop(actor, browser, token, point) {
   const window = browser.documentGlobal;
   const state = windows.get(window);
   if (
@@ -284,36 +319,105 @@ async function showDrop(actor, browser, token) {
     return;
   }
   const doc = window.document;
-  const zone = doc.createElementNS("http://www.w3.org/1999/xhtml", "div");
+  const margin = FOLDER_RING + 48;
+  const cx = Math.min(
+    Math.max(point?.x ?? window.innerWidth / 2, margin),
+    Math.max(margin, window.innerWidth - margin)
+  );
+  const cy = Math.min(
+    Math.max(point?.y ?? window.innerHeight / 2, margin),
+    Math.max(margin, window.innerHeight - margin)
+  );
+
+  const zone = doc.createElementNS(HTML, "div");
   zone.id = "zen-gallery-drop-zone";
   zone.setAttribute("role", "region");
   zone.setAttribute("aria-label", "Save image to encrypted gallery");
   zone.style.cssText =
-    "position:fixed;z-index:2147483647;bottom:32px;left:50%;transform:translateX(-50%);max-width:80vw;display:flex;flex-wrap:wrap;gap:8px;padding:16px;border-radius:18px;background:color-mix(in srgb,Canvas 80%,transparent);color:CanvasText;backdrop-filter:blur(24px);border:1px solid color-mix(in srgb,CanvasText 25%,transparent);box-shadow:0 8px 32px #0005";
-  const chip = (name, folderId = "") => {
-    const element = doc.createElementNS("http://www.w3.org/1999/xhtml", "div");
-    element.textContent = name;
-    element.dataset.folderId = folderId;
-    element.style.cssText =
-      "padding:12px;border-radius:12px;backdrop-filter:blur(16px);background:color-mix(in srgb,Canvas 60%,transparent);border:1px solid color-mix(in srgb,CanvasText 20%,transparent)";
+    "position:fixed;inset:0;z-index:2147483647;background:color-mix(in srgb,Canvas 30%,transparent);backdrop-filter:blur(14px);color:CanvasText;font:menu";
+  // backdrop-filter does not reach the page (a remote layer), and a filter on
+  // the <browser> renders it at the wrong scale: a snapshot of the visible page
+  // lies blurred over it instead.
+  void blurredSnapshot(browser, zone).catch(() => {});
+  const item = (label, attributes, x, y, size, round) => {
+    const element = doc.createElementNS(HTML, "div");
+    element.textContent = label;
+    for (const [name, value] of Object.entries(attributes)) {
+      element.dataset[name] = value;
+    }
+    const shape = round
+      ? `width:${size}px;padding:0 8px;white-space:normal;line-height:1.15;border-radius:50%`
+      : `min-width:${size}px;max-width:180px;padding:0 14px;white-space:nowrap;text-overflow:ellipsis;border-radius:${size / 2}px`;
+    element.style.cssText = `position:absolute;left:${x}px;top:${y}px;transform:translate(-50%,-50%);box-sizing:border-box;height:${size}px;${shape};display:flex;align-items:center;justify-content:center;text-align:center;overflow:hidden;background:color-mix(in srgb,Canvas 70%,transparent);backdrop-filter:blur(16px);border:1px solid color-mix(in srgb,CanvasText 20%,transparent);box-shadow:0 6px 24px #0004;transition:background 80ms`;
     zone.append(element);
+    return element;
   };
-  chip("▣ Save to gallery");
-  for (const folder of folders) {
-    chip(folder.name, folder.id);
-  }
+  const at = (radius, degrees) => [
+    cx + radius * Math.cos((degrees * Math.PI) / 180),
+    cy + radius * Math.sin((degrees * Math.PI) / 180),
+  ];
+  item("Folder", { action: "folder" }, ...at(RING, -90), 80, true);
+  item("New folder", { action: "new" }, ...at(RING, 30), 80, true);
+  item("Cancel", { action: "cancel" }, ...at(RING, 150), 80, true);
+
+  let opened = false;
+  const openFolders = () => {
+    if (opened) {
+      return;
+    }
+    opened = true;
+    const ring = [
+      { name: "Gallery", id: "" },
+      ...folders.slice(0, MAX_RING_FOLDERS),
+    ].map(folder =>
+      item(folder.name, { action: "save", folderId: folder.id }, cx, cy, 40, false)
+    );
+    // An arc over the menu, centred on its top: each chip takes its width
+    // along it; the arc grows outwards rather than past 170° (it stays above the cursor).
+    const gap = 10;
+    const length =
+      ring.reduce((sum, chip) => sum + chip.offsetWidth, 0) +
+      gap * (ring.length - 1);
+    const radius = Math.max(FOLDER_RING, length / ((170 * Math.PI) / 180));
+    let along = -length / 2;
+    for (const chip of ring) {
+      const degrees =
+        -90 + ((along + chip.offsetWidth / 2) / radius) * (180 / Math.PI);
+      const [x, y] = at(radius, degrees);
+      chip.style.left = `${x}px`;
+      chip.style.top = `${y}px`;
+      along += chip.offsetWidth + gap;
+    }
+  };
+
   const valid = event =>
     event.isTrusted &&
     state.drag === drag &&
     event.dataTransfer?.sourceTopWindowContext === actor.manager &&
     bound(actor, browser) &&
     !ZenGalleryStore.locked;
-  zone.addEventListener("dragover", event => {
-    if (valid(event)) {
-      event.preventDefault();
-      event.stopPropagation();
-      event.dataTransfer.dropEffect = "copy";
+  const target = event => event.target.closest?.("[data-action]");
+  zone.addEventListener("dragenter", event => {
+    const element = target(event);
+    if (element?.dataset.action === "folder") {
+      openFolders();
     }
+    for (const child of zone.querySelectorAll("[data-action]")) {
+      child.style.background =
+        child === element
+          ? "color-mix(in srgb,AccentColor 45%,Canvas)"
+          : "color-mix(in srgb,Canvas 70%,transparent)";
+    }
+  });
+  zone.addEventListener("dragover", event => {
+    if (!valid(event)) {
+      return;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+    const action = target(event)?.dataset.action;
+    event.dataTransfer.dropEffect =
+      action === "save" || action === "new" ? "copy" : "none";
   });
   zone.addEventListener("drop", event => {
     if (!valid(event)) {
@@ -321,11 +425,27 @@ async function showDrop(actor, browser, token) {
     }
     event.preventDefault();
     event.stopPropagation();
-    const folderId =
-      event.target.closest("[data-folder-id]")?.dataset.folderId || "";
+    const element = target(event);
     hideDrop(state);
-    (async () => {
+    const action = element?.dataset.action;
+    if (action !== "save" && action !== "new") {
+      return;
+    }
+    void (async () => {
+      // Taken at once: the child keeps the dragged image only briefly, and the
+      // name prompt below is modal.
       const result = await actor.sendQuery("Gallery:Drop", { token });
+      let folderId = element.dataset.folderId || "";
+      if (action === "new") {
+        const name = { value: "" };
+        if (
+          !Services.prompt.prompt(window, "New folder", "Folder name", name, null, {}) ||
+          !name.value.trim()
+        ) {
+          return;
+        }
+        folderId = await ZenGalleryStore.createFolder(name.value);
+      }
       requireUnlocked();
       if (!bound(actor, browser)) {
         throw new Error("The source page changed");
@@ -659,7 +779,12 @@ export const ZenGalleryCapture = {
         typeof message.data?.token === "string" &&
         message.data.token.length < 80
       ) {
-        void showDrop(actor, browser, message.data.token).catch(() => {});
+        const { screenX, screenY } = message.data;
+        const window = browser.documentGlobal;
+        const point = Number.isFinite(screenX) && Number.isFinite(screenY)
+          ? { x: screenX - window.mozInnerScreenX, y: screenY - window.mozInnerScreenY }
+          : null;
+        void showDrop(actor, browser, message.data.token, point).catch(() => {});
       }
       return;
     }

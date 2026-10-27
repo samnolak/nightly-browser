@@ -20,7 +20,7 @@
       "brandShortName": "Nightly",
       "brandFullName": "Nightly Browser",
       "release": {
-        "displayVersion": "0.1.0b1",
+        "displayVersion": "0.1.0b2",
         "github": {
           "repo": "samnolak/nightly-browser"
         },

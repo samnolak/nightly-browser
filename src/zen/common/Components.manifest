@@ -5,3 +5,4 @@
 category browser-before-ui-startup resource:///modules/ZenActorsManager.sys.mjs gZenActorsManager.init
 
 category browser-window-delayed-startup resource:///modules/zen/ui/ZenProgressBar.sys.mjs ZenProgressBar.create
+category browser-window-delayed-startup resource:///modules/zen/ui/ZenWindowPlacement.sys.mjs ZenWindowPlacement.create
